@@ -1,0 +1,17 @@
+{
+  "functions": {
+    "pages/api/sync-markets.js": {
+      "maxDuration": 300
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/sync-markets",
+      "schedule": "0 1 * * *"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  },
+  "regions": ["iad1"]
+}
