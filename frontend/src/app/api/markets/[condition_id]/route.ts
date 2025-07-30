@@ -8,7 +8,7 @@ export async function GET(
   try {
     const { condition_id } = await params;
 
-    // Buscar dados completos do mercado com dados de trading
+    // Fetch complete market data with trading data
     const { data: market, error: marketError } = await supabaseAdmin
       .from("markets")
       .select(
@@ -37,7 +37,7 @@ export async function GET(
       return NextResponse.json({ error: "Market not found" }, { status: 404 });
     }
 
-    // Buscar dados da condição (blockchain data)
+    // Fetch condition data (blockchain data)
     const { data: condition, error: conditionError } = await supabaseAdmin
       .from("conditions")
       .select("*")
@@ -48,7 +48,7 @@ export async function GET(
       console.error("Error fetching condition:", conditionError);
     }
 
-    // Buscar fills recentes (últimas 50 transações)
+    // Fetch recent fills (last 50 transactions)
     const { data: recentFills, error: fillsError } = await supabaseAdmin
       .from("order_fills")
       .select("*")
@@ -60,7 +60,7 @@ export async function GET(
       console.error("Error fetching fills:", fillsError);
     }
 
-    // Buscar posições de usuários (top 20 por balance)
+    // Fetch user positions (top 20 by balance)
     const { data: topPositions, error: positionsError } = await supabaseAdmin
       .from("user_position_balances")
       .select("*")

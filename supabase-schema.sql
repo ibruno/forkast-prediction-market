@@ -356,6 +356,7 @@ CREATE TABLE IF NOT EXISTS events (
     creator VARCHAR(42), -- Market creator address (0x...)
     icon_url TEXT, -- events/icons/event-slug.jpg
     show_market_icons BOOLEAN DEFAULT true, -- Field to control the display of market icons
+    rules TEXT, -- Rules for market resolution
     active_markets_count INTEGER DEFAULT 0, -- Count cache
     total_markets_count INTEGER DEFAULT 0, -- Total count cache
     created_at TIMESTAMPTZ DEFAULT NOW(),

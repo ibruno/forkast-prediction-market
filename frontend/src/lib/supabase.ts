@@ -30,9 +30,10 @@ export interface Event {
   slug: string;
   title: string;
   description: string | null;
-  creator: string | null; // NOVO: endereço do criador
+  creator: string | null; // NEW: creator address
   icon_url: string | null;
   show_market_icons: boolean;
+  rules: string | null; // Rules for market resolution
   active_markets_count: number;
   total_markets_count: number;
   created_at: string;
@@ -73,7 +74,7 @@ export interface Outcome {
   token_id: string; // NOVO: token ID do ERC1155
   is_winning_outcome: boolean;
   payout_value: number | null; // NOVO: valor final de payout
-  current_price: number | null; // NOVO: preço atual do mercado (0.0001 to 0.9999)
+  current_price: number | null; // NEW: current market price (0.0001 to 0.9999)
   volume_24h: number; // NOVO: volume 24h
   total_volume: number; // NOVO: volume total
   created_at: string;

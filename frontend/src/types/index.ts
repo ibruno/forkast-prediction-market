@@ -15,6 +15,8 @@ export interface Market {
   creatorAvatar?: string; // URL for creator avatar
   tags: string[];
   show_market_icons?: boolean; // Control if market icons should be shown in lists
+  rules?: string; // Rules for market resolution
+  oracle?: string; // Oracle address for resolution
 }
 
 export interface MarketOutcome {

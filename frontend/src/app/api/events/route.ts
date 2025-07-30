@@ -55,11 +55,11 @@ export async function GET(request: Request) {
       );
     }
 
-    // Otimização: Buscar todos os outcomes de uma vez
+    // Optimization: Fetch all outcomes at once
     const transformedData = [];
 
     if (data && data.length > 0) {
-      // 1. Coletar todos os condition_ids
+      // 1. Collect all condition_ids
       const allConditionIds = [];
       for (const event of data) {
         if (event.markets) {
@@ -69,7 +69,7 @@ export async function GET(request: Request) {
         }
       }
 
-      // 2. Buscar todos os outcomes de uma vez (muito mais eficiente)
+      // 2. Fetch all outcomes at once (much more efficient)
       let allOutcomes = [];
       if (allConditionIds.length > 0) {
         const { data: outcomes } = await supabaseAdmin
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
         allOutcomes = outcomes || [];
       }
 
-      // 3. Criar um mapa para lookup rápido
+      // 3. Create a map for fast lookup
       const outcomesMap = new Map();
       for (const outcome of allOutcomes) {
         if (!outcomesMap.has(outcome.condition_id)) {
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
       }
     }
 
-    // Adicionar headers de cache para melhorar performance
+    // Add cache headers to improve performance
     const response = NextResponse.json(transformedData);
     response.headers.set(
       "Cache-Control",

@@ -1,6 +1,6 @@
 import { Tag, EventWithMarkets } from "./supabase";
 
-// Cache simples para evitar requisições desnecessárias
+// Simple cache to avoid unnecessary requests
 const cache = new Map<string, { data: unknown; timestamp: number }>();
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
 
@@ -9,7 +9,7 @@ function getBaseUrl(): string {
     return window.location.origin;
   }
 
-  // Em produção no Vercel
+  // In production on Vercel
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
   }
@@ -226,7 +226,7 @@ export async function fetchTradingStats() {
   }
 }
 
-// Função para limpar cache manualmente se necessário
+// Function to manually clear cache if necessary
 export function clearCache(): void {
   cache.clear();
 }

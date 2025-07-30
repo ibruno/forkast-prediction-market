@@ -47,12 +47,12 @@ export async function GET(
 
     console.log(`[API] Successfully found event: ${data?.title}`);
 
-    // Buscar outcomes para cada market
+    // Fetch outcomes for each market
     const marketsWithOutcomes = [];
 
     if (data.markets) {
       for (const market of data.markets) {
-        // Buscar outcomes para este market
+        // Fetch outcomes for this market
         const { data: outcomes } = await supabaseAdmin
           .from("outcomes")
           .select("*")

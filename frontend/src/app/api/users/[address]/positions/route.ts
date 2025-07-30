@@ -10,7 +10,7 @@ export async function GET(
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit") || "50";
 
-    // Buscar posições do usuário com dados dos mercados
+    // Fetch user positions with market data
     const { data: positions, error } = await supabaseAdmin
       .from("user_position_balances")
       .select(
@@ -51,7 +51,7 @@ export async function GET(
       );
     }
 
-    // Calcular estatísticas do usuário
+    // Calculate user statistics
     const totalValue =
       positions?.reduce((sum, pos) => {
         const currentValue = pos.balance * (pos.outcomes?.current_price || 0);

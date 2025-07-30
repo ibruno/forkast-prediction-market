@@ -2,7 +2,7 @@ import { Market, MarketCategory, FilterPill } from "@/types";
 import { fetchTags, fetchEvents, fetchEventBySlug } from "./data";
 import { Tag, EventWithMarkets } from "./supabase";
 
-// Função para formar URL completa das imagens do Supabase Storage
+// Function to form complete URL for Supabase Storage images
 export function getSupabaseImageUrl(iconPath: string | null): string | null {
   if (!iconPath) return null;
 
@@ -512,7 +512,7 @@ export const mockUser = {
 // FUNÇÕES PARA DADOS REAIS DO SUPABASE
 // ============================================================
 
-// Função para converter Event do Supabase para Market do frontend
+// Function to convert Event from Supabase to Market for frontend
 function convertEventToMarket(event: EventWithMarkets): Market {
   // Se o evento tem apenas 1 market, usamos os outcomes como Yes/No
   if (event.markets.length === 1) {
@@ -520,9 +520,9 @@ function convertEventToMarket(event: EventWithMarkets): Market {
     const outcomes = market.outcomes.map((outcome) => ({
       id: `${event.id}-${outcome.outcome_index}`,
       name: outcome.outcome_text,
-      probability: Math.random() * 100, // TODO: calcular probabilidade real
-      price: Math.random() * 0.99 + 0.01, // TODO: calcular preço real
-      volume: Math.random() * 100000, // TODO: volume real
+      probability: Math.random() * 100, // TODO: calculate real probability
+      price: Math.random() * 0.99 + 0.01, // TODO: calculate real price
+      volume: Math.random() * 100000, // TODO: real volume
       isYes: outcome.outcome_index === 0,
       avatar: `https://avatar.vercel.sh/${outcome.outcome_text.toLowerCase()}.png`,
     }));
@@ -534,11 +534,11 @@ function convertEventToMarket(event: EventWithMarkets): Market {
       description: market.description || event.description || "",
       category: getCategoryFromTags(event.tags),
       probability: outcomes[0]?.probability || 50,
-      volume: Math.random() * 1000000, // TODO: volume real
-      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // TODO: data real
+      volume: Math.random() * 1000000, // TODO: real volume
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // TODO: real date
       isResolved: market.is_resolved,
       isTrending: Math.random() > 0.7,
-      creator: "0x1234...5678", // TODO: creator real
+      creator: "0x1234...5678", // TODO: real creator
       creatorAvatar:
         getSupabaseImageUrl(event.icon_url) ||
         "https://avatar.vercel.sh/creator.png", // URL COMPLETA DO SUPABASE
@@ -548,13 +548,13 @@ function convertEventToMarket(event: EventWithMarkets): Market {
     };
   }
 
-  // Se o evento tem múltiplos markets, criamos outcomes para cada market
+  // If the event has multiple markets, we create outcomes for each market
   const outcomes = event.markets.map((market) => ({
     id: `${event.id}-${market.slug}`,
     name: market.short_title || market.name,
-    probability: Math.random() * 100, // TODO: calcular probabilidade real
-    price: Math.random() * 0.99 + 0.01, // TODO: calcular preço real
-    volume: Math.random() * 100000, // TODO: volume real
+    probability: Math.random() * 100, // TODO: calculate real probability
+    price: Math.random() * 0.99 + 0.01, // TODO: calculate real price
+    volume: Math.random() * 100000, // TODO: real volume
     avatar:
       getSupabaseImageUrl(market.icon_url) ||
       `https://avatar.vercel.sh/${market.slug}.png`,
@@ -566,12 +566,12 @@ function convertEventToMarket(event: EventWithMarkets): Market {
     title: event.title,
     description: event.description || "",
     category: getCategoryFromTags(event.tags),
-    probability: 0, // Para múltiplos markets, não há probabilidade única
-    volume: Math.random() * 1000000, // TODO: volume real
-    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // TODO: data real
+    probability: 0, // For multiple markets, there's no single probability
+    volume: Math.random() * 1000000, // TODO: real volume
+    endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // TODO: real date
     isResolved: false,
     isTrending: Math.random() > 0.7,
-    creator: "0x1234...5678", // TODO: creator real
+    creator: "0x1234...5678", // TODO: real creator
     creatorAvatar:
       getSupabaseImageUrl(event.icon_url) ||
       "https://avatar.vercel.sh/creator.png", // URL COMPLETA DO SUPABASE
@@ -581,24 +581,24 @@ function convertEventToMarket(event: EventWithMarkets): Market {
   };
 }
 
-// Função para mapear tags do banco para categorias do frontend
+// Function to map database tags to frontend categories
 function getCategoryFromTags(tags: Tag[]): MarketCategory {
-  // Encontrar a primeira tag principal (is_main_category = true)
+  // Find the first main tag (is_main_category = true)
   const mainTag = tags.find((tag) => tag.is_main_category);
 
   if (mainTag) {
     return mainTag.slug;
   }
 
-  // Se não tem tag principal, usar a primeira tag disponível
+  // If no main tag, use the first available tag
   if (tags.length > 0) {
     return tags[0].slug;
   }
 
-  return "world"; // fallback padrão
+  return "world"; // default fallback
 }
 
-// Função para buscar categorias principais do banco
+// Function to fetch main categories from database
 export async function getMainCategories(): Promise<
   { id: MarketCategory; label: string }[]
 > {
@@ -624,7 +624,7 @@ export async function getMainCategories(): Promise<
   }
 }
 
-// Função para buscar todos os markets/eventos
+// Function to fetch all markets/events
 export async function getAllMarkets(
   category?: MarketCategory,
   limit?: number
@@ -634,21 +634,21 @@ export async function getAllMarkets(
 
     // Mapear categorias especiais
     if (category === "trending" || category === "new") {
-      categorySlug = undefined; // buscar todos
+      categorySlug = undefined; // fetch all
     }
 
     const events = await fetchEvents(categorySlug, limit);
     const markets = events.map(convertEventToMarket);
 
-    // Filtrar por trending se necessário
+    // Filter by trending if necessary
     if (category === "trending") {
       return markets.filter((market) => market.isTrending);
     }
 
-    // Ordenar por new se necessário (por created_at dos events)
+    // Sort by new if necessary (by events created_at)
     if (category === "new") {
       return markets.sort((a, b) => {
-        // Buscar o event original para pegar created_at
+        // Find the original event to get created_at
         const eventA = events.find((e) => e.id.toString() === a.id);
         const eventB = events.find((e) => e.id.toString() === b.id);
         if (!eventA || !eventB) return 0;
@@ -662,11 +662,11 @@ export async function getAllMarkets(
     return markets;
   } catch (error) {
     console.error("Error fetching markets:", error);
-    return mockMarkets; // fallback para dados mock
+    return mockMarkets; // fallback to mock data
   }
 }
 
-// Função para buscar market específico por slug
+// Function to fetch specific market by slug
 export async function getMarketBySlug(slug: string): Promise<Market | null> {
   try {
     const event = await fetchEventBySlug(slug);

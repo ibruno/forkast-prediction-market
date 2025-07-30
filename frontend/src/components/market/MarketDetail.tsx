@@ -32,6 +32,7 @@ import {
   getSupabaseImageUrl,
 } from "@/lib/mockData";
 import { fetchRelatedEvents, RelatedEvent } from "@/lib/data";
+import { formatRules, formatOracleAddress } from "@/lib/utils";
 
 interface MarketDetailProps {
   market: Market;
@@ -272,7 +273,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
       // Reset states
       setAmount("");
       setIsMobileModalOpen(false);
-      // Gambiarra temporária: exibe card de vitória após 1.5s
+      // Temporary workaround: displays victory card after 1.5s
       setTimeout(() => setShowWinCard(true), 1500);
     }, 1000);
   };
@@ -503,7 +504,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
     return sharesToSell * sellPrice;
   };
 
-  // Função para obter o preço médio de venda
+  // Function to get the average selling price
   const getAvgSellPrice = () => {
     if (!selectedOutcomeForOrder || !yesNoSelection) return "0";
 
@@ -1625,18 +1626,21 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           {/* Rules */}
           <div className="mt-3">
             <h3 className="text-lg font-semibold mb-2">Rules</h3>
-            <p className="text-md text-muted-foreground mb-2">
-              {market.description}
-            </p>
+
+            {market.rules && (
+              <>
+                {rulesExpanded && (
+                  <>
+                    <div className="text-md text-muted-foreground mb-2 whitespace-pre-line">
+                      {formatRules(market.rules)}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
 
             {rulesExpanded && (
               <>
-                {mockMarketDetails.expandedRules.map((rule, index) => (
-                  <p key={index} className="text-md text-muted-foreground mb-2">
-                    {rule}
-                  </p>
-                ))}
-
                 {/* Oracle Info */}
                 <div className="border border-border/50 dark:border-border/20 rounded-lg p-3 mb-3">
                   <div className="flex items-center justify-between">
@@ -1649,10 +1653,18 @@ export default function MarketDetail({ market }: MarketDetailProps) {
                           Resolver
                         </div>
                         <a
-                          href="#"
+                          href={
+                            market.oracle
+                              ? `https://polygonscan.com/address/${market.oracle}`
+                              : "#"
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
                         >
-                          {mockMarketDetails.resolver.address}
+                          {market.oracle
+                            ? formatOracleAddress(market.oracle)
+                            : ""}
                         </a>
                       </div>
                     </div>

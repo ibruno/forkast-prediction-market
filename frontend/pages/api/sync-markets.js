@@ -500,6 +500,7 @@ async function processEvent(eventData, creatorAddress) {
       creator: creatorAddress,
       icon_url: iconUrl,
       show_market_icons: eventData.show_market_icons !== false,
+      rules: eventData.rules || null,
     })
     .select("id")
     .single();

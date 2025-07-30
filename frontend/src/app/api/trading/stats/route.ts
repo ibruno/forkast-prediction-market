@@ -3,7 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 
 export async function GET() {
   try {
-    // Buscar estatísticas globais de trading
+    // Fetch global trading statistics
     const [
       { data: globalOrders },
       { data: globalOI },
@@ -11,7 +11,7 @@ export async function GET() {
       { data: topMarkets },
       { data: recentFills },
     ] = await Promise.all([
-      // Estatísticas globais de orders
+      // Global order statistics
       supabaseAdmin.from("orders_matched_global").select("*").single(),
 
       // Open Interest global
@@ -38,7 +38,7 @@ export async function GET() {
         .order("total_volume", { ascending: false })
         .limit(10),
 
-      // Últimas 20 transações
+      // Last 20 transactions
       supabaseAdmin
         .from("order_fills")
         .select(
@@ -51,7 +51,7 @@ export async function GET() {
         .limit(20),
     ]);
 
-    // Calcular estatísticas adicionais
+    // Calculate additional statistics
     const totalActiveMarkets = await supabaseAdmin
       .from("markets")
       .select("condition_id", { count: "exact" })

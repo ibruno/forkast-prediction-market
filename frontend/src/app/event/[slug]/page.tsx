@@ -10,7 +10,7 @@ interface MarketPageProps {
   }>;
 }
 
-// Função para converter Event do Supabase para Market (server-side)
+// Function to convert Event from Supabase to Market (server-side)
 function convertEventToMarket(event: any): Market {
   // Se o evento tem apenas 1 market, usamos os outcomes como Yes/No
   if (event.markets.length === 1) {
@@ -43,10 +43,12 @@ function convertEventToMarket(event: any): Market {
       tags: event.tags?.map((tag: any) => tag.slug) || [],
       outcomes,
       show_market_icons: event.show_market_icons,
+      rules: event.rules || undefined,
+      oracle: event.markets[0]?.oracle || null,
     };
   }
 
-  // Múltiplos markets
+  // Multiple markets
   const outcomes = event.markets.map((market: any) => ({
     id: `${event.id}-${market.slug}`,
     name: market.short_title || market.name,
@@ -76,6 +78,7 @@ function convertEventToMarket(event: any): Market {
     tags: event.tags?.map((tag: any) => tag.slug) || [],
     outcomes,
     show_market_icons: event.show_market_icons,
+    rules: event.rules || undefined,
   };
 }
 
@@ -83,7 +86,7 @@ export default async function MarketPage({ params }: MarketPageProps) {
   const { slug } = await params;
 
   try {
-    // Query direta do Supabase (mais confiável que fetch interno)
+    // Direct query to Supabase (more reliable than internal fetch)
     const { data, error } = await supabaseAdmin
       .from("events")
       .select(
@@ -120,7 +123,7 @@ export default async function MarketPage({ params }: MarketPageProps) {
       notFound();
     }
 
-    // Buscar outcomes para cada market
+    // Fetch outcomes for each market
     const marketsWithOutcomes = [];
 
     if (data.markets) {
@@ -138,6 +141,18 @@ export default async function MarketPage({ params }: MarketPageProps) {
       }
     }
 
+    // Fetch oracle once per event (using the first market)
+    let eventOracle = null;
+    if (data.markets && data.markets.length > 0) {
+      const { data: condition } = await supabaseAdmin
+        .from("conditions")
+        .select("oracle")
+        .eq("id", data.markets[0].condition_id)
+        .single();
+
+      eventOracle = condition?.oracle || null;
+    }
+
     // Transformar dados
     const transformedData = {
       ...data,
@@ -145,6 +160,9 @@ export default async function MarketPage({ params }: MarketPageProps) {
       markets: marketsWithOutcomes,
     };
     const market = convertEventToMarket(transformedData);
+
+    // Add event oracle to market
+    market.oracle = eventOracle;
 
     return <MarketDetail market={market} />;
   } catch (error) {
