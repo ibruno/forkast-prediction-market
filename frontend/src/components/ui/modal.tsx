@@ -53,11 +53,15 @@ export function Modal({
     >
       <div
         ref={modalRef}
-        className={`min-w-[448px] max-w-md w-full mx-4 bg-white rounded-lg shadow-xl border border-gray-200 p-6 transition-[height] duration-200 ease-out ${className}`}
+        className={`
+          mx-4 w-full min-w-[448px] max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl
+          transition-[height] duration-200 ease-out
+          ${className}
+        `}
         onClick={e => e.stopPropagation()}
       >
         {title && (
-          <h2 className="text-xl font-semibold text-gray-900 mb-6 text-center">
+          <h2 className="mb-6 text-center text-xl font-semibold text-gray-900">
             {title}
           </h2>
         )}

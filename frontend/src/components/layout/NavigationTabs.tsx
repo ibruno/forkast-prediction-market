@@ -42,16 +42,16 @@ export default function NavigationTabs({
   }
 
   return (
-    <nav className="bg-background sticky top-14 z-10 border-b">
+    <nav className="sticky top-14 z-10 border-b bg-background">
       <div className="container flex gap-6 overflow-x-auto py-1 text-sm font-medium">
         {categories.map((category, index) => (
           <div key={category.id} className="flex items-center">
             <button
               onClick={() => handleCategoryClick(category.id)}
-              className={`flex items-center gap-1.5 whitespace-nowrap py-2 pb-1 border-b-2 transition-colors ${
+              className={`flex items-center gap-1.5 whitespace-nowrap border-b-2 py-2 pb-1 transition-colors ${
                 activeCategory === category.id
-                  ? 'text-foreground border-primary'
-                  : 'text-muted-foreground hover:text-foreground border-transparent'
+                  ? 'border-primary text-foreground'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
               }`}
             >
               {category.id === 'trending' && <TrendingUp className="h-4 w-4" />}

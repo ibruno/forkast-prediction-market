@@ -71,8 +71,8 @@ export default function EventGrid({
 
   if (isLoading) {
     return (
-      <main className="container mx-auto px-4 md:px-6 py-3 max-w-6xl">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <main className="container mx-auto max-w-6xl px-4 py-3 md:px-6">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <EventCardSkeleton key={i} />
           ))}
@@ -83,9 +83,9 @@ export default function EventGrid({
 
   if (filteredEvents.length === 0) {
     return (
-      <main className="container mx-auto px-4 md:px-6 py-3 max-w-6xl">
-        <div className="text-center py-12">
-          <div className="text-muted-foreground mb-2 flex justify-center">
+      <main className="container mx-auto max-w-6xl px-4 py-3 md:px-6">
+        <div className="py-12 text-center">
+          <div className="mb-2 flex justify-center text-muted-foreground">
             {searchQuery
               ? (
                   <Search className="h-6 w-6" />
@@ -94,10 +94,10 @@ export default function EventGrid({
                   <BarChart3 className="h-6 w-6" />
                 )}
           </div>
-          <h3 className="text-lg font-medium text-foreground mb-2">
+          <h3 className="mb-2 text-lg font-medium text-foreground">
             {searchQuery ? 'No events found' : 'No events available'}
           </h3>
-          <p className="text-muted-foreground text-sm mb-6">
+          <p className="mb-6 text-sm text-muted-foreground">
             {searchQuery
               ? (
                   <>
@@ -132,9 +132,9 @@ export default function EventGrid({
   }
 
   return (
-    <main className="container mx-auto px-4 md:px-6 py-3 max-w-6xl">
+    <main className="container mx-auto max-w-6xl px-4 py-3 md:px-6">
       {/* Events Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredEvents.map((event: Market) => (
           <EventCard
             key={event.id}

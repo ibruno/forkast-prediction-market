@@ -78,7 +78,11 @@ export function LoginModal({
         {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors duration-200"
+          className={`
+            flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-4 py-3 font-medium text-white
+            transition-colors duration-200
+            hover:bg-blue-700
+          `}
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -95,7 +99,7 @@ export function LoginModal({
             <div className="w-full border-t border-gray-300" />
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">OR</span>
+            <span className="bg-white px-2 text-gray-500">OR</span>
           </div>
         </div>
 
@@ -107,12 +111,20 @@ export function LoginModal({
             value={email}
             onChange={e => setEmail(e.target.value)}
             disabled={isEmailLoading}
-            className="flex-1 px-3 py-3 border border-gray-300 border-r-0 rounded-l-lg focus:outline-none focus:ring-0 focus:border-blue-500 text-gray-900 placeholder-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+            className={`
+              flex-1 rounded-l-lg border border-r-0 border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500
+              focus:border-blue-500 focus:outline-none focus:ring-0
+              disabled:cursor-not-allowed disabled:bg-gray-100
+            `}
           />
           <button
             onClick={handleEmailContinue}
             disabled={!email.trim() || isEmailLoading}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-r-lg transition-colors duration-200"
+            className={`
+              rounded-r-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200
+              hover:bg-blue-700
+              disabled:cursor-not-allowed disabled:bg-gray-300
+            `}
           >
             {isEmailLoading ? 'Sending...' : 'Continue'}
           </button>
@@ -122,7 +134,13 @@ export function LoginModal({
         <div className="flex justify-between">
           <button
             onClick={() => handleWalletConnect('metamask')}
-            className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
+            className={`
+              mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
+              duration-200
+              first:ml-0
+              last:mr-0
+              hover:bg-gray-50
+            `}
             title="MetaMask"
           >
             <Image
@@ -130,13 +148,19 @@ export function LoginModal({
               alt="MetaMask"
               width={24}
               height={24}
-              className="w-6 h-6"
+              className="h-6 w-6"
             />
           </button>
 
           <button
             onClick={() => handleWalletConnect('coinbase')}
-            className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
+            className={`
+              mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
+              duration-200
+              first:ml-0
+              last:mr-0
+              hover:bg-gray-50
+            `}
             title="Coinbase Wallet"
           >
             <Image
@@ -144,13 +168,19 @@ export function LoginModal({
               alt="Coinbase Wallet"
               width={24}
               height={24}
-              className="w-6 h-6"
+              className="h-6 w-6"
             />
           </button>
 
           <button
             onClick={() => handleWalletConnect('phantom')}
-            className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
+            className={`
+              mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
+              duration-200
+              first:ml-0
+              last:mr-0
+              hover:bg-gray-50
+            `}
             title="Phantom"
           >
             <Image
@@ -158,13 +188,19 @@ export function LoginModal({
               alt="Phantom"
               width={24}
               height={24}
-              className="w-6 h-6"
+              className="h-6 w-6"
             />
           </button>
 
           <button
             onClick={() => handleWalletConnect('walletconnect')}
-            className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
+            className={`
+              mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
+              duration-200
+              first:ml-0
+              last:mr-0
+              hover:bg-gray-50
+            `}
             title="WalletConnect"
           >
             <Image
@@ -172,7 +208,7 @@ export function LoginModal({
               alt="WalletConnect"
               width={24}
               height={24}
-              className="w-6 h-6"
+              className="h-6 w-6"
             />
           </button>
         </div>
@@ -182,14 +218,14 @@ export function LoginModal({
           <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
             <a
               href="/terms"
-              className="hover:text-gray-700 transition-colors duration-200"
+              className="transition-colors duration-200 hover:text-gray-700"
             >
               Terms
             </a>
             <span>•</span>
             <a
               href="/privacy"
-              className="hover:text-gray-700 transition-colors duration-200"
+              className="transition-colors duration-200 hover:text-gray-700"
             >
               Privacy
             </a>

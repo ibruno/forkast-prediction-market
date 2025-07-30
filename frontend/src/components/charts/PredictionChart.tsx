@@ -194,7 +194,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
 
   if (!isClient || data.length === 0 || series.length === 0) {
     return (
-      <div className="relative w-full h-full">
+      <div className="relative h-full w-full">
         <svg width="100%" height={height}>
           <rect width="100%" height={height} fill="transparent" />
         </svg>
@@ -226,7 +226,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
   const getX = (d: DataPoint) => xScale(getDate(d))
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative h-full w-full">
       <svg
         width="100%"
         height={height}
@@ -414,7 +414,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
           style={tooltipStyles}
         >
           <div>
-            <div className="font-semibold mb-2 text-sm border-b border-border pb-1 text-card-foreground">
+            <div className="mb-2 border-b border-border pb-1 text-sm font-semibold text-card-foreground">
               {tooltipData.date.toLocaleDateString('en-US', {
                 weekday: 'short',
                 month: 'short',
@@ -429,7 +429,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
                 >
                   <div className="flex items-center gap-2">
                     <div
-                      className="w-3 h-3 rounded-full border border-muted"
+                      className="h-3 w-3 rounded-full border border-muted"
                       style={{ backgroundColor: seriesItem.color }}
                     />
                     <span className="text-muted-foreground">

@@ -102,11 +102,9 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Function to get top 4 outcomes by volume
   const getTopOutcomesForChart = () => {
-    const sortedOutcomes = [...event.outcomes]
+    return [...event.outcomes]
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 4)
-
-    return sortedOutcomes
   }
 
   // Function to generate chart data based on actual outcomes
@@ -170,6 +168,11 @@ export default function EventDetail({ event }: EventDetailProps) {
   // Generate dynamic data for the chart
   const chartConfig = generateChartData()
 
+  // Function to format values with 2 decimal places
+  const formatValue = (value: number): string => {
+    return value.toFixed(2)
+  }
+
   // Confetti effects
   const triggerYesConfetti = (event?: React.MouseEvent) => {
     let origin: { x?: number, y: number } = { y: 0.6 }
@@ -209,6 +212,41 @@ export default function EventDetail({ event }: EventDetailProps) {
     })
   }
 
+  // Function to calculate the amount the user will receive when selling shares
+  const calculateSellAmount = (sharesToSell: number) => {
+    if (!selectedOutcomeForOrder || !yesNoSelection)
+      return 0
+
+    // Base sell price based on current probability (slightly lower than buy price)
+    const selectedOutcome = getSelectedOutcome()
+    if (!selectedOutcome)
+      return 0
+
+    const sellPrice
+        = yesNoSelection === 'yes'
+          ? (selectedOutcome.probability / 100) * 0.95 // 5% spread for sell
+          : ((100 - selectedOutcome.probability) / 100) * 0.95
+
+    return sharesToSell * sellPrice
+  }
+
+  // Function to get the average selling price
+  const getAvgSellPrice = () => {
+    if (!selectedOutcomeForOrder || !yesNoSelection)
+      return '0'
+
+    const selectedOutcome = getSelectedOutcome()
+    if (!selectedOutcome)
+      return '0'
+
+    const sellPrice
+        = yesNoSelection === 'yes'
+          ? Math.round(selectedOutcome.probability * 0.95) // 5% spread for sell
+          : Math.round((100 - selectedOutcome.probability) * 0.95)
+
+    return sellPrice.toString()
+  }
+
   // Handle confirm trade with loading
   const handleConfirmTrade = async () => {
     if (!amount || Number.parseFloat(amount) <= 0 || !yesNoSelection)
@@ -234,7 +272,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             description: (
               <div>
                 <div className="font-medium">{event.title}</div>
-                <div className="text-xs opacity-80 mt-1">
+                <div className="mt-1 text-xs opacity-80">
                   Received $$
                   {formatValue(sellValue)}
                   {' '}
@@ -265,7 +303,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             description: (
               <div>
                 <div className="font-medium">{event.title}</div>
-                <div className="text-xs opacity-80 mt-1">
+                <div className="mt-1 text-xs opacity-80">
                   {shares}
                   {' '}
                   shares @
@@ -440,11 +478,6 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   const { timeRanges, commentsTabs, trendingData } = mockMarketDetails
 
-  // Function to format values with 2 decimal places
-  const formatValue = (value: number): string => {
-    return value.toFixed(2)
-  }
-
   // Function to limit decimal places while typing
   const limitDecimalPlaces = (
     value: string,
@@ -511,41 +544,6 @@ export default function EventDetail({ event }: EventDetailProps) {
     return mockUser.shares[shareKey] || 0
   }
 
-  // Function to calculate the amount the user will receive when selling shares
-  const calculateSellAmount = (sharesToSell: number) => {
-    if (!selectedOutcomeForOrder || !yesNoSelection)
-      return 0
-
-    // Base sell price based on current probability (slightly lower than buy price)
-    const selectedOutcome = getSelectedOutcome()
-    if (!selectedOutcome)
-      return 0
-
-    const sellPrice
-      = yesNoSelection === 'yes'
-        ? (selectedOutcome.probability / 100) * 0.95 // 5% spread for sell
-        : ((100 - selectedOutcome.probability) / 100) * 0.95
-
-    return sharesToSell * sellPrice
-  }
-
-  // Function to get the average selling price
-  const getAvgSellPrice = () => {
-    if (!selectedOutcomeForOrder || !yesNoSelection)
-      return '0'
-
-    const selectedOutcome = getSelectedOutcome()
-    if (!selectedOutcome)
-      return '0'
-
-    const sellPrice
-      = yesNoSelection === 'yes'
-        ? Math.round(selectedOutcome.probability * 0.95) // 5% spread for sell
-        : Math.round((100 - selectedOutcome.probability) * 0.95)
-
-    return sellPrice.toString()
-  }
-
   // Function to render Yes/No buttons
   const renderYesNoButton = (
     type: 'yes' | 'no',
@@ -598,8 +596,8 @@ export default function EventDetail({ event }: EventDetailProps) {
           key={percentage}
           className={`${baseButtonClasses} ${
             isDisabled
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-white/10 dark:hover:bg-white/5 hover:border-border'
+              ? 'cursor-not-allowed opacity-50'
+              : 'hover:border-border hover:bg-white/10 dark:hover:bg-white/5'
           }`}
           disabled={isDisabled}
           onClick={() => {
@@ -623,7 +621,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       return chipValues.map(chip => (
         <button
           key={chip}
-          className={`${baseButtonClasses} hover:bg-white/10 dark:hover:bg-white/5 hover:border-border`}
+          className={`${baseButtonClasses} hover:border-border hover:bg-white/10 dark:hover:bg-white/5`}
           onClick={() => {
             const chipValue = Number.parseInt(chip.substring(2))
             const currentValue = Number.parseFloat(amount) || 0
@@ -639,6 +637,136 @@ export default function EventDetail({ event }: EventDetailProps) {
         </button>
       ))
     }
+  }
+
+  const renderWinCard = (isMobileVersion = false) => {
+    const outcomeName
+        = yesNoSelection === 'yes'
+          ? getYesOutcome()?.name || 'Yes'
+          : getSelectedOutcome()?.name || 'No'
+    // shares: user input, valuePerShare: real order value, total: shares * valuePerShare
+    const shares = amount && !Number.isNaN(Number(amount)) ? Number(amount) : 1.1
+    const valuePerShare
+        = amount && !Number.isNaN(Number(amount))
+          ? Number.parseFloat((Number.parseFloat(amount) / shares).toFixed(2))
+          : 1.0
+    const total = shares * valuePerShare
+
+    // Function to trigger blue confetti from the button
+    const triggerBlueConfetti = (
+      event: React.MouseEvent<HTMLButtonElement>,
+    ) => {
+      if (!event || !event.currentTarget)
+        return
+      const rect = event.currentTarget.getBoundingClientRect()
+      const x = (rect.left + rect.width / 2) / window.innerWidth
+      const y = (rect.top + rect.height / 2) / window.innerHeight
+      confetti({
+        particleCount: 80,
+        spread: 60,
+        origin: { x, y },
+        colors: ['#2563eb', '#1d4ed8', '#3b82f6', '#60a5fa'],
+      })
+    }
+
+    const isMultiOutcome = event.outcomes.length > 2
+    let outcomeLabel = outcomeName
+    if (isMultiOutcome) {
+      const selectedOutcome = getSelectedOutcome()
+      if (selectedOutcome) {
+        outcomeLabel = `${selectedOutcome.name} - ${
+          yesNoSelection === 'yes' ? 'Yes' : 'No'
+        }`
+      }
+    }
+
+    return (
+      <div
+        className={`
+          border-border/50 flex flex-col items-center justify-center rounded-lg border p-6
+          dark:border-border/20
+          ${
+      isMobileVersion ? 'w-full' : 'w-full lg:w-[320px]'
+      }`}
+      >
+        <CircleCheck size={56} className="mb-2 text-primary" />
+        <div className="mb-1 text-center text-xl font-bold text-primary">
+          Outcome:
+          {' '}
+          {outcomeLabel}
+        </div>
+        {!claimed && <hr className="my-4 w-full border-border" />}
+        {!claimed && (
+          <>
+            <div className="mb-2 text-center text-lg font-bold text-foreground">
+              Your Earnings
+            </div>
+            <div className="flex w-full flex-col gap-2">
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Position:</span>
+                <span className="font-medium text-foreground">
+                  {shares}
+                  {' '}
+                  {outcomeLabel}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Value per Share:</span>
+                <span className="font-medium text-foreground">
+                  $
+                  {valuePerShare.toFixed(2)}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">Total:</span>
+                <span className="font-medium text-foreground">
+                  $
+                  {total.toFixed(2)}
+                </span>
+              </div>
+            </div>
+            <button
+              className={`
+                hover:bg-primary/90
+                mt-6 flex h-11 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-white
+                transition-colors
+              `}
+              onClick={async (e) => {
+                setClaiming(true)
+                triggerBlueConfetti(e)
+                await new Promise(res => setTimeout(res, 1800))
+                setClaiming(false)
+                setClaimed(true)
+                // Show success toast for claim
+                toast.success('Redeem shares', {
+                  description: (
+                    <div>
+                      <div className="font-medium">{event.title}</div>
+                    </div>
+                  ),
+                })
+              }}
+              disabled={claiming}
+            >
+              {claiming
+                ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent">
+                      </div>
+                      <span>Confirming...</span>
+                    </div>
+                  )
+                : (
+                    'Claim winnings'
+                  )}
+            </button>
+          </>
+        )}
+        <p className="mt-3 text-center text-[10px] text-muted-foreground">
+          By trading, you agree to our Terms of Service
+        </p>
+      </div>
+    )
   }
 
   // Function to render the order panel content
@@ -660,7 +788,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         {event.outcomes.length > 2
           && selectedOutcomeForOrder
           && !isMobileVersion && (
-          <div className="mb-4 rounded-lg bg-muted/20">
+          <div className="bg-muted/20 mb-4 rounded-lg">
             <div className="flex items-center gap-3">
               <Image
                 src={
@@ -670,7 +798,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 alt={getSelectedOutcome()?.name || 'Selected outcome'}
                 width={42}
                 height={42}
-                className="rounded-sm flex-shrink-0"
+                className="flex-shrink-0 rounded-sm"
               />
               <span className="text-md font-bold">
                 {getSelectedOutcome()?.name}
@@ -681,11 +809,11 @@ export default function EventDetail({ event }: EventDetailProps) {
 
         {/* Mobile header with title and market info */}
         {isMobileVersion && (
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex items-center justify-between">
             <div className="flex items-center gap-1">
               <span className="text-lg font-semibold">Buy</span>
               <svg
-                className="w-4 h-4 text-muted-foreground"
+                className="h-4 w-4 text-muted-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -701,7 +829,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             <div className="flex items-center gap-1 text-muted-foreground">
               <span className="text-sm">Market</span>
               <svg
-                className="w-4 h-4"
+                className="h-4 w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -719,12 +847,12 @@ export default function EventDetail({ event }: EventDetailProps) {
 
         {/* Divider for mobile */}
         {isMobileVersion && (
-          <hr className="border-border/50 dark:border-border/20 mb-4" />
+          <hr className="border-border/50 mb-4 dark:border-border/20" />
         )}
 
         {/* Market info for mobile */}
         {isMobileVersion && (
-          <div className="flex items-center gap-3 mb-4">
+          <div className="mb-4 flex items-center gap-3">
             <Image
               src={
                 // If there's a selected option, use its photo, otherwise use creator's photo
@@ -741,13 +869,13 @@ export default function EventDetail({ event }: EventDetailProps) {
               }
               width={32}
               height={32}
-              className="rounded flex-shrink-0"
+              className="flex-shrink-0 rounded"
             />
             <div className="flex-1">
-              <div className="text-sm font-medium line-clamp-2">
+              <div className="line-clamp-2 text-sm font-medium">
                 {event.title}
               </div>
-              <div className="text-xs text-muted-foreground flex items-center justify-between">
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
                   {selectedOutcomeForOrder
                     ? getSelectedOutcome()?.name
@@ -763,7 +891,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         )}
 
         {/* Tabs Buy/Sell */}
-        <div className="flex mb-4 text-sm font-semibold">
+        <div className="mb-4 flex text-sm font-semibold">
           <button
             onClick={() => {
               setActiveTab('buy')
@@ -772,8 +900,8 @@ export default function EventDetail({ event }: EventDetailProps) {
             }}
             className={`flex-1 pb-2 transition-colors duration-200 ${
               activeTab === 'buy'
-                ? 'text-foreground border-b-2 border-emerald-500'
-                : 'text-muted-foreground hover:text-muted-foreground border-b-2 border-muted-foreground'
+                ? 'border-b-2 border-emerald-500 text-foreground'
+                : 'border-b-2 border-muted-foreground text-muted-foreground hover:text-muted-foreground'
             }`}
           >
             Buy
@@ -786,8 +914,8 @@ export default function EventDetail({ event }: EventDetailProps) {
             }}
             className={`flex-1 pb-2 transition-colors duration-200 ${
               activeTab === 'sell'
-                ? 'text-foreground border-b-2 border-emerald-500'
-                : 'text-muted-foreground hover:text-muted-foreground border-b-2 border-muted-foreground'
+                ? 'border-b-2 border-emerald-500 text-foreground'
+                : 'border-b-2 border-muted-foreground text-muted-foreground hover:text-muted-foreground'
             }`}
           >
             Sell
@@ -795,14 +923,14 @@ export default function EventDetail({ event }: EventDetailProps) {
         </div>
 
         {/* Yes/No buttons */}
-        <div className="flex gap-2 mb-2">
+        <div className="mb-2 flex gap-2">
           {renderYesNoButton('yes', yesPrice)}
           {renderYesNoButton('no', noPrice)}
         </div>
 
         {/* Display available shares (only in Sell mode) */}
         {activeTab === 'sell' && selectedOutcomeForOrder && (
-          <div className="flex gap-2 mb-4">
+          <div className="mb-4 flex gap-2">
             <div className="flex-1 text-center">
               {getYesShares(selectedOutcomeForOrder) > 0
                 ? (
@@ -838,8 +966,8 @@ export default function EventDetail({ event }: EventDetailProps) {
 
         {/* Message when no outcome is selected in Sell mode */}
         {activeTab === 'sell' && !selectedOutcomeForOrder && (
-          <div className="mb-4 p-3 bg-muted/30 rounded-lg border border-border/50">
-            <p className="text-sm text-muted-foreground text-center">
+          <div className="bg-muted/30 border-border/50 mb-4 rounded-lg border p-3">
+            <p className="text-center text-sm text-muted-foreground">
               Select an outcome to sell shares
             </p>
           </div>
@@ -848,173 +976,196 @@ export default function EventDetail({ event }: EventDetailProps) {
         {activeTab !== 'sell' && <div className="mb-4"></div>}
 
         {/* Amount/Shares */}
-        {isMobileVersion ? (
-          // Version mobile with +/- buttons
-          <div className="mb-4">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <button
-                onClick={() => {
-                  const currentValue = Number.parseFloat(amount) || 0
-                  const newValue = Math.max(
-                    0,
-                    currentValue - (activeTab === 'sell' ? 0.1 : 1),
-                  )
-                  setAmount(formatValue(newValue))
-                }}
-                className="w-12 h-12 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center text-2xl font-bold transition-colors"
-              >
-                −
-              </button>
-              <div className="flex-1 text-center">
-                <input
-                  ref={setInputRef}
-                  type="text"
-                  className="w-full bg-transparent border-0 outline-none text-4xl font-bold text-center text-foreground placeholder-muted-foreground [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  placeholder={activeTab === 'sell' ? '0' : '$1.00'}
-                  value={
-                    activeTab === 'sell'
-                      ? amount || ''
-                      : amount
-                        ? `$${amount}`
-                        : ''
-                  }
-                  onChange={(e) => {
-                    const rawValue
+        {isMobileVersion
+          ? (
+              <div className="mb-4">
+                <div className="mb-4 flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => {
+                      const currentValue = Number.parseFloat(amount) || 0
+                      const newValue = Math.max(
+                        0,
+                        currentValue - (activeTab === 'sell' ? 0.1 : 1),
+                      )
+                      setAmount(formatValue(newValue))
+                    }}
+                    className={`
+                      hover:bg-muted/80
+                      flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-2xl font-bold
+                      transition-colors
+                    `}
+                  >
+                    −
+                  </button>
+                  <div className="flex-1 text-center">
+                    <input
+                      ref={setInputRef}
+                      type="text"
+                      className={`
+                        w-full border-0 bg-transparent text-center text-4xl font-bold text-foreground
+                        placeholder-muted-foreground outline-none
+                        [appearance:textfield]
+                        [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
+                      `}
+                      placeholder={activeTab === 'sell' ? '0' : '$1.00'}
+                      value={
+                        activeTab === 'sell'
+                          ? amount || ''
+                          : amount
+                            ? `$${amount}`
+                            : ''
+                      }
+                      onChange={(e) => {
+                        const rawValue
                       = activeTab === 'sell'
                         ? e.target.value
                         : e.target.value.replace(/[^0-9.]/g, '')
 
-                    const value
+                        const value
                       = activeTab === 'sell'
                         ? limitDecimalPlaces(rawValue, 2)
                         : rawValue
 
-                    const numericValue = Number.parseFloat(value)
+                        const numericValue = Number.parseFloat(value)
 
-                    if (activeTab === 'sell') {
-                      // For sell, limit by the amount of shares the user has
-                      const userShares = getUserShares()
-                      if (numericValue <= userShares || value === '') {
-                        setAmount(value)
-                      }
-                    }
-                    else {
-                      // For buy, limit as before
-                      if (numericValue <= 99999 || value === '') {
-                        setAmount(value)
-                      }
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const value = e.target.value.replace(/[^0-9.]/g, '')
-                    if (value && !isNaN(Number.parseFloat(value))) {
-                      setAmount(formatValue(Number.parseFloat(value)))
-                    }
-                  }}
-                />
-              </div>
-              <button
-                onClick={() => {
-                  const currentValue = Number.parseFloat(amount) || 0
-                  const newValue
+                        if (activeTab === 'sell') {
+                          // For sell, limit by the amount of shares the user has
+                          const userShares = getUserShares()
+                          if (numericValue <= userShares || value === '') {
+                            setAmount(value)
+                          }
+                        }
+                        else {
+                          // For buy, limit as before
+                          if (numericValue <= 99999 || value === '') {
+                            setAmount(value)
+                          }
+                        }
+                      }}
+                      onBlur={(e) => {
+                        const value = e.target.value.replace(/[^0-9.]/g, '')
+                        if (value && !Number.isNaN(Number.parseFloat(value))) {
+                          setAmount(formatValue(Number.parseFloat(value)))
+                        }
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      const currentValue = Number.parseFloat(amount) || 0
+                      const newValue
                     = currentValue + (activeTab === 'sell' ? 0.1 : 1)
 
-                  if (activeTab === 'sell') {
-                    const userShares = getUserShares()
-                    if (newValue <= userShares) {
-                      setAmount(formatValue(newValue))
-                    }
-                  }
-                  else {
-                    if (newValue <= 99999) {
-                      setAmount(formatValue(newValue))
-                    }
-                  }
-                }}
-                className="w-12 h-12 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center text-2xl font-bold transition-colors"
-              >
-                +
-              </button>
-            </div>
-          </div>
-        ) : (
-          // Version desktop original
-          <div className="mb-2 flex items-center gap-3">
-            <div className="flex-shrink-0">
-              <div className="text-lg font-medium">
-                {activeTab === 'sell' ? 'Shares' : 'Amount'}
+                      if (activeTab === 'sell') {
+                        const userShares = getUserShares()
+                        if (newValue <= userShares) {
+                          setAmount(formatValue(newValue))
+                        }
+                      }
+                      else {
+                        if (newValue <= 99999) {
+                          setAmount(formatValue(newValue))
+                        }
+                      }
+                    }}
+                    className={`
+                      hover:bg-muted/80
+                      flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-2xl font-bold
+                      transition-colors
+                    `}
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {activeTab === 'sell'
-                  ? ``
-                  : `Balance $${formatValue(mockUser.cash)}`}
-              </div>
-            </div>
-            <div className="flex-1 relative">
-              <input
-                ref={setInputRef}
-                type="text"
-                className="w-full h-14 bg-transparent border-0 outline-none text-4xl font-bold text-right text-slate-700 dark:text-slate-300 placeholder-slate-400 dark:placeholder-slate-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                placeholder={activeTab === 'sell' ? '0' : '$0.00'}
-                value={
-                  activeTab === 'sell'
-                    ? amount || ''
-                    : amount
-                      ? `$${amount}`
-                      : ''
-                }
-                onChange={(e) => {
-                  const rawValue
+            )
+          : (
+              <div className="mb-2 flex items-center gap-3">
+                <div className="flex-shrink-0">
+                  <div className="text-lg font-medium">
+                    {activeTab === 'sell' ? 'Shares' : 'Amount'}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {activeTab === 'sell'
+                      ? ``
+                      : `Balance $${formatValue(mockUser.cash)}`}
+                  </div>
+                </div>
+                <div className="relative flex-1">
+                  <input
+                    ref={setInputRef}
+                    type="text"
+                    className={`
+                      h-14 w-full border-0 bg-transparent text-right text-4xl font-bold text-slate-700
+                      placeholder-slate-400 outline-none
+                      [appearance:textfield]
+                      dark:text-slate-300 dark:placeholder-slate-500
+                      [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
+                    `}
+                    placeholder={activeTab === 'sell' ? '0' : '$0.00'}
+                    value={
+                      activeTab === 'sell'
+                        ? amount || ''
+                        : amount
+                          ? `$${amount}`
+                          : ''
+                    }
+                    onChange={(e) => {
+                      const rawValue
                     = activeTab === 'sell'
                       ? e.target.value
                       : e.target.value.replace(/[^0-9.]/g, '')
 
-                  const value
+                      const value
                     = activeTab === 'sell'
                       ? limitDecimalPlaces(rawValue, 2)
                       : rawValue
 
-                  const numericValue = Number.parseFloat(value)
+                      const numericValue = Number.parseFloat(value)
 
-                  if (activeTab === 'sell') {
-                    // For sell, limit by the amount of shares the user has
-                    const userShares = getUserShares()
-                    if (numericValue <= userShares || value === '') {
-                      setAmount(value)
-                    }
-                  }
-                  else {
-                    // For buy, limit as before
-                    if (numericValue <= 99999 || value === '') {
-                      setAmount(value)
-                    }
-                  }
-                }}
-                onBlur={(e) => {
-                  const value = e.target.value.replace(/[^0-9.]/g, '')
-                  if (value && !isNaN(Number.parseFloat(value))) {
-                    setAmount(formatValue(Number.parseFloat(value)))
-                  }
-                }}
-              />
-            </div>
-          </div>
-        )}
+                      if (activeTab === 'sell') {
+                        // For sell, limit by the amount of shares the user has
+                        const userShares = getUserShares()
+                        if (numericValue <= userShares || value === '') {
+                          setAmount(value)
+                        }
+                      }
+                      else {
+                        // For buy, limit as before
+                        if (numericValue <= 99999 || value === '') {
+                          setAmount(value)
+                        }
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const value = e.target.value.replace(/[^0-9.]/g, '')
+                      if (value && !Number.isNaN(Number.parseFloat(value))) {
+                        setAmount(formatValue(Number.parseFloat(value)))
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
         {/* Quick chips */}
         <div
-          className={`flex gap-2 mb-3 ${
+          className={`mb-3 flex gap-2 ${
             isMobileVersion ? 'justify-center' : 'justify-end'
           }`}
         >
           {renderActionButtons(isMobileVersion)}
           {/* Max button */}
           <button
-            className={`h-7 px-3 rounded-lg border border-border/50 dark:border-border/20 text-[11px] font-semibold transition-all duration-200 ease-in-out ${
-              activeTab === 'sell' && getUserShares() <= 0
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-white/10 dark:hover:bg-white/5 hover:border-border'
-            }`}
+            className={`
+              border-border/50 h-7 rounded-lg border px-3 text-[11px] font-semibold transition-all duration-200
+              ease-in-out
+              dark:border-border/20
+              ${
+      activeTab === 'sell' && getUserShares() <= 0
+        ? 'cursor-not-allowed opacity-50'
+        : 'hover:border-border hover:bg-white/10 dark:hover:bg-white/5'
+      }`}
             disabled={activeTab === 'sell' && getUserShares() <= 0}
             onClick={() => {
               if (activeTab === 'sell') {
@@ -1038,9 +1189,9 @@ export default function EventDetail({ event }: EventDetailProps) {
 
         {/* To Win / You'll receive Section */}
         {amount && Number.parseFloat(amount) > 0 && yesNoSelection && (
-          <div className={`${isMobileVersion ? 'text-center mb-4' : 'mb-4'}`}>
+          <div className={`${isMobileVersion ? 'mb-4 text-center' : 'mb-4'}`}>
             {!isMobileVersion && (
-              <hr className="border-border/50 dark:border-border/20 mb-3" />
+              <hr className="border-border/50 mb-3 dark:border-border/20" />
             )}
             <div
               className={`flex ${
@@ -1061,10 +1212,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                 >
                   {activeTab === 'sell' ? 'You\'ll receive' : 'To win'}
                   {!isMobileVersion && (
-                    <Banknote className="w-4 h-4 text-emerald-600" />
+                    <Banknote className="h-4 w-4 text-emerald-600" />
                   )}
                   {isMobileVersion && (
-                    <span className="text-emerald-600 text-xl">💰</span>
+                    <span className="text-xl text-emerald-600">💰</span>
                   )}
                   {isMobileVersion && (
                     <span className="text-2xl font-bold text-emerald-600">
@@ -1105,7 +1256,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
         {/* Main button */}
         <Button
-          className="w-full h-11 text-sm font-bold"
+          className="h-11 w-full text-sm font-bold"
           onClick={(e) => {
             // Trigger confetti based on selection
             if (yesNoSelection === 'yes') {
@@ -1127,7 +1278,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           {isLoading
             ? (
                 <div className="flex items-center justify-center gap-2">
-                  <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
                   <span>Processing...</span>
                 </div>
               )
@@ -1145,129 +1296,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         </Button>
 
         {/* Disclaimer */}
-        <p className="text-[10px] text-center text-muted-foreground mt-3">
-          By trading, you agree to our Terms of Service
-        </p>
-      </div>
-    )
-  }
-
-  const renderWinCard = (isMobileVersion = false) => {
-    const outcomeName
-      = yesNoSelection === 'yes'
-        ? getYesOutcome()?.name || 'Yes'
-        : getSelectedOutcome()?.name || 'No'
-    // shares: user input, valuePerShare: real order value, total: shares * valuePerShare
-    const shares = amount && !isNaN(Number(amount)) ? Number(amount) : 1.1
-    const valuePerShare
-      = amount && !isNaN(Number(amount))
-        ? Number.parseFloat((Number.parseFloat(amount) / shares).toFixed(2))
-        : 1.0
-    const total = shares * valuePerShare
-
-    // Function to trigger blue confetti from the button
-    const triggerBlueConfetti = (
-      event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
-      if (!event || !event.currentTarget)
-        return
-      const rect = event.currentTarget.getBoundingClientRect()
-      const x = (rect.left + rect.width / 2) / window.innerWidth
-      const y = (rect.top + rect.height / 2) / window.innerHeight
-      confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { x, y },
-        colors: ['#2563eb', '#1d4ed8', '#3b82f6', '#60a5fa'],
-      })
-    }
-
-    const isMultiOutcome = event.outcomes.length > 2
-    let outcomeLabel = outcomeName
-    if (isMultiOutcome) {
-      const selectedOutcome = getSelectedOutcome()
-      if (selectedOutcome) {
-        outcomeLabel = `${selectedOutcome.name} - ${
-          yesNoSelection === 'yes' ? 'Yes' : 'No'
-        }`
-      }
-    }
-
-    return (
-      <div
-        className={`flex flex-col items-center justify-center rounded-lg border border-border/50 dark:border-border/20 p-6 ${
-          isMobileVersion ? 'w-full' : 'w-full lg:w-[320px]'
-        }`}
-      >
-        <CircleCheck size={56} className="text-primary mb-2" />
-        <div className="text-primary text-xl font-bold mb-1 text-center">
-          Outcome:
-          {' '}
-          {outcomeLabel}
-        </div>
-        {!claimed && <hr className="w-full border-border my-4" />}
-        {!claimed && (
-          <>
-            <div className="text-foreground text-lg font-bold mb-2 text-center">
-              Your Earnings
-            </div>
-            <div className="w-full flex flex-col gap-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Position:</span>
-                <span className="text-foreground font-medium">
-                  {shares}
-                  {' '}
-                  {outcomeLabel}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Value per Share:</span>
-                <span className="text-foreground font-medium">
-                  $
-                  {valuePerShare.toFixed(2)}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Total:</span>
-                <span className="text-foreground font-medium">
-                  $
-                  {total.toFixed(2)}
-                </span>
-              </div>
-            </div>
-            <button
-              className="mt-6 w-full h-11 bg-primary text-white rounded-lg font-bold text-base transition-colors hover:bg-primary/90 flex items-center justify-center"
-              onClick={async (e) => {
-                setClaiming(true)
-                triggerBlueConfetti(e)
-                await new Promise(res => setTimeout(res, 1800))
-                setClaiming(false)
-                setClaimed(true)
-                // Show success toast for claim
-                toast.success('Redeem shares', {
-                  description: (
-                    <div>
-                      <div className="font-medium">{event.title}</div>
-                    </div>
-                  ),
-                })
-              }}
-              disabled={claiming}
-            >
-              {claiming
-                ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full"></div>
-                      <span>Confirming...</span>
-                    </div>
-                  )
-                : (
-                    'Claim winnings'
-                  )}
-            </button>
-          </>
-        )}
-        <p className="text-[10px] text-center text-muted-foreground mt-3">
+        <p className="mt-3 text-center text-[10px] text-muted-foreground">
           By trading, you agree to our Terms of Service
         </p>
       </div>
@@ -1282,12 +1311,12 @@ export default function EventDetail({ event }: EventDetailProps) {
         onCategoryChange={() => {}}
       />
 
-      <main className="container pt-8 grid lg:grid-cols-[3fr_1fr] gap-8 lg:gap-10 pb-12 md:pb-12">
+      <main className="container grid gap-8 pb-12 pt-8 md:pb-12 lg:grid-cols-[3fr_1fr] lg:gap-10">
         {/* Left column - Main content */}
         <div className="pb-20 md:pb-0">
           {/* Add padding bottom on mobile for the floating button */}
           {/* Market header */}
-          <div className="flex items-center gap-4 mb-6">
+          <div className="mb-6 flex items-center gap-4">
             <Image
               src={
                 event.creatorAvatar
@@ -1296,25 +1325,25 @@ export default function EventDetail({ event }: EventDetailProps) {
               alt={event.creator || 'Market creator'}
               width={64}
               height={64}
-              className="rounded-xl flex-shrink-0"
+              className="flex-shrink-0 rounded-xl"
             />
-            <h1 className="flex-1 text-lg md:text-xl lg:text-2xl font-bold leading-tight line-clamp-3">
+            <h1 className="line-clamp-3 flex-1 text-lg font-bold leading-tight md:text-xl lg:text-2xl">
               {event.title}
             </h1>
             <div className="flex gap-2 text-muted-foreground">
               <Star
-                className={`w-4 h-4 cursor-pointer hover:text-foreground transition-colors ${
+                className={`h-4 w-4 cursor-pointer transition-colors hover:text-foreground ${
                   isFavorite ? 'fill-yellow-400 text-yellow-400' : ''
                 }`}
                 onClick={handleFavoriteToggle}
               />
               {shareSuccess
                 ? (
-                    <Check className="w-4 h-4 text-emerald-500" />
+                    <Check className="h-4 w-4 text-emerald-500" />
                   )
                 : (
                     <Share
-                      className="w-4 h-4 cursor-pointer hover:text-foreground transition-colors"
+                      className="h-4 w-4 cursor-pointer transition-colors hover:text-foreground"
                       onClick={handleShare}
                     />
                   )}
@@ -1322,7 +1351,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Meta information */}
-          <div className="mt-1 text-xs text-muted-foreground flex gap-1 items-center">
+          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <span>
               Volume
               {formatVolume(event.volume)}
@@ -1340,47 +1369,47 @@ export default function EventDetail({ event }: EventDetailProps) {
           <div className="mt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {event.outcomes.length <= 2 ? (
-                  // Binary markets: show percentage and trend
-                  <>
-                    <span
-                      className={`inline-flex items-center gap-1 text-xl font-bold ${
-                        primaryProbability > 0.5
-                          ? 'text-emerald-600'
-                          : 'text-rose-600'
-                      }`}
-                    >
-                      {Math.round(primaryProbability)}
-                      % chance
-                    </span>
-
-                    {/* Red arrow with percentage */}
-                    <div className="flex items-center gap-1 text-rose-600">
-                      <TrendingDown className="w-4 h-4" />
-                      <span className="text-xs font-semibold">
-                        {trendingData.changePercentage}
-                        %
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  // Multiple markets: show legend of top 4 by volume
-                  <div className="flex flex-wrap items-center gap-4">
-                    {getTopOutcomesForChart().map((outcome, index) => (
-                      <div key={outcome.id} className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{
-                            backgroundColor: POLYMARKET_COLORS[index % 4],
-                          }}
-                        />
-                        <span className="text-sm font-medium text-muted-foreground">
-                          {outcome.name}
+                {event.outcomes.length <= 2
+                  ? (
+                      <>
+                        <span
+                          className={`inline-flex items-center gap-1 text-xl font-bold ${
+                            primaryProbability > 0.5
+                              ? 'text-emerald-600'
+                              : 'text-rose-600'
+                          }`}
+                        >
+                          {Math.round(primaryProbability)}
+                          % chance
                         </span>
+
+                        {/* Red arrow with percentage */}
+                        <div className="flex items-center gap-1 text-rose-600">
+                          <TrendingDown className="h-4 w-4" />
+                          <span className="text-xs font-semibold">
+                            {trendingData.changePercentage}
+                            %
+                          </span>
+                        </div>
+                      </>
+                    )
+                  : (
+                      <div className="flex flex-wrap items-center gap-4">
+                        {getTopOutcomesForChart().map((outcome, index) => (
+                          <div key={outcome.id} className="flex items-center gap-2">
+                            <div
+                              className="h-3 w-3 rounded-full"
+                              style={{
+                                backgroundColor: POLYMARKET_COLORS[index % 4],
+                              }}
+                            />
+                            <span className="text-sm font-medium text-muted-foreground">
+                              {outcome.name}
+                            </span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                )}
+                    )}
               </div>
 
               {/* Logo for prints - always present */}
@@ -1400,7 +1429,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
           {/* Price chart */}
           <div className="mt-4">
-            <div className="w-full h-72 relative">
+            <div className="relative h-72 w-full">
               <div className="absolute inset-0">
                 <PredictionChart
                   data={chartConfig.data}
@@ -1411,13 +1440,13 @@ export default function EventDetail({ event }: EventDetailProps) {
                 />
               </div>
             </div>
-            <ul className="flex justify-center gap-4 mt-2 text-[11px] font-medium">
+            <ul className="mt-2 flex justify-center gap-4 text-[11px] font-medium">
               {timeRanges.map(range => (
                 <li
                   key={range}
                   className={`cursor-pointer transition-colors duration-200 ${
                     activeTimeRange === range
-                      ? 'text-foreground border-b-2 border-foreground'
+                      ? 'border-b-2 border-foreground text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
                   }`}
                   onClick={() => setActiveTimeRange(range)}
@@ -1430,23 +1459,28 @@ export default function EventDetail({ event }: EventDetailProps) {
 
           {/* List of Outcomes (only if > 2) */}
           {event.outcomes.length > 2 && (
-            <div className="mt-6 bg-background overflow-hidden">
+            <div className="mt-6 overflow-hidden bg-background">
               {/* Header */}
-              <div className="hidden md:flex items-center py-3 bg-muted/10 rounded-t-lg border-b border-border/50 dark:border-border/20">
+              <div className={`
+                bg-muted/10 border-border/50 hidden items-center rounded-t-lg border-b py-3
+                dark:border-border/20
+                md:flex
+              `}
+              >
                 <div className="w-1/2">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     OUTCOMES
                   </span>
                 </div>
-                <div className="w-3/5 flex items-center justify-center gap-1">
+                <div className="flex w-3/5 items-center justify-center gap-1">
                   <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     CHANCE
                   </span>
                   <a
                     href="#"
-                    className="text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <RefreshCw className="w-3 h-3" />
+                    <RefreshCw className="h-3 w-3" />
                   </a>
                 </div>
                 <div className="w-[24%]"></div>
@@ -1459,15 +1493,21 @@ export default function EventDetail({ event }: EventDetailProps) {
                 .map((outcome, index, sortedOutcomes) => (
                   <div
                     key={outcome.id}
-                    className={`rounded-lg flex flex-col md:flex-row items-start md:items-center px-3 md:px-2 py-4 transition-all duration-200 ease-in-out hover:bg-black/5 dark:hover:bg-white/5 cursor-pointer ${
-                      selectedOutcomeForOrder === outcome.id
-                        ? 'bg-muted/30'
-                        : ''
-                    } ${
-                      index !== sortedOutcomes.length - 1
-                        ? 'border-b border-border/50 dark:border-border/20'
-                        : 'rounded-b-lg'
-                    }`}
+                    className={`
+                      flex cursor-pointer flex-col items-start rounded-lg px-3 py-4 transition-all duration-200
+                      ease-in-out
+                      hover:bg-black/5
+                      dark:hover:bg-white/5
+                      md:flex-row md:items-center md:px-2
+                      ${
+                  selectedOutcomeForOrder === outcome.id
+                    ? 'bg-muted/30'
+                    : ''
+                  } ${
+                    index !== sortedOutcomes.length - 1
+                      ? 'border-border/50 border-b dark:border-border/20'
+                      : 'rounded-b-lg'
+                  }`}
                     onClick={() => {
                       setSelectedOutcomeForOrder(outcome.id)
                       setActiveTab('buy')
@@ -1477,7 +1517,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                     {/* Mobile: Layout in column */}
                     <div className="w-full md:hidden">
                       {/* Row 1: Name and probability */}
-                      <div className="flex items-center justify-between mb-3">
+                      <div className="mb-3 flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {event.show_market_icons !== false && (
                             <Image
@@ -1488,7 +1528,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                               alt={outcome.name}
                               width={42}
                               height={42}
-                              className="rounded-full flex-shrink-0"
+                              className="flex-shrink-0 rounded-full"
                             />
                           )}
                           <div>
@@ -1512,7 +1552,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             %
                           </span>
                           <div className="flex items-center gap-1 text-rose-600">
-                            <TrendingDown className="w-3 h-3" />
+                            <TrendingDown className="h-3 w-3" />
                             <span className="text-xs font-semibold">3%</span>
                           </div>
                         </div>
@@ -1522,10 +1562,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className={`flex-1 h-10 text-sm font-bold transition-colors ${
+                          className={`h-10 flex-1 text-sm font-bold transition-colors ${
                             selectedOutcomeForOrder === outcome.id
                             && yesNoSelection === 'yes'
-                              ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                               : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
                           }`}
                           onClick={(e) => {
@@ -1543,10 +1583,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                         </Button>
                         <Button
                           size="sm"
-                          className={`flex-1 h-10 text-sm font-bold transition-colors ${
+                          className={`h-10 flex-1 text-sm font-bold transition-colors ${
                             selectedOutcomeForOrder === outcome.id
                             && yesNoSelection === 'no'
-                              ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                              ? 'bg-rose-500 text-white hover:bg-rose-600'
                               : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
                           }`}
                           onClick={(e) => {
@@ -1566,9 +1606,9 @@ export default function EventDetail({ event }: EventDetailProps) {
                     </div>
 
                     {/* Desktop: Original line layout */}
-                    <div className="hidden md:flex items-center w-full">
+                    <div className="hidden w-full items-center md:flex">
                       {/* First column: Name and info - 50% */}
-                      <div className="flex items-center gap-3 w-1/2">
+                      <div className="flex w-1/2 items-center gap-3">
                         {event.show_market_icons !== false && (
                           <Image
                             src={
@@ -1578,7 +1618,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             alt={outcome.name}
                             width={42}
                             height={42}
-                            className="rounded-full flex-shrink-0"
+                            className="flex-shrink-0 rounded-full"
                           />
                         )}
                         <div>
@@ -1598,14 +1638,14 @@ export default function EventDetail({ event }: EventDetailProps) {
                       </div>
 
                       {/* Second column: Probability - 20% */}
-                      <div className="w-3/5 flex justify-center">
+                      <div className="flex w-3/5 justify-center">
                         <div className="flex items-center gap-2">
                           <span className="text-4xl font-bold text-foreground">
                             {Math.round(outcome.probability)}
                             %
                           </span>
                           <div className="flex items-center gap-1 text-rose-600">
-                            <TrendingDown className="w-3 h-3" />
+                            <TrendingDown className="h-3 w-3" />
                             <span className="text-xs font-semibold">3%</span>
                           </div>
                         </div>
@@ -1618,7 +1658,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                           className={`h-12 w-full text-sm font-bold transition-colors ${
                             selectedOutcomeForOrder === outcome.id
                             && yesNoSelection === 'yes'
-                              ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                               : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
                           }`}
                           onClick={(e) => {
@@ -1645,7 +1685,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                           className={`h-12 w-full text-sm font-bold transition-colors ${
                             selectedOutcomeForOrder === outcome.id
                             && yesNoSelection === 'no'
-                              ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                              ? 'bg-rose-500 text-white hover:bg-rose-600'
                               : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
                           }`}
                           onClick={(e) => {
@@ -1675,8 +1715,12 @@ export default function EventDetail({ event }: EventDetailProps) {
           {/* Order Book - Commented for now */}
 
           {/* Market Context */}
-          <div className="mt-3 rounded-lg border border-border/50 dark:border-border/20 transition-all duration-200 ease-in-out">
-            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
+          <div className={`
+            border-border/50 mt-3 rounded-lg border transition-all duration-200 ease-in-out
+            dark:border-border/20
+          `}
+          >
+            <div className="hover:bg-muted/50 flex items-center justify-between p-4">
               <span className="text-lg font-medium">Market Context</span>
               <Button
                 variant="outline"
@@ -1686,7 +1730,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 disabled={isGeneratingContext}
               >
                 <Sparkles
-                  className={`w-3 h-3 ${
+                  className={`h-3 w-3 ${
                     isGeneratingContext ? 'animate-spin' : ''
                   }`}
                 />
@@ -1695,12 +1739,12 @@ export default function EventDetail({ event }: EventDetailProps) {
             </div>
 
             {contextExpanded && (
-              <div className="px-3 pb-3 border-t border-border/30">
-                <div className="pt-3 space-y-2">
+              <div className="border-border/30 border-t px-3 pb-3">
+                <div className="space-y-2 pt-3">
                   {generatedContext.map((line, index) => (
                     <p
                       key={index}
-                      className="text-sm text-muted-foreground leading-relaxed"
+                      className="text-sm leading-relaxed text-muted-foreground"
                     >
                       {line}
                     </p>
@@ -1711,8 +1755,12 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Rules */}
-          <div className="mt-3 rounded-lg border border-border/50 dark:border-border/20 transition-all duration-200 ease-in-out">
-            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
+          <div className={`
+            border-border/50 mt-3 rounded-lg border transition-all duration-200 ease-in-out
+            dark:border-border/20
+          `}
+          >
+            <div className="hover:bg-muted/50 flex items-center justify-between p-4">
               <span className="text-lg font-medium">Rules</span>
               <Button
                 variant="outline"
@@ -1725,20 +1773,22 @@ export default function EventDetail({ event }: EventDetailProps) {
             </div>
 
             {rulesExpanded && (
-              <div className="px-3 pb-3 border-t border-border/30">
-                <div className="pt-3 space-y-2">
+              <div className="border-border/30 border-t px-3 pb-3">
+                <div className="space-y-2 pt-3">
                   {event.rules && (
-                    <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                    <div className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                       {formatRules(event.rules)}
                     </div>
                   )}
 
                   {/* Oracle Info */}
-                  <div className="border border-border/50 dark:border-border/20 rounded-lg p-3 mt-3">
+                  <div className="border-border/50 mt-3 rounded-lg border p-3 dark:border-border/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-3">
                         <div
-                          className={`w-10 h-10 bg-gradient-to-r ${mockMarketDetails.resolver.gradientColors} rounded-sm flex items-center justify-center flex-shrink-0`}
+                          className={`h-10 w-10 bg-gradient-to-r ${mockMarketDetails.resolver.gradientColors}
+                            flex flex-shrink-0 items-center justify-center rounded-sm
+                          `}
                         >
                         </div>
                         <div>
@@ -1753,7 +1803,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                            className="text-xs text-blue-500 transition-colors hover:text-blue-600"
                           >
                             {event.oracle
                               ? formatOracleAddress(event.oracle)
@@ -1774,13 +1824,13 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Comments tabs */}
-          <ul className="flex gap-8 h-12 mt-8 text-sm font-semibold border-b border-border/50 dark:border-border/20">
+          <ul className="border-border/50 mt-8 flex h-12 gap-8 border-b text-sm font-semibold dark:border-border/20">
             {commentsTabs.map(tab => (
               <li
                 key={tab}
                 className={`cursor-pointer transition-colors duration-200 ${
                   activeCommentsTab === tab
-                    ? 'text-foreground border-b-2 border-emerald-500'
+                    ? 'border-b-2 border-emerald-500 text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setActiveCommentsTab(tab)}
@@ -1796,7 +1846,13 @@ export default function EventDetail({ event }: EventDetailProps) {
               <div className="mt-4 space-y-2">
                 <div className="relative">
                   <Input
-                    className="w-full h-11 rounded-lg border border-border/50 dark:border-border/20 px-3 text-sm pr-16 transition-all duration-200 ease-in-out hover:border-border focus:border-primary"
+                    className={`
+                      border-border/50 h-11 w-full rounded-lg border px-3 pr-16 text-sm transition-all duration-200
+                      ease-in-out
+                      dark:border-border/20
+                      hover:border-border
+                      focus:border-primary
+                    `}
                     placeholder="Add a comment"
                     value={newComment}
                     onChange={e => setNewComment(e.target.value)}
@@ -1809,14 +1865,19 @@ export default function EventDetail({ event }: EventDetailProps) {
                     Post
                   </Button>
                 </div>
-                <div className="flex items-center gap-1 text-[11px] text-muted-foreground rounded-lg px-3 py-1.5 border border-border/50 dark:border-border/20">
-                  <Shield className="w-3 h-3" />
+                <div className={`
+                  border-border/50 flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[11px]
+                  text-muted-foreground
+                  dark:border-border/20
+                `}
+                >
+                  <Shield className="h-3 w-3" />
                   Beware of external links, they may be phishing attacks.
                 </div>
               </div>
 
               {/* List of Comments */}
-              <div className="space-y-6 mt-6">
+              <div className="mt-6 space-y-6">
                 {[1, 2, 3].map(comment => (
                   <div key={comment} className="space-y-3">
                     <div className="flex gap-3">
@@ -1825,10 +1886,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                         alt={`user${comment}`}
                         width={32}
                         height={32}
-                        className="rounded-full flex-shrink-0 w-8 h-8 object-cover"
+                        className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
                       />
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <span className="text-[13px] font-medium">
                             user
                             {comment}
@@ -1842,17 +1903,21 @@ export default function EventDetail({ event }: EventDetailProps) {
                           reaching this target given the current market
                           conditions.
                         </p>
-                        <div className="flex items-center gap-3 mt-2">
-                          <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                        <div className="mt-2 flex items-center gap-3">
+                          <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
                             Reply
                           </button>
-                          <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                            <Heart className="w-3 h-3" />
+                          <button className={`
+                            flex items-center gap-1 text-xs text-muted-foreground transition-colors
+                            hover:text-foreground
+                          `}
+                          >
+                            <Heart className="h-3 w-3" />
                           </button>
                         </div>
                       </div>
-                      <button className="text-muted-foreground hover:text-foreground transition-colors">
-                        <MoreHorizontal className="w-4 h-4" />
+                      <button className="text-muted-foreground transition-colors hover:text-foreground">
+                        <MoreHorizontal className="h-4 w-4" />
                       </button>
                     </div>
 
@@ -1864,10 +1929,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                           alt="replier1"
                           width={24}
                           height={24}
-                          className="rounded-full flex-shrink-0 w-6 h-6 object-cover"
+                          className="h-6 w-6 flex-shrink-0 rounded-full object-cover"
                         />
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1 flex items-center gap-2">
                             <span className="text-[13px] font-medium">
                               replier1
                             </span>
@@ -1879,12 +1944,16 @@ export default function EventDetail({ event }: EventDetailProps) {
                             I agree! The institutional adoption has been
                             accelerating this year.
                           </p>
-                          <div className="flex items-center gap-3 mt-2">
-                            <button className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                          <div className="mt-2 flex items-center gap-3">
+                            <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
                               Reply
                             </button>
-                            <button className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                              <Heart className="w-3 h-3" />
+                            <button className={`
+                              flex items-center gap-1 text-xs text-muted-foreground transition-colors
+                              hover:text-foreground
+                            `}
+                            >
+                              <Heart className="h-3 w-3" />
                             </button>
                           </div>
                         </div>
@@ -1902,7 +1971,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               <div className="grid grid-cols-2 gap-6">
                 {/* Yes Holders */}
                 <div>
-                  <h3 className="text-sm font-semibold mb-4 text-emerald-600">
+                  <h3 className="mb-4 text-sm font-semibold text-emerald-600">
                     Yes Holders
                   </h3>
                   <div className="space-y-3">
@@ -1913,13 +1982,13 @@ export default function EventDetail({ event }: EventDetailProps) {
                           alt={holder.name}
                           width={32}
                           height={32}
-                          className="rounded-full flex-shrink-0"
+                          className="flex-shrink-0 rounded-full"
                         />
                         <div className="flex-1">
                           <div className="text-sm font-medium">
                             {holder.name}
                           </div>
-                          <div className="text-xs text-emerald-600 font-semibold">
+                          <div className="text-xs font-semibold text-emerald-600">
                             {holder.amount}
                           </div>
                         </div>
@@ -1930,7 +1999,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
                 {/* No Holders */}
                 <div>
-                  <h3 className="text-sm font-semibold mb-4 text-rose-600">
+                  <h3 className="mb-4 text-sm font-semibold text-rose-600">
                     No Holders
                   </h3>
                   <div className="space-y-3">
@@ -1941,13 +2010,13 @@ export default function EventDetail({ event }: EventDetailProps) {
                           alt={holder.name}
                           width={32}
                           height={32}
-                          className="rounded-full flex-shrink-0"
+                          className="flex-shrink-0 rounded-full"
                         />
                         <div className="flex-1">
                           <div className="text-sm font-medium">
                             {holder.name}
                           </div>
-                          <div className="text-xs text-rose-600 font-semibold">
+                          <div className="text-xs font-semibold text-rose-600">
                             {holder.amount}
                           </div>
                         </div>
@@ -1963,14 +2032,14 @@ export default function EventDetail({ event }: EventDetailProps) {
           {activeCommentsTab === 'activity' && (
             <div className="mt-6">
               {/* Filters */}
-              <div className="flex gap-2 mb-4">
+              <div className="mb-4 flex gap-2">
                 {mockMarketDetails.activityFilters.map(filter => (
                   <button
                     key={filter}
-                    className={`px-3 py-1 text-xs font-medium rounded-full transition-colors ${
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                       activityFilter === filter
                         ? 'bg-muted text-foreground'
-                        : 'border border-border/50 hover:bg-muted/50'
+                        : 'border-border/50 border hover:bg-muted/50'
                     }`}
                     onClick={() => setActivityFilter(filter)}
                   >
@@ -1984,14 +2053,14 @@ export default function EventDetail({ event }: EventDetailProps) {
                 {mockMarketDetails.activities.map((activity, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 py-2 border-b border-border/30 last:border-b-0"
+                    className="border-border/30 flex items-center gap-3 border-b py-2 last:border-b-0"
                   >
                     <Image
                       src={activity.avatar}
                       alt={activity.user}
                       width={32}
                       height={32}
-                      className="rounded-full flex-shrink-0"
+                      className="flex-shrink-0 rounded-full"
                     />
                     <div className="flex-1">
                       <span className="text-sm font-medium">
@@ -2006,7 +2075,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                         {activity.amount}
                       </span>
                       <span
-                        className={`text-sm font-semibold ml-1 ${
+                        className={`ml-1 text-sm font-semibold ${
                           activity.type === 'Yes'
                             ? 'text-emerald-600'
                             : 'text-rose-600'
@@ -2048,7 +2117,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               {loadingRelated
                 ? (
                     <div className="flex items-center justify-center py-8">
-                      <RefreshCw className="w-6 h-6 animate-spin text-muted-foreground" />
+                      <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
                       <span className="ml-2 text-sm text-muted-foreground">
                         Loading related events...
                       </span>
@@ -2059,7 +2128,12 @@ export default function EventDetail({ event }: EventDetailProps) {
                       relatedEvents.map(relatedEvent => (
                         <div
                           key={relatedEvent.id}
-                          className="flex items-center gap-3 p-3 rounded-lg border border-border/50 dark:border-border/20 transition-all duration-200 hover:bg-muted/50 cursor-pointer"
+                          className={`
+                            border-border/50 flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all
+                            duration-200
+                            dark:border-border/20
+                            hover:bg-muted/50
+                          `}
                           onClick={() =>
                             window.open(`/event/${relatedEvent.slug}`, '_blank')}
                         >
@@ -2071,18 +2145,18 @@ export default function EventDetail({ event }: EventDetailProps) {
                             alt={relatedEvent.title}
                             width={48}
                             height={48}
-                            className="rounded-lg flex-shrink-0"
+                            className="flex-shrink-0 rounded-lg"
                           />
                           <div className="flex-1">
-                            <h4 className="text-sm font-medium line-clamp-2 mb-1">
+                            <h4 className="mb-1 line-clamp-2 text-sm font-medium">
                               {relatedEvent.market.name}
                             </h4>
                             <div className="flex items-center gap-3 text-xs">
                               <span className="text-muted-foreground">Vol. N/A</span>
-                              <span className="bg-emerald-600/30 text-emerald-600 px-2 py-0.5 rounded font-semibold">
+                              <span className="rounded bg-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-600">
                                 Yes 50¢
                               </span>
-                              <span className="bg-rose-600/30 text-rose-600 px-2 py-0.5 rounded font-semibold">
+                              <span className="rounded bg-rose-600/30 px-2 py-0.5 font-semibold text-rose-600">
                                 No 50¢
                               </span>
                             </div>
@@ -2091,7 +2165,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       ))
                     )
                   : (
-                      <div className="text-center py-8 text-muted-foreground">
+                      <div className="py-8 text-center text-muted-foreground">
                         <p className="text-sm">No related events found.</p>
                       </div>
                     )}
@@ -2106,14 +2180,14 @@ export default function EventDetail({ event }: EventDetailProps) {
 
       {/* Floating buttons for mobile - only binary markets */}
       {event.outcomes.length === 2 && (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border/50">
+        <div className="border-border/50 fixed bottom-0 left-0 right-0 border-t bg-background p-4 md:hidden">
           <div className="flex gap-2">
             <Button
               onClick={() => {
                 setYesNoSelection('yes')
                 setIsMobileModalOpen(true)
               }}
-              className="flex-1 h-12 text-lg font-bold bg-emerald-500 hover:bg-emerald-600 text-white"
+              className="h-12 flex-1 bg-emerald-500 text-lg font-bold text-white hover:bg-emerald-600"
             >
               Buy Yes
               {' '}
@@ -2125,7 +2199,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 setYesNoSelection('no')
                 setIsMobileModalOpen(true)
               }}
-              className="flex-1 h-12 text-lg font-bold bg-rose-500 hover:bg-rose-600 text-white"
+              className="h-12 flex-1 bg-rose-500 text-lg font-bold text-white hover:bg-rose-600"
             >
               Buy No
               {' '}
@@ -2138,7 +2212,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
       {/* Mobile bottom sheet */}
       {isMobileModalOpen && (
-        <div className="md:hidden fixed inset-0 z-[50] flex items-end">
+        <div className="fixed inset-0 z-[50] flex items-end md:hidden">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/50"
@@ -2150,7 +2224,10 @@ export default function EventDetail({ event }: EventDetailProps) {
           {/* Modal content */}
           <div
             data-modal="mobile-sheet"
-            className="relative w-full bg-background rounded-t-xl max-h-[90vh] overflow-y-auto transform transition-transform duration-300 ease-out"
+            className={`
+              relative max-h-[90vh] w-full transform overflow-y-auto rounded-t-xl bg-background transition-transform
+              duration-300 ease-out
+            `}
             onTouchStart={(e) => {
               e.stopPropagation()
               setDragStartY(e.touches[0].clientY)
@@ -2245,7 +2322,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           >
             {/* Handle bar - grip to drag */}
             <div
-              className="flex justify-center pt-4 pb-2 cursor-grab active:cursor-grabbing"
+              className="flex cursor-grab justify-center pb-2 pt-4 active:cursor-grabbing"
               onMouseDown={(e) => {
                 // Start drag specifically on the handle bar
                 e.preventDefault()
@@ -2261,7 +2338,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 setIsDragging(true)
               }}
             >
-              <div className="w-24 h-1.5 bg-black/20 rounded-full shadow-sm" />
+              <div className="h-1.5 w-24 rounded-full bg-black/20 shadow-sm" />
             </div>
 
             {/* Modal Content */}

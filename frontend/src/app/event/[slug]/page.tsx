@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Market } from '@/types'
 import { notFound } from 'next/navigation'
 import EventDetail from '@/components/event/EventDetail'
