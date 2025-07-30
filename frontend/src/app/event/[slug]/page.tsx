@@ -49,13 +49,12 @@ function convertEventToMarket(event: any): Market {
   }
 
   // Multiple markets
-  const outcomes = event.markets.map((market: any, index: number) => ({
+  const outcomes = event.markets.map((market: any) => ({
     id: `${event.id}-${market.slug}`,
     name: market.short_title || market.name,
     probability: Math.random() * 100,
     price: Math.random() * 0.99 + 0.01,
     volume: Math.random() * 100000,
-    isYes: index === 0, // First market = green, second = red
     avatar: market.icon_url
       ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/forkast-assets/${market.icon_url}`
       : `https://avatar.vercel.sh/${market.slug}.png`,
