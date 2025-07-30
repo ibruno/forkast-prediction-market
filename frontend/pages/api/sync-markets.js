@@ -602,7 +602,7 @@ async function processMarketData(market, metadata, eventId) {
 async function processOutcomes(conditionId, outcomes) {
   const outcomeData = outcomes.map((outcome, index) => ({
     condition_id: conditionId,
-    outcome_text: outcome.outcome || outcome.title || `Outcome ${index + 1}`,
+    outcome_text: outcome.outcome,
     outcome_index: index,
     token_id: `${conditionId}-${index}`, // Generate token_id as condition_id + outcome_index
   }));

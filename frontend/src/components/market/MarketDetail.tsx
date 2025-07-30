@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/Header";
 import NavigationTabs from "@/components/layout/NavigationTabs";
-import { Market } from "@/types";
+import { Market, MarketOutcome } from "@/types";
 import PredictionChart from "@/components/charts/PredictionChart";
 import {
   mockMarketDetails,
@@ -227,7 +227,11 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
         // Show success toast for sell
         toast.success(
-          `Sell ${amount} shares on ${yesNoSelection === "yes" ? "Yes" : "No"}`,
+          `Sell ${amount} shares on ${
+            yesNoSelection === "yes"
+              ? getYesOutcome()?.name || "Yes"
+              : getSelectedOutcome()?.name || "No"
+          }`,
           {
             description: (
               <div>
@@ -252,7 +256,11 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
         // Show success toast for buy
         toast.success(
-          `Buy $${amount} on ${yesNoSelection === "yes" ? "Yes" : "No"}`,
+          `Buy $${amount} on ${
+            yesNoSelection === "yes"
+              ? getYesOutcome()?.name || "Yes"
+              : getSelectedOutcome()?.name || "No"
+          }`,
           {
             description: (
               <div>
@@ -519,26 +527,25 @@ export default function MarketDetail({ market }: MarketDetailProps) {
     return sellPrice.toString();
   };
 
-  // Function to render Yes/No buttons
-  const renderYesNoButton = (
-    type: "yes" | "no",
+  // Function to render outcome buttons
+  const renderOutcomeButton = (
+    outcome: MarketOutcome,
     price: number,
     forceTabChange = false
   ) => {
-    const isSelected = yesNoSelection === type;
+    const isSelected = yesNoSelection === (outcome.isYes ? "yes" : "no");
     const baseClasses =
       "flex-1 h-12 rounded-sm font-bold transition-all duration-200 flex items-center justify-center gap-1";
-    const selectedClasses =
-      type === "yes"
-        ? "bg-emerald-500 hover:bg-emerald-600 text-white"
-        : "bg-rose-500 hover:bg-rose-600 text-white";
+    const selectedClasses = outcome.isYes
+      ? "bg-emerald-500 hover:bg-emerald-600 text-white"
+      : "bg-rose-500 hover:bg-rose-600 text-white";
     const defaultClasses =
       "bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200";
 
     return (
       <button
         onClick={() => {
-          setYesNoSelection(type);
+          setYesNoSelection(outcome.isYes ? "yes" : "no");
           if (forceTabChange) {
             setActiveTab("buy");
           }
@@ -546,9 +553,9 @@ export default function MarketDetail({ market }: MarketDetailProps) {
         }}
         className={`${baseClasses} ${
           isSelected ? selectedClasses : defaultClasses
-        } ${type === "yes" ? "text-md" : "text-sm"}`}
+        } ${outcome.isYes ? "text-md" : "text-sm"}`}
       >
-        <span className="opacity-70">{type === "yes" ? "Yes" : "No"}</span>
+        <span className="opacity-70">{outcome.name}</span>
         <span className="font-bold">{price}¢</span>
       </button>
     );
@@ -758,10 +765,12 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           </button>
         </div>
 
-        {/* Yes/No buttons */}
+        {/* Outcome buttons */}
         <div className="flex gap-2 mb-2">
-          {renderYesNoButton("yes", yesPrice)}
-          {renderYesNoButton("no", noPrice)}
+          {market.outcomes[0] &&
+            renderOutcomeButton(market.outcomes[0], yesPrice)}
+          {market.outcomes[1] &&
+            renderOutcomeButton(market.outcomes[1], noPrice)}
         </div>
 
         {/* Display available shares (only in Sell mode) */}
@@ -1135,7 +1144,9 @@ export default function MarketDetail({ market }: MarketDetailProps) {
       const selectedOutcome = getSelectedOutcome();
       if (selectedOutcome) {
         outcomeLabel = `${selectedOutcome.name} - ${
-          yesNoSelection === "yes" ? "Yes" : "No"
+          yesNoSelection === "yes"
+            ? getYesOutcome()?.name || "Yes"
+            : getSelectedOutcome()?.name || "No"
         }`;
       }
     }
