@@ -3,59 +3,59 @@
 import { useState, useEffect } from "react";
 import { MarketCategory, Market } from "@/types";
 import { getAllMarkets } from "@/lib/mockData";
-import MarketCard from "./MarketCard";
+import EventCard from "./EventCard";
 import { Search, BarChart3, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-interface MarketGridProps {
+interface EventGridProps {
   activeCategory: MarketCategory;
   searchQuery: string;
   showFavoritesOnly: boolean;
   favoriteMarkets: Set<string>;
-  onToggleFavorite: (marketId: string) => void;
+  onToggleFavorite: (eventId: string) => void;
 }
 
-export default function MarketGrid({
+export default function EventGrid({
   activeCategory,
   searchQuery,
   showFavoritesOnly,
   favoriteMarkets,
   onToggleFavorite,
-}: MarketGridProps) {
+}: EventGridProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [openCardId, setOpenCardId] = useState<string | null>(null);
-  const [markets, setMarkets] = useState<Market[]>([]);
+  const [events, setEvents] = useState<Market[]>([]);
 
   useEffect(() => {
-    const loadMarkets = async () => {
+    const loadEvents = async () => {
       setIsLoading(true);
-      const allMarkets = await getAllMarkets(activeCategory);
-      setMarkets(allMarkets);
+      const allEvents = await getAllMarkets(activeCategory);
+      setEvents(allEvents);
       setIsLoading(false);
     };
-    loadMarkets();
+    loadEvents();
   }, [activeCategory]);
 
-  // Filter markets based on category and search
-  const filteredMarkets = markets
-    .filter((market: Market) => {
+  // Filter events based on category and search
+  const filteredEvents = events
+    .filter((event: Market) => {
       const matchesCategory =
         activeCategory === "trending"
           ? true // Show all markets for trending, will be sorted by volume
           : activeCategory === "new"
           ? true // For now, show all as "new"
-          : market.category === activeCategory;
+          : event.category === activeCategory;
 
       const matchesSearch =
         searchQuery === "" ||
-        market.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        market.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        market.tags.some((tag: string) =>
+        event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        event.tags.some((tag: string) =>
           tag.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
       const matchesFavorites =
-        !showFavoritesOnly || favoriteMarkets.has(market.id);
+        !showFavoritesOnly || favoriteMarkets.has(event.id);
 
       return matchesCategory && matchesSearch && matchesFavorites;
     })
@@ -73,14 +73,14 @@ export default function MarketGrid({
       <main className="container mx-auto px-4 md:px-6 py-3 max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 8 }).map((_, i) => (
-            <MarketCardSkeleton key={i} />
+            <EventCardSkeleton key={i} />
           ))}
         </div>
       </main>
     );
   }
 
-  if (filteredMarkets.length === 0) {
+  if (filteredEvents.length === 0) {
     return (
       <main className="container mx-auto px-4 md:px-6 py-3 max-w-6xl">
         <div className="text-center py-12">
@@ -92,14 +92,14 @@ export default function MarketGrid({
             )}
           </div>
           <h3 className="text-lg font-medium text-foreground mb-2">
-            {searchQuery ? "No markets found" : "No markets available"}
+            {searchQuery ? "No events found" : "No events available"}
           </h3>
           <p className="text-muted-foreground text-sm mb-6">
             {searchQuery ? (
               <>Try adjusting your search for &ldquo;{searchQuery}&rdquo;</>
             ) : (
               <>
-                There are no markets in the {activeCategory} category with these
+                There are no events in the {activeCategory} category with these
                 filters
               </>
             )}
@@ -120,15 +120,15 @@ export default function MarketGrid({
 
   return (
     <main className="container mx-auto px-4 md:px-6 py-3 max-w-6xl">
-      {/* Markets Grid */}
+      {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {filteredMarkets.map((market: Market) => (
-          <MarketCard
-            key={market.id}
-            market={market}
-            isOpen={openCardId === market.id}
-            onToggle={(isOpen) => setOpenCardId(isOpen ? market.id : null)}
-            isFavorited={favoriteMarkets.has(market.id)}
+        {filteredEvents.map((event: Market) => (
+          <EventCard
+            key={event.id}
+            event={event}
+            isOpen={openCardId === event.id}
+            onToggle={(isOpen) => setOpenCardId(isOpen ? event.id : null)}
+            isFavorited={favoriteMarkets.has(event.id)}
             onToggleFavorite={onToggleFavorite}
           />
         ))}
@@ -137,7 +137,7 @@ export default function MarketGrid({
   );
 }
 
-function MarketCardSkeleton() {
+function EventCardSkeleton() {
   return (
     <div className="rounded-lg bg-card border p-4 min-h-[170px] animate-pulse">
       <div className="flex items-start gap-2 mb-3">

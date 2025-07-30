@@ -10,21 +10,21 @@ import { toast } from "sonner";
 import { Market } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 
-interface MarketCardProps {
-  market: Market;
+interface EventCardProps {
+  event: Market;
   isOpen?: boolean;
   onToggle?: (isOpen: boolean) => void;
   isFavorited?: boolean;
-  onToggleFavorite?: (marketId: string) => void;
+  onToggleFavorite?: (eventId: string) => void;
 }
 
-export default function MarketCard({
-  market,
+export default function EventCard({
+  event,
   isOpen = false,
   onToggle,
   isFavorited = false,
   onToggleFavorite,
-}: MarketCardProps) {
+}: EventCardProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedOutcome, setSelectedOutcome] = useState<{
     id: string;
@@ -64,10 +64,10 @@ export default function MarketCard({
   const isInTradingMode = isOpen && selectedOutcome;
 
   const isBinaryMarket =
-    market.outcomes.length === 2 &&
-    market.outcomes.some((o) => o.isYes !== undefined);
-  const yesOutcome = market.outcomes.find((o) => o.isYes === true);
-  const noOutcome = market.outcomes.find((o) => o.isYes === false);
+    event.outcomes.length === 2 &&
+    event.outcomes.some((o) => o.isYes !== undefined);
+  const yesOutcome = event.outcomes.find((o) => o.isYes === true);
+  const noOutcome = event.outcomes.find((o) => o.isYes === false);
 
   const formatVolume = (volume: number) => {
     if (volume >= 1000000) {
@@ -79,7 +79,7 @@ export default function MarketCard({
   };
 
   const handleTrade = async (outcomeId: string, type: "yes" | "no") => {
-    const outcome = market.outcomes.find((o) => o.id === outcomeId);
+    const outcome = event.outcomes.find((o) => o.id === outcomeId);
     if (outcome) {
       setSelectedOutcome({
         id: outcomeId,
@@ -104,7 +104,7 @@ export default function MarketCard({
 
       // Calculate shares and price
       const amountNum = parseFloat(tradeAmount);
-      const outcome = market.outcomes.find((o) => o.id === selectedOutcome.id);
+      const outcome = event.outcomes.find((o) => o.id === selectedOutcome.id);
       if (outcome) {
         const probability = outcome.probability;
         const price =
@@ -121,7 +121,7 @@ export default function MarketCard({
           {
             description: (
               <div>
-                <div className="font-medium">{market.title}</div>
+                <div className="font-medium">{event.title}</div>
                 <div className="text-xs opacity-80 mt-1">
                   {shares} shares @ {price}¢
                 </div>
@@ -149,7 +149,7 @@ export default function MarketCard({
   const calculateWinnings = (amount: string) => {
     if (!amount || !selectedOutcome) return "0.00";
     const amountNum = parseFloat(amount);
-    const outcome = market.outcomes.find((o) => o.id === selectedOutcome.id);
+    const outcome = event.outcomes.find((o) => o.id === selectedOutcome.id);
     if (!outcome) return "0.00";
 
     // Calculate potential winnings based on probability
@@ -215,12 +215,12 @@ export default function MarketCard({
             <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-muted-foreground flex-shrink-0 overflow-hidden">
               <Image
                 src={
-                  market.creatorAvatar ||
+                  event.creatorAvatar ||
                   `https://avatar.vercel.sh/${
-                    market.creator || market.title.charAt(0)
+                    event.creator || event.title.charAt(0)
                   }.png`
                 }
-                alt={market.creator || "Market creator"}
+                alt={event.creator || "Market creator"}
                 width={32}
                 height={32}
                 className="w-full h-full object-cover rounded"
@@ -229,12 +229,12 @@ export default function MarketCard({
 
             {/* Title */}
             <Link
-              href={`/event/${market.slug}`}
+              href={`/event/${event.slug}`}
               className="flex-1"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-sm font-semibold leading-tight text-foreground transition-all duration-200 line-clamp-3 hover:text-foreground">
-                {market.title}
+                {event.title}
               </h3>
             </Link>
           </div>
@@ -298,7 +298,7 @@ export default function MarketCard({
                     const value = limitDecimalPlaces(rawValue, 2);
                     const numericValue = parseFloat(value);
 
-                    // Limit to 99999 like in MarketDetail
+                    // Limit to 99999 like in EventDetail
                     if (numericValue <= 99999 || value === "") {
                       setTradeAmount(value);
                     }
@@ -372,7 +372,7 @@ export default function MarketCard({
               {/* Body - Show multi-outcome options only for non-binary markets */}
               {!isBinaryMarket && (
                 <div className="mb-4 space-y-2 max-h-16 overflow-y-auto scrollbar-hide flex-1">
-                  {market.outcomes.map((outcome) => (
+                  {event.outcomes.map((outcome) => (
                     <div
                       key={outcome.id}
                       className="flex justify-between items-center text-xs"
@@ -457,13 +457,13 @@ export default function MarketCard({
         {!isInTradingMode && (
           <div className="flex justify-between items-center text-[11px] text-muted-foreground mt-2">
             <div className="flex items-center gap-2">
-              <span>{formatVolume(market.volume)} Vol.</span>
+              <span>{formatVolume(event.volume)} Vol.</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleFavorite?.(market.id);
+                  onToggleFavorite?.(event.id);
                 }}
                 className="text-muted-foreground hover:text-yellow-500 transition-colors"
               >

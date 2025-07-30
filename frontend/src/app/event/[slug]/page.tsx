@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { notFound } from "next/navigation";
 import { supabaseAdmin } from "@/lib/supabase";
-import MarketDetail from "@/components/market/MarketDetail";
+import EventDetail from "@/components/event/EventDetail";
 import { Market } from "@/types";
 
 interface MarketPageProps {
@@ -165,7 +165,7 @@ export default async function MarketPage({ params }: MarketPageProps) {
     // Add event oracle to market
     market.oracle = eventOracle;
 
-    return <MarketDetail market={market} />;
+    return <EventDetail event={market} />;
   } catch (error) {
     console.error("Error fetching event:", error);
     notFound();

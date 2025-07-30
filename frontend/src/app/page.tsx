@@ -7,7 +7,7 @@ import { MarketCategory } from "@/types";
 import Header from "@/components/layout/Header";
 import NavigationTabs from "@/components/layout/NavigationTabs";
 import FilterToolbar from "@/components/layout/FilterToolbar";
-import MarketGrid from "@/components/market/MarketGrid";
+import EventGrid from "@/components/event/EventGrid";
 
 function HomePageContent() {
   const searchParams = useSearchParams();
@@ -52,13 +52,13 @@ function HomePageContent() {
     );
   }, [favoriteMarkets]);
 
-  const handleToggleFavorite = (marketId: string) => {
+  const handleToggleFavorite = (eventId: string) => {
     setFavoriteMarkets((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(marketId)) {
-        newSet.delete(marketId);
+      if (newSet.has(eventId)) {
+        newSet.delete(eventId);
       } else {
-        newSet.add(marketId);
+        newSet.add(eventId);
       }
       return newSet;
     });
@@ -89,7 +89,7 @@ function HomePageContent() {
       />
 
       {/* Main Content */}
-      <MarketGrid
+      <EventGrid
         activeCategory={activeCategory}
         searchQuery={searchQuery}
         showFavoritesOnly={showFavoritesOnly}

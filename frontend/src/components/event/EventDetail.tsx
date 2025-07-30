@@ -34,11 +34,11 @@ import {
 import { fetchRelatedEvents, RelatedEvent } from "@/lib/data";
 import { formatRules, formatOracleAddress } from "@/lib/utils";
 
-interface MarketDetailProps {
-  market: Market;
+interface EventDetailProps {
+  event: Market;
 }
 
-export default function MarketDetail({ market }: MarketDetailProps) {
+export default function EventDetail({ event }: EventDetailProps) {
   // Basic SVG sanitization function
   const sanitizeSvg = (svg: string) => {
     return svg
@@ -81,19 +81,19 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
   // Utility functions
   const getSelectedOutcome = useCallback(
-    () => market.outcomes.find((o) => o.id === selectedOutcomeForOrder),
-    [market.outcomes, selectedOutcomeForOrder]
+    () => event.outcomes.find((o) => o.id === selectedOutcomeForOrder),
+    [event.outcomes, selectedOutcomeForOrder]
   );
 
   const getYesOutcome = useCallback(
-    () => market.outcomes.find((o) => o.isYes === true),
-    [market.outcomes]
+    () => event.outcomes.find((o) => o.isYes === true),
+    [event.outcomes]
   );
 
   const yesOutcome = getYesOutcome();
   const primaryProbability = yesOutcome
     ? yesOutcome.probability
-    : market.outcomes[0]?.probability || 0;
+    : event.outcomes[0]?.probability || 0;
 
   // Calculate prices in cents
   const yesPrice = Math.round(primaryProbability);
@@ -101,7 +101,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
   // Function to get top 4 outcomes by volume
   const getTopOutcomesForChart = () => {
-    const sortedOutcomes = [...market.outcomes]
+    const sortedOutcomes = [...event.outcomes]
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 4);
 
@@ -235,7 +235,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           {
             description: (
               <div>
-                <div className="font-medium">{market.title}</div>
+                <div className="font-medium">{event.title}</div>
                 <div className="text-xs opacity-80 mt-1">
                   Received $${formatValue(sellValue)} @ ${getAvgSellPrice()}¢
                 </div>
@@ -264,7 +264,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           {
             description: (
               <div>
-                <div className="font-medium">{market.title}</div>
+                <div className="font-medium">{event.title}</div>
                 <div className="text-xs opacity-80 mt-1">
                   {shares} shares @ {price}¢
                 </div>
@@ -274,7 +274,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
         );
 
         console.log(
-          `Buy executed: $${amount} on ${yesNoSelection} for market ${market.title}`
+          `Buy executed: $${amount} on ${yesNoSelection} for market ${event.title}`
         );
       }
 
@@ -295,7 +295,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
     // Generate contextual content based on market title and type
     const contextLines = [
-      `This market tracks ${market.title.toLowerCase()} with current probability trends indicating ${primaryProbability}% likelihood of the positive outcome.`,
+      `This market tracks ${event.title.toLowerCase()} with current probability trends indicating ${primaryProbability}% likelihood of the positive outcome.`,
       `Historical data shows similar events have had volatility patterns with key decision points typically occurring near market resolution dates.`,
       `Market sentiment and external factors including recent news developments, expert opinions, and related market movements may influence final outcomes.`,
     ];
@@ -312,17 +312,17 @@ export default function MarketDetail({ market }: MarketDetailProps) {
     if (stored) {
       try {
         const favArray = JSON.parse(stored);
-        setIsFavorite(favArray.includes(market.id));
+        setIsFavorite(favArray.includes(event.id));
       } catch (error) {
         console.error("Error loading favorites:", error);
       }
     }
-  }, [market.id]);
+  }, [event.id]);
 
   // Auto-select outcome for all markets (binary and multi-outcome)
   useEffect(() => {
-    if (!selectedOutcomeForOrder && market.outcomes.length > 0) {
-      if (market.outcomes.length === 2) {
+    if (!selectedOutcomeForOrder && event.outcomes.length > 0) {
+      if (event.outcomes.length === 2) {
         // For binary markets, select the "Yes" option (isYes = true)
         const yesOutcome = getYesOutcome();
         if (yesOutcome) {
@@ -330,12 +330,12 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           setYesNoSelection("yes");
         } else {
           // If isYes not found, select first option
-          setSelectedOutcomeForOrder(market.outcomes[0].id);
+          setSelectedOutcomeForOrder(event.outcomes[0].id);
           setYesNoSelection("yes");
         }
-      } else if (market.outcomes.length > 2) {
+      } else if (event.outcomes.length > 2) {
         // For multi-option markets, select option with highest probability
-        const sortedOutcomes = [...market.outcomes].sort(
+        const sortedOutcomes = [...event.outcomes].sort(
           (a, b) => b.probability - a.probability
         );
         const highestProbOutcome = sortedOutcomes[0];
@@ -345,7 +345,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
         }
       }
     }
-  }, [market.outcomes, selectedOutcomeForOrder, getYesOutcome]);
+  }, [event.outcomes, selectedOutcomeForOrder, getYesOutcome]);
 
   // Block body scroll when mobile modal is open
   useEffect(() => {
@@ -380,10 +380,10 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
     if (isFavorite) {
       // Remove from favorites
-      favArray = favArray.filter((id) => id !== market.id);
+              favArray = favArray.filter((id) => id !== event.id);
     } else {
       // Add to favorites
-      favArray.push(market.id);
+              favArray.push(event.id);
     }
 
     localStorage.setItem(`${siteName}-favorites`, JSON.stringify(favArray));
@@ -408,14 +408,14 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
     setLoadingRelated(true);
     try {
-      const related = await fetchRelatedEvents(market.slug);
+      const related = await fetchRelatedEvents(event.slug);
       setRelatedEvents(related);
     } catch (error) {
       console.error("Error loading related events:", error);
     } finally {
       setLoadingRelated(false);
     }
-  }, [loadingRelated, relatedEvents.length, market.slug]);
+  }, [loadingRelated, relatedEvents.length, event.slug]);
 
   // Load related events when tab is clicked
   useEffect(() => {
@@ -631,7 +631,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
     return (
       <div className={containerClasses}>
         {/* Display the selected option (only for multi-outcome) */}
-        {market.outcomes.length > 2 &&
+        {event.outcomes.length > 2 &&
           selectedOutcomeForOrder &&
           !isMobileVersion && (
             <div className="mb-4 rounded-lg bg-muted/20">
@@ -705,13 +705,13 @@ export default function MarketDetail({ market }: MarketDetailProps) {
                 selectedOutcomeForOrder
                   ? getSelectedOutcome()?.avatar ||
                     `https://avatar.vercel.sh/${getSelectedOutcome()?.name.toLowerCase()}.png`
-                  : market.creatorAvatar ||
-                    `https://avatar.vercel.sh/${market.title.charAt(0)}.png`
+                  : event.creatorAvatar ||
+                    `https://avatar.vercel.sh/${event.title.charAt(0)}.png`
               }
               alt={
                 selectedOutcomeForOrder
                   ? getSelectedOutcome()?.name || "Selected outcome"
-                  : market.creator || "Market creator"
+                  : event.creator || "Market creator"
               }
               width={32}
               height={32}
@@ -719,13 +719,13 @@ export default function MarketDetail({ market }: MarketDetailProps) {
             />
             <div className="flex-1">
               <div className="text-sm font-medium line-clamp-2">
-                {market.title}
+                {event.title}
               </div>
               <div className="text-xs text-muted-foreground flex items-center justify-between">
                 <span>
                   {selectedOutcomeForOrder
                     ? getSelectedOutcome()?.name
-                    : getYesOutcome()?.name || market.outcomes[0]?.name}
+                    : getYesOutcome()?.name || event.outcomes[0]?.name}
                 </span>
                 <span>Bal. $${formatValue(mockUser.cash)}</span>
               </div>
@@ -767,10 +767,10 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
         {/* Outcome buttons */}
         <div className="flex gap-2 mb-2">
-          {market.outcomes[0] &&
-            renderOutcomeButton(market.outcomes[0], yesPrice)}
-          {market.outcomes[1] &&
-            renderOutcomeButton(market.outcomes[1], noPrice)}
+          {event.outcomes[0] &&
+            renderOutcomeButton(event.outcomes[0], yesPrice)}
+          {event.outcomes[1] &&
+            renderOutcomeButton(event.outcomes[1], noPrice)}
         </div>
 
         {/* Display available shares (only in Sell mode) */}
@@ -1138,7 +1138,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
       });
     };
 
-    const isMultiOutcome = market.outcomes.length > 2;
+    const isMultiOutcome = event.outcomes.length > 2;
     let outcomeLabel = outcomeName;
     if (isMultiOutcome) {
       const selectedOutcome = getSelectedOutcome();
@@ -1199,7 +1199,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
                 toast.success("Redeem shares", {
                   description: (
                     <div>
-                      <div className="font-medium">{market.title}</div>
+                      <div className="font-medium">{event.title}</div>
                     </div>
                   ),
                 });
@@ -1228,7 +1228,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
     <div className="min-h-screen bg-background">
       <Header />
       <NavigationTabs
-        activeCategory={market.category}
+        activeCategory={event.category}
         onCategoryChange={() => {}}
       />
 
@@ -1240,16 +1240,16 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           <div className="flex items-center gap-4 mb-6">
             <Image
               src={
-                market.creatorAvatar ||
-                `https://avatar.vercel.sh/${market.title.charAt(0)}.png`
+                event.creatorAvatar ||
+                `https://avatar.vercel.sh/${event.title.charAt(0)}.png`
               }
-              alt={market.creator || "Market creator"}
+              alt={event.creator || "Market creator"}
               width={64}
               height={64}
               className="rounded-xl flex-shrink-0"
             />
             <h1 className="flex-1 text-lg md:text-xl lg:text-2xl font-bold leading-tight line-clamp-3">
-              {market.title}
+              {event.title}
             </h1>
             <div className="flex gap-2 text-muted-foreground">
               <Star
@@ -1271,18 +1271,18 @@ export default function MarketDetail({ market }: MarketDetailProps) {
 
           {/* Meta information */}
           <div className="mt-1 text-xs text-muted-foreground flex gap-1 items-center">
-            <span>Volume {formatVolume(market.volume)}</span>
+            <span>Volume {formatVolume(event.volume)}</span>
             <span>•</span>
-            <span>Expires {formatDate(market.endDate)}</span>
+            <span>Expires {formatDate(event.endDate)}</span>
             <span>•</span>
-            <span>{market.category}</span>
+            <span>{event.category}</span>
           </div>
 
           {/* Probability tag or legend */}
           <div className="mt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {market.outcomes.length <= 2 ? (
+                {event.outcomes.length <= 2 ? (
                   // Binary markets: show percentage and trend
                   <>
                     <span
@@ -1369,7 +1369,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           </div>
 
           {/* List of Outcomes (only if > 2) */}
-          {market.outcomes.length > 2 && (
+          {event.outcomes.length > 2 && (
             <div className="mt-6 bg-background overflow-hidden">
               {/* Header */}
               <div className="hidden md:flex items-center py-3 bg-muted/10 rounded-t-lg border-b border-border/50 dark:border-border/20">
@@ -1394,7 +1394,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
               </div>
 
               {/* Items - Sorted by probability descending */}
-              {[...market.outcomes]
+              {[...event.outcomes]
                 .sort((a, b) => b.probability - a.probability)
                 .map((outcome, index, sortedOutcomes) => (
                   <div
@@ -1419,7 +1419,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
                       {/* Row 1: Name and probability */}
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
-                          {market.show_market_icons !== false && (
+                          {event.show_market_icons !== false && (
                             <Image
                               src={
                                 outcome.avatar ||
@@ -1501,7 +1501,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
                     <div className="hidden md:flex items-center w-full">
                       {/* First column: Name and info - 50% */}
                       <div className="flex items-center gap-3 w-1/2">
-                        {market.show_market_icons !== false && (
+                        {event.show_market_icons !== false && (
                           <Image
                             src={
                               outcome.avatar ||
@@ -1638,12 +1638,12 @@ export default function MarketDetail({ market }: MarketDetailProps) {
           <div className="mt-3">
             <h3 className="text-lg font-semibold mb-2">Rules</h3>
 
-            {market.rules && (
+            {event.rules && (
               <>
                 {rulesExpanded && (
                   <>
                     <div className="text-md text-muted-foreground mb-2 whitespace-pre-line">
-                      {formatRules(market.rules)}
+                      {formatRules(event.rules)}
                     </div>
                   </>
                 )}
@@ -1665,16 +1665,16 @@ export default function MarketDetail({ market }: MarketDetailProps) {
                         </div>
                         <a
                           href={
-                            market.oracle
-                              ? `https://polygonscan.com/address/${market.oracle}`
+                            event.oracle
+                              ? `https://polygonscan.com/address/${event.oracle}`
                               : "#"
                           }
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
                         >
-                          {market.oracle
-                            ? formatOracleAddress(market.oracle)
+                          {event.oracle
+                            ? formatOracleAddress(event.oracle)
                             : ""}
                         </a>
                       </div>
@@ -2028,7 +2028,7 @@ export default function MarketDetail({ market }: MarketDetailProps) {
       </main>
 
       {/* Floating buttons for mobile - only binary markets */}
-      {market.outcomes.length === 2 && (
+      {event.outcomes.length === 2 && (
         <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-background border-t border-border/50">
           <div className="flex gap-2">
             <Button
