@@ -380,10 +380,10 @@ export default function EventDetail({ event }: EventDetailProps) {
 
     if (isFavorite) {
       // Remove from favorites
-              favArray = favArray.filter((id) => id !== event.id);
+      favArray = favArray.filter((id) => id !== event.id);
     } else {
       // Add to favorites
-              favArray.push(event.id);
+      favArray.push(event.id);
     }
 
     localStorage.setItem(`${siteName}-favorites`, JSON.stringify(favArray));
@@ -769,8 +769,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         <div className="flex gap-2 mb-2">
           {event.outcomes[0] &&
             renderOutcomeButton(event.outcomes[0], yesPrice)}
-          {event.outcomes[1] &&
-            renderOutcomeButton(event.outcomes[1], noPrice)}
+          {event.outcomes[1] && renderOutcomeButton(event.outcomes[1], noPrice)}
         </div>
 
         {/* Display available shares (only in Sell mode) */}
@@ -1635,76 +1634,64 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Rules */}
-          <div className="mt-3">
-            <h3 className="text-lg font-semibold mb-2">Rules</h3>
-
-            {event.rules && (
-              <>
-                {rulesExpanded && (
-                  <>
-                    <div className="text-md text-muted-foreground mb-2 whitespace-pre-line">
-                      {formatRules(event.rules)}
-                    </div>
-                  </>
-                )}
-              </>
-            )}
-
-            {rulesExpanded && (
-              <>
-                {/* Oracle Info */}
-                <div className="border border-border/50 dark:border-border/20 rounded-lg p-3 mb-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-start gap-3">
-                      <div
-                        className={`w-10 h-10 bg-gradient-to-r ${mockMarketDetails.resolver.gradientColors} rounded-sm flex items-center justify-center flex-shrink-0`}
-                      ></div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">
-                          Resolver
-                        </div>
-                        <a
-                          href={
-                            event.oracle
-                              ? `https://polygonscan.com/address/${event.oracle}`
-                              : "#"
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
-                        >
-                          {event.oracle
-                            ? formatOracleAddress(event.oracle)
-                            : ""}
-                        </a>
-                      </div>
-                    </div>
-
-                    {/* Propose resolution button aligned to the right */}
-                    <Button variant="outline" size="sm">
-                      Propose resolution
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="mt-2">
-                  <button
-                    className="text-xs text-muted-foreground hover:text-foreground transition-colors block"
-                    onClick={() => setRulesExpanded(!rulesExpanded)}
-                  >
-                    Show less ▴
-                  </button>
-                </div>
-              </>
-            )}
-
-            {!rulesExpanded && (
-              <button
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          <div className="mt-3 rounded-lg border border-border/50 dark:border-border/20 transition-all duration-200 ease-in-out">
+            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
+              <span className="text-lg font-medium">Rules</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-1"
                 onClick={() => setRulesExpanded(!rulesExpanded)}
               >
-                Show more ▾
-              </button>
+                {rulesExpanded ? "Show less ▴" : "Show more ▾"}
+              </Button>
+            </div>
+
+            {rulesExpanded && (
+              <div className="px-3 pb-3 border-t border-border/30">
+                <div className="pt-3 space-y-2">
+                  {event.rules && (
+                    <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                      {formatRules(event.rules)}
+                    </div>
+                  )}
+
+                  {/* Oracle Info */}
+                  <div className="border border-border/50 dark:border-border/20 rounded-lg p-3 mt-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-start gap-3">
+                        <div
+                          className={`w-10 h-10 bg-gradient-to-r ${mockMarketDetails.resolver.gradientColors} rounded-sm flex items-center justify-center flex-shrink-0`}
+                        ></div>
+                        <div>
+                          <div className="text-xs text-muted-foreground">
+                            Resolver
+                          </div>
+                          <a
+                            href={
+                              event.oracle
+                                ? `https://polygonscan.com/address/${event.oracle}`
+                                : "#"
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-500 hover:text-blue-600 transition-colors"
+                          >
+                            {event.oracle
+                              ? formatOracleAddress(event.oracle)
+                              : ""}
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Propose resolution button aligned to the right */}
+                      <Button variant="outline" size="sm">
+                        Propose resolution
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 
