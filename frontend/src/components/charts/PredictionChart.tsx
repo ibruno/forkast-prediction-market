@@ -1,49 +1,49 @@
-"use client";
+'use client'
 
-import React, { useState, useEffect, useCallback } from "react";
-import { Group } from "@visx/group";
-import { scaleTime, scaleLinear } from "@visx/scale";
-import { LinePath } from "@visx/shape";
-import { AxisBottom, AxisRight } from "@visx/axis";
-import { curveMonotoneX } from "@visx/curve";
-import { localPoint } from "@visx/event";
-import { TooltipWithBounds, useTooltip, defaultStyles } from "@visx/tooltip";
-import { bisector } from "d3-array";
+import { AxisBottom, AxisRight } from '@visx/axis'
+import { curveMonotoneX } from '@visx/curve'
+import { localPoint } from '@visx/event'
+import { Group } from '@visx/group'
+import { scaleLinear, scaleTime } from '@visx/scale'
+import { LinePath } from '@visx/shape'
+import { defaultStyles, TooltipWithBounds, useTooltip } from '@visx/tooltip'
+import { bisector } from 'd3-array'
+import React, { useCallback, useEffect, useState } from 'react'
 
 // Data types
 interface DataPoint {
-  date: Date;
-  [key: string]: number | Date;
+  date: Date
+  [key: string]: number | Date
 }
 
 interface SeriesConfig {
-  key: string;
-  name: string;
-  color: string;
+  key: string
+  name: string
+  color: string
 }
 
 interface PredictionChartProps {
-  data?: DataPoint[];
-  series?: SeriesConfig[];
-  width?: number;
-  height?: number;
-  margin?: { top: number; right: number; bottom: number; left: number };
+  data?: DataPoint[]
+  series?: SeriesConfig[]
+  width?: number
+  height?: number
+  margin?: { top: number, right: number, bottom: number, left: number }
 }
 
 const tooltipStyles = {
   ...defaultStyles,
-  backgroundColor: "hsl(var(--card))",
-  color: "hsl(var(--card-foreground))",
-  border: "1px solid hsl(var(--border))",
-  borderRadius: "8px",
-  padding: "12px 16px",
-  fontSize: "12px",
-  fontWeight: "500",
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.15)",
-  backdropFilter: "blur(8px)",
-};
+  backgroundColor: 'hsl(var(--card))',
+  color: 'hsl(var(--card-foreground))',
+  border: '1px solid hsl(var(--border))',
+  borderRadius: '8px',
+  padding: '12px 16px',
+  fontSize: '12px',
+  fontWeight: '500',
+  boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)',
+  backdropFilter: 'blur(8px)',
+}
 
-const bisectDate = bisector<DataPoint, Date>((d) => d.date).left;
+const bisectDate = bisector<DataPoint, Date>(d => d.date).left
 
 // Example usage with multiple custom series:
 // const customData = [
@@ -63,9 +63,9 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
   height = 400,
   margin = { top: 30, right: 60, bottom: 40, left: 0 },
 }) => {
-  const [data, setData] = useState<DataPoint[]>([]);
-  const [series, setSeries] = useState<SeriesConfig[]>([]);
-  const [isClient, setIsClient] = useState(false);
+  const [data, setData] = useState<DataPoint[]>([])
+  const [series, setSeries] = useState<SeriesConfig[]>([])
+  const [isClient, setIsClient] = useState(false)
 
   const {
     tooltipData,
@@ -74,103 +74,105 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
     tooltipOpen,
     showTooltip,
     hideTooltip,
-  } = useTooltip<DataPoint>();
+  } = useTooltip<DataPoint>()
 
   const handleTooltip = useCallback(
     (
-      event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>
+      event: React.TouchEvent<SVGRectElement> | React.MouseEvent<SVGRectElement>,
     ) => {
-      if (!data.length || !series.length) return;
+      if (!data.length || !series.length)
+        return
 
-      const { x } = localPoint(event) || { x: 0 };
-      const innerWidth = width - margin.left - margin.right;
-      const innerHeight = height - margin.top - margin.bottom;
+      const { x } = localPoint(event) || { x: 0 }
+      const innerWidth = width - margin.left - margin.right
+      const innerHeight = height - margin.top - margin.bottom
 
       const xScale = scaleTime<number>({
         range: [0, innerWidth],
         domain: [
-          Math.min(...data.map((d) => d.date.getTime())),
-          Math.max(...data.map((d) => d.date.getTime())),
+          Math.min(...data.map(d => d.date.getTime())),
+          Math.max(...data.map(d => d.date.getTime())),
         ],
-      });
+      })
 
       const yScale = scaleLinear<number>({
         range: [innerHeight, 0],
         domain: [0, 100],
         nice: true,
-      });
+      })
 
-      const x0 = xScale.invert(x - margin.left);
-      const index = bisectDate(data, x0, 1);
-      const d0 = data[index - 1];
-      const d1 = data[index];
-      let d = d0;
+      const x0 = xScale.invert(x - margin.left)
+      const index = bisectDate(data, x0, 1)
+      const d0 = data[index - 1]
+      const d1 = data[index]
+      let d = d0
       if (d1 && d1.date) {
-        d =
-          x0.valueOf() - d0.date.valueOf() > d1.date.valueOf() - x0.valueOf()
+        d
+          = x0.valueOf() - d0.date.valueOf() > d1.date.valueOf() - x0.valueOf()
             ? d1
-            : d0;
+            : d0
       }
       showTooltip({
         tooltipData: d,
         tooltipLeft: x - margin.left,
         tooltipTop: yScale((d[series[0].key] as number) || 0),
-      });
+      })
     },
-    [showTooltip, data, series, width, height, margin]
-  );
+    [showTooltip, data, series, width, height, margin],
+  )
 
   useEffect(() => {
-    setIsClient(true);
+    setIsClient(true)
 
     if (providedData && providedSeries) {
-      setData(providedData);
-      setSeries(providedSeries);
-    } else {
+      setData(providedData)
+      setSeries(providedSeries)
+    }
+    else {
       const generateMultiSeriesData = () => {
-        const now = new Date();
-        const generatedData: DataPoint[] = [];
+        const now = new Date()
+        const generatedData: DataPoint[] = []
 
         // Configure series with the 4 items with most volume
         const defaultSeries: SeriesConfig[] = [
-          { key: "yes", name: "Elon Musk 2028", color: "#2D9CDB" }, // Polymarket Blue
-          { key: "no", name: "Bitcoin $150K", color: "#FF5952" }, // Polymarket Red
-          { key: "maybe", name: "GPT-5 Release", color: "#27AE60" }, // Polymarket Green
-          { key: "unlikely", name: "Taylor Grammy", color: "#9B51E0" }, // Polymarket Purple
-        ];
+          { key: 'yes', name: 'Elon Musk 2028', color: '#2D9CDB' }, // Polymarket Blue
+          { key: 'no', name: 'Bitcoin $150K', color: '#FF5952' }, // Polymarket Red
+          { key: 'maybe', name: 'GPT-5 Release', color: '#27AE60' }, // Polymarket Green
+          { key: 'unlikely', name: 'Taylor Grammy', color: '#9B51E0' }, // Polymarket Purple
+        ]
 
         for (let i = 29; i >= 0; i--) {
-          const date = new Date(now);
-          date.setDate(date.getDate() - i);
+          const date = new Date(now)
+          date.setDate(date.getDate() - i)
 
           // For Yes: increasing trend
-          const yesBase = 25 + (29 - i) * 1.2;
-          const yesVariation = (Math.random() - 0.5) * 6;
-          const yesValue = Math.max(5, Math.min(50, yesBase + yesVariation));
+          const yesBase = 25 + (29 - i) * 1.2
+          const yesVariation = (Math.random() - 0.5) * 6
+          const yesValue = Math.max(5, Math.min(50, yesBase + yesVariation))
 
           // For No: decreasing trend
-          const noBase = 45 - (29 - i) * 0.8;
-          const noVariation = (Math.random() - 0.5) * 5;
-          const noValue = Math.max(15, Math.min(60, noBase + noVariation));
+          const noBase = 45 - (29 - i) * 0.8
+          const noVariation = (Math.random() - 0.5) * 5
+          const noValue = Math.max(15, Math.min(60, noBase + noVariation))
 
           // For Maybe: moderate oscillation
-          const maybeBase = 20 + Math.sin((29 - i) * 0.2) * 8;
-          const maybeVariation = (Math.random() - 0.5) * 4;
+          const maybeBase = 20 + Math.sin((29 - i) * 0.2) * 8
+          const maybeVariation = (Math.random() - 0.5) * 4
           const maybeValue = Math.max(
             10,
-            Math.min(35, maybeBase + maybeVariation)
-          );
+            Math.min(35, maybeBase + maybeVariation),
+          )
 
           // For Unlikely: low and stable value
-          const unlikelyBase = 10 + (Math.random() - 0.5) * 6;
-          const unlikelyValue = Math.max(2, Math.min(20, unlikelyBase));
+          const unlikelyBase = 10 + (Math.random() - 0.5) * 6
+          const unlikelyValue = Math.max(2, Math.min(20, unlikelyBase))
 
           // Normalize to sum 100%
-          const total = yesValue + noValue + maybeValue + unlikelyValue;
-          const normalizedYes = (yesValue / total) * 100;
-          const normalizedNo = (noValue / total) * 100;
-          const normalizedMaybe = (maybeValue / total) * 100;
-          const normalizedUnlikely = (unlikelyValue / total) * 100;
+          const total = yesValue + noValue + maybeValue + unlikelyValue
+          const normalizedYes = (yesValue / total) * 100
+          const normalizedNo = (noValue / total) * 100
+          const normalizedMaybe = (maybeValue / total) * 100
+          const normalizedUnlikely = (unlikelyValue / total) * 100
 
           generatedData.push({
             date,
@@ -178,17 +180,17 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
             no: normalizedNo,
             maybe: normalizedMaybe,
             unlikely: normalizedUnlikely,
-          });
+          })
         }
 
-        return { data: generatedData, series: defaultSeries };
-      };
+        return { data: generatedData, series: defaultSeries }
+      }
 
-      const { data: genData, series: genSeries } = generateMultiSeriesData();
-      setData(genData);
-      setSeries(genSeries);
+      const { data: genData, series: genSeries } = generateMultiSeriesData()
+      setData(genData)
+      setSeries(genSeries)
     }
-  }, [providedData, providedSeries]);
+  }, [providedData, providedSeries])
 
   if (!isClient || data.length === 0 || series.length === 0) {
     return (
@@ -200,28 +202,28 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
           <span className="text-muted-foreground">Loading chart...</span>
         </div>
       </div>
-    );
+    )
   }
 
-  const innerWidth = width - margin.left - margin.right;
-  const innerHeight = height - margin.top - margin.bottom;
+  const innerWidth = width - margin.left - margin.right
+  const innerHeight = height - margin.top - margin.bottom
 
   const xScale = scaleTime<number>({
     range: [0, innerWidth],
     domain: [
-      Math.min(...data.map((d) => d.date.getTime())),
-      Math.max(...data.map((d) => d.date.getTime())),
+      Math.min(...data.map(d => d.date.getTime())),
+      Math.max(...data.map(d => d.date.getTime())),
     ],
-  });
+  })
 
   const yScale = scaleLinear<number>({
     range: [innerHeight, 0],
     domain: [0, 100],
     nice: true,
-  });
+  })
 
-  const getDate = (d: DataPoint) => d.date;
-  const getX = (d: DataPoint) => xScale(getDate(d));
+  const getDate = (d: DataPoint) => d.date
+  const getX = (d: DataPoint) => xScale(getDate(d))
 
   return (
     <div className="relative w-full h-full">
@@ -230,7 +232,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
         height={height}
         viewBox={`0 0 ${width} ${height}`}
         preserveAspectRatio="none"
-        style={{ overflow: "visible" }}
+        style={{ overflow: 'visible' }}
       >
         {/* Source/Fonte atrás do gráfico - estilo Polymarket */}
         <foreignObject
@@ -241,26 +243,28 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
         >
           <div
             style={{
-              display: "inline-block",
-              background: "rgba(229, 231, 235, 0.3)",
-              color: "rgba(209, 213, 219, 0.9)",
-              borderRadius: "6px",
-              padding: "4px 14px",
-              fontSize: "10px",
+              display: 'inline-block',
+              background: 'rgba(229, 231, 235, 0.3)',
+              color: 'rgba(209, 213, 219, 0.9)',
+              borderRadius: '6px',
+              padding: '4px 14px',
+              fontSize: '10px',
               fontWeight: 600,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-              pointerEvents: "none",
-              userSelect: "none",
-              width: "fit-content",
+              boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+              pointerEvents: 'none',
+              userSelect: 'none',
+              width: 'fit-content',
             }}
           >
-            Source: {process.env.NEXT_PUBLIC_SITE_NAME}
+            Source:
+            {' '}
+            {process.env.NEXT_PUBLIC_SITE_NAME}
           </div>
         </foreignObject>
 
         <Group left={margin.left} top={margin.top}>
           {/* Grid lines horizontais pontilhadas - estilo Polymarket */}
-          {[0, 20, 40, 60, 80, 100].map((value) => (
+          {[0, 20, 40, 60, 80, 100].map(value => (
             <line
               key={`grid-${value}`}
               x1={0}
@@ -287,12 +291,12 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
           />
 
           {/* Linhas de dados com estilo Polymarket */}
-          {series.map((seriesItem) => (
+          {series.map(seriesItem => (
             <LinePath<DataPoint>
               key={seriesItem.key}
               data={data}
-              x={(d) => xScale(getDate(d))}
-              y={(d) => yScale((d[seriesItem.key] as number) || 0)}
+              x={d => xScale(getDate(d))}
+              y={d => yScale((d[seriesItem.key] as number) || 0)}
               stroke={seriesItem.color}
               strokeWidth={2.5}
               curve={curveMonotoneX}
@@ -301,14 +305,14 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
           ))}
 
           {/* Markers circulares nas pontas - estilo Polymarket */}
-          {data.length > 0 &&
-            series.map((seriesItem) => (
+          {data.length > 0
+            && series.map(seriesItem => (
               <g key={`${seriesItem.key}-marker`}>
                 {/* Círculo externo (borda branca) */}
                 <circle
                   cx={getX(data[data.length - 1])}
                   cy={yScale(
-                    (data[data.length - 1][seriesItem.key] as number) || 0
+                    (data[data.length - 1][seriesItem.key] as number) || 0,
                   )}
                   r={5}
                   fill="white"
@@ -319,7 +323,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
                 <circle
                   cx={getX(data[data.length - 1])}
                   cy={yScale(
-                    (data[data.length - 1][seriesItem.key] as number) || 0
+                    (data[data.length - 1][seriesItem.key] as number) || 0,
                   )}
                   r={3}
                   fill={seriesItem.color}
@@ -331,15 +335,15 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
           <AxisRight
             left={innerWidth}
             scale={yScale}
-            tickFormat={(value) => `${value}%`}
+            tickFormat={value => `${value}%`}
             stroke="#344452"
             tickStroke="#344452"
             tickLabelProps={{
-              fill: "#6b7280",
+              fill: '#6b7280',
               fontSize: 11,
-              textAnchor: "start",
-              dy: "0.33em",
-              dx: "0.5em",
+              textAnchor: 'start',
+              dy: '0.33em',
+              dx: '0.5em',
             }}
             numTicks={6}
             strokeWidth={1}
@@ -351,18 +355,18 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
             top={innerHeight}
             scale={xScale}
             tickFormat={(value) => {
-              const date = new Date(Number(value));
-              return date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              });
+              const date = new Date(Number(value))
+              return date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              })
             }}
             stroke="#344452"
             tickStroke="#344452"
             tickLabelProps={{
-              fill: "#6b7280",
+              fill: '#6b7280',
               fontSize: 11,
-              textAnchor: "middle",
+              textAnchor: 'middle',
             }}
             numTicks={6}
             strokeWidth={1}
@@ -399,53 +403,53 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
       </svg>
 
       {/* Tooltip original unificado */}
-      {tooltipOpen &&
-        tooltipData &&
-        tooltipLeft !== undefined &&
-        tooltipTop !== undefined && (
-          <TooltipWithBounds
-            key={Math.random()}
-            top={tooltipTop + margin.top}
-            left={tooltipLeft + margin.left}
-            style={tooltipStyles}
-          >
-            <div>
-              <div className="font-semibold mb-2 text-sm border-b border-border pb-1 text-card-foreground">
-                {tooltipData.date.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                })}
-              </div>
-              <div className="space-y-1">
-                {series.map((seriesItem) => (
-                  <div
-                    key={seriesItem.key}
-                    className="flex items-center justify-between gap-3 text-xs"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className="w-3 h-3 rounded-full border border-muted"
-                        style={{ backgroundColor: seriesItem.color }}
-                      />
-                      <span className="text-muted-foreground">
-                        {seriesItem.name}
-                      </span>
-                    </div>
-                    <span className="font-bold text-card-foreground">
-                      {((tooltipData[seriesItem.key] as number) || 0).toFixed(
-                        1
-                      )}
-                      %
+      {tooltipOpen
+        && tooltipData
+        && tooltipLeft !== undefined
+        && tooltipTop !== undefined && (
+        <TooltipWithBounds
+          key={Math.random()}
+          top={tooltipTop + margin.top}
+          left={tooltipLeft + margin.left}
+          style={tooltipStyles}
+        >
+          <div>
+            <div className="font-semibold mb-2 text-sm border-b border-border pb-1 text-card-foreground">
+              {tooltipData.date.toLocaleDateString('en-US', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+              })}
+            </div>
+            <div className="space-y-1">
+              {series.map(seriesItem => (
+                <div
+                  key={seriesItem.key}
+                  className="flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <div
+                      className="w-3 h-3 rounded-full border border-muted"
+                      style={{ backgroundColor: seriesItem.color }}
+                    />
+                    <span className="text-muted-foreground">
+                      {seriesItem.name}
                     </span>
                   </div>
-                ))}
-              </div>
+                  <span className="font-bold text-card-foreground">
+                    {((tooltipData[seriesItem.key] as number) || 0).toFixed(
+                      1,
+                    )}
+                    %
+                  </span>
+                </div>
+              ))}
             </div>
-          </TooltipWithBounds>
-        )}
+          </div>
+        </TooltipWithBounds>
+      )}
     </div>
-  );
-};
+  )
+}
 
-export default PredictionChart;
+export default PredictionChart

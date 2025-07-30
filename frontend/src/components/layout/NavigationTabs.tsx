@@ -1,44 +1,45 @@
-"use client";
+'use client'
 
-import { useRouter, usePathname } from "next/navigation";
-import { TrendingUp } from "lucide-react";
-import { MarketCategory } from "@/types";
-import { getMainCategories } from "@/lib/mockData";
-import { useEffect, useState } from "react";
+import type { MarketCategory } from '@/types'
+import { TrendingUp } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { getMainCategories } from '@/lib/mockData'
 
 interface NavigationTabsProps {
-  activeCategory: MarketCategory;
-  onCategoryChange: (category: MarketCategory) => void;
+  activeCategory: MarketCategory
+  onCategoryChange: (category: MarketCategory) => void
 }
 
 export default function NavigationTabs({
   activeCategory,
   onCategoryChange,
 }: NavigationTabsProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const isHomePage = pathname === "/";
+  const router = useRouter()
+  const pathname = usePathname()
+  const isHomePage = pathname === '/'
   const [categories, setCategories] = useState<
-    { id: MarketCategory; label: string }[]
-  >([]);
+    { id: MarketCategory, label: string }[]
+  >([])
 
   useEffect(() => {
     const loadCategories = async () => {
-      const mainCategories = await getMainCategories();
-      setCategories(mainCategories);
-    };
-    loadCategories();
-  }, []);
+      const mainCategories = await getMainCategories()
+      setCategories(mainCategories)
+    }
+    loadCategories()
+  }, [])
 
   const handleCategoryClick = (category: MarketCategory) => {
     if (isHomePage) {
       // If on home page, use normal behavior
-      onCategoryChange(category);
-    } else {
-      // If not on home page, navigate to home with selected category
-      router.push(`/?category=${category}`);
+      onCategoryChange(category)
     }
-  };
+    else {
+      // If not on home page, navigate to home with selected category
+      router.push(`/?category=${category}`)
+    }
+  }
 
   return (
     <nav className="bg-background sticky top-14 z-10 border-b">
@@ -49,11 +50,11 @@ export default function NavigationTabs({
               onClick={() => handleCategoryClick(category.id)}
               className={`flex items-center gap-1.5 whitespace-nowrap py-2 pb-1 border-b-2 transition-colors ${
                 activeCategory === category.id
-                  ? "text-foreground border-primary"
-                  : "text-muted-foreground hover:text-foreground border-transparent"
+                  ? 'text-foreground border-primary'
+                  : 'text-muted-foreground hover:text-foreground border-transparent'
               }`}
             >
-              {category.id === "trending" && <TrendingUp className="h-4 w-4" />}
+              {category.id === 'trending' && <TrendingUp className="h-4 w-4" />}
               <span>{category.label}</span>
             </button>
             {/* Adiciona separador visual após "New" (índice 1) */}
@@ -62,5 +63,5 @@ export default function NavigationTabs({
         ))}
       </div>
     </nav>
-  );
+  )
 }

@@ -8,18 +8,18 @@
  * - Tracks last processed timestamp for incremental syncs
  */
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from '@supabase/supabase-js'
 
 // Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+)
 
 // Configuration
-const ACTIVITY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_ACTIVITY_SUBGRAPH_URL;
-const PNL_SUBGRAPH_URL = process.env.NEXT_PUBLIC_PNL_SUBGRAPH_URL;
-const IRYS_GATEWAY = process.env.IRYS_GATEWAY || "https://gateway.irys.xyz";
+const ACTIVITY_SUBGRAPH_URL = process.env.NEXT_PUBLIC_ACTIVITY_SUBGRAPH_URL
+const PNL_SUBGRAPH_URL = process.env.NEXT_PUBLIC_PNL_SUBGRAPH_URL
+const IRYS_GATEWAY = process.env.IRYS_GATEWAY || 'https://gateway.irys.xyz'
 
 /**
  * Main sync function
@@ -27,54 +27,55 @@ const IRYS_GATEWAY = process.env.IRYS_GATEWAY || "https://gateway.irys.xyz";
 export default async function handler(req, res) {
   // Security check for cron jobs
   if (req.headers.authorization !== `Bearer ${process.env.CRON_SECRET}`) {
-    return res.status(401).json({ error: "Unauthorized" });
+    return res.status(401).json({ error: 'Unauthorized' })
   }
 
   try {
-    console.log("🚀 Starting incremental market synchronization...");
+    console.log('🚀 Starting incremental market synchronization...')
 
     // 1. Get last processed timestamp
-    const lastProcessedTimestamp = await getLastProcessedTimestamp();
-    console.log(`📊 Last processed timestamp: ${lastProcessedTimestamp}`);
+    const lastProcessedTimestamp = await getLastProcessedTimestamp()
+    console.log(`📊 Last processed timestamp: ${lastProcessedTimestamp}`)
 
     // 2. Fetch new markets from subgraph
-    const markets = await fetchNewMarkets();
-    console.log(`🔍 Found ${markets.length} new markets to process`);
+    const markets = await fetchNewMarkets()
+    console.log(`🔍 Found ${markets.length} new markets to process`)
 
     if (markets.length === 0) {
       return res.status(200).json({
         success: true,
-        message: "No new markets to process",
+        message: 'No new markets to process',
         processed: 0,
-        lastProcessedTimestamp: lastProcessedTimestamp,
-      });
+        lastProcessedTimestamp,
+      })
     }
 
     // 3. Process each market
-    let processedCount = 0;
-    let errors = [];
+    let processedCount = 0
+    const errors = []
 
     for (const market of markets) {
       try {
-        await processMarket(market);
-        processedCount++;
-        console.log(`✅ Processed market: ${market.id}`);
-      } catch (error) {
-        console.error(`❌ Error processing market ${market.id}:`, error);
+        await processMarket(market)
+        processedCount++
+        console.log(`✅ Processed market: ${market.id}`)
+      }
+      catch (error) {
+        console.error(`❌ Error processing market ${market.id}:`, error)
         errors.push({
           conditionId: market.id,
           error: error.message,
-        });
+        })
       }
     }
 
     // 4. Update last processed timestamp (only if we processed something)
     if (processedCount > 0) {
-      const currentTimestamp = Math.floor(Date.now() / 1000);
-      await updateLastProcessedTimestamp(currentTimestamp);
+      const currentTimestamp = Math.floor(Date.now() / 1000)
+      await updateLastProcessedTimestamp(currentTimestamp)
       console.log(
-        `📦 Updated last processed timestamp to: ${currentTimestamp}`
-      );
+        `📦 Updated last processed timestamp to: ${currentTimestamp}`,
+      )
     }
 
     // 5. Return results
@@ -88,17 +89,18 @@ export default async function handler(req, res) {
         processedCount > 0
           ? Math.floor(Date.now() / 1000)
           : lastProcessedTimestamp,
-    };
+    }
 
-    console.log("🎉 Incremental synchronization completed:", result);
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error("💥 Sync failed:", error);
+    console.log('🎉 Incremental synchronization completed:', result)
+    return res.status(200).json(result)
+  }
+  catch (error) {
+    console.error('💥 Sync failed:', error)
     return res.status(500).json({
       success: false,
       error: error.message,
-      stack: process.env.NODE_ENV === "development" ? error.stack : undefined,
-    });
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
+    })
   }
 }
 
@@ -107,53 +109,53 @@ export default async function handler(req, res) {
  */
 async function getLastProcessedTimestamp() {
   const { data, error } = await supabase
-    .from("sync_status")
-    .select("last_processed_block")
-    .eq("service_name", "market_sync")
-    .eq("subgraph_name", "activity")
-    .maybeSingle();
+    .from('sync_status')
+    .select('last_processed_block')
+    .eq('service_name', 'market_sync')
+    .eq('subgraph_name', 'activity')
+    .maybeSingle()
 
-  if (error && error.code !== "PGRST116") {
+  if (error && error.code !== 'PGRST116') {
     // Not found is OK
-    throw new Error(`Failed to get last processed timestamp: ${error.message}`);
+    throw new Error(`Failed to get last processed timestamp: ${error.message}`)
   }
 
-  return data?.last_processed_block || 0;
+  return data?.last_processed_block || 0
 }
 
 /**
  * Fetch new markets from The Graph subgraph
  */
 async function fetchNewMarkets() {
-  console.log(`🔄 Fetching data from Activity subgraph...`);
-  const activityConditions = await fetchFromActivitySubgraph();
+  console.log(`🔄 Fetching data from Activity subgraph...`)
+  const activityConditions = await fetchFromActivitySubgraph()
   console.log(
-    `📊 Activity subgraph: Found ${activityConditions.length} conditions`
-  );
+    `📊 Activity subgraph: Found ${activityConditions.length} conditions`,
+  )
 
-  console.log(`🔄 Fetching data from PnL subgraph...`);
-  const pnlConditions = await fetchFromPnLSubgraph();
-  console.log(`📊 PnL subgraph: Found ${pnlConditions.length} conditions`);
+  console.log(`🔄 Fetching data from PnL subgraph...`)
+  const pnlConditions = await fetchFromPnLSubgraph()
+  console.log(`📊 PnL subgraph: Found ${pnlConditions.length} conditions`)
 
   // Merge data from both subgraphs
   const mergedConditions = mergeConditionsData(
     activityConditions,
-    pnlConditions
-  );
-  console.log(`🎯 Total merged conditions: ${mergedConditions.length}`);
+    pnlConditions,
+  )
+  console.log(`🎯 Total merged conditions: ${mergedConditions.length}`)
 
   // Filter out conditions that already exist in our database
-  const newConditions = await filterExistingConditions(mergedConditions);
-  console.log(`🆕 New conditions to process: ${newConditions.length}`);
+  const newConditions = await filterExistingConditions(mergedConditions)
+  console.log(`🆕 New conditions to process: ${newConditions.length}`)
 
-  return newConditions;
+  return newConditions
 }
 
 async function fetchFromActivitySubgraph() {
-  let allConditions = [];
-  let skip = 0;
-  const first = 1000;
-  let hasMore = true;
+  let allConditions = []
+  let skip = 0
+  const first = 1000
+  let hasMore = true
 
   while (hasMore) {
     const query = `
@@ -169,52 +171,53 @@ async function fetchFromActivitySubgraph() {
           creator
         }
       }
-    `;
+    `
 
     const response = await fetch(ACTIVITY_SUBGRAPH_URL, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query }),
-    });
+    })
 
     if (!response.ok) {
       throw new Error(
-        `Activity subgraph request failed: ${response.statusText}`
-      );
+        `Activity subgraph request failed: ${response.statusText}`,
+      )
     }
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (result.errors) {
       throw new Error(
-        `Activity subgraph query error: ${result.errors[0].message}`
-      );
+        `Activity subgraph query error: ${result.errors[0].message}`,
+      )
     }
 
-    const conditions = result.data.conditions || [];
+    const conditions = result.data.conditions || []
 
     if (conditions.length === 0) {
-      hasMore = false;
-    } else {
-      allConditions = allConditions.concat(conditions);
-      skip += first;
+      hasMore = false
+    }
+    else {
+      allConditions = allConditions.concat(conditions)
+      skip += first
 
       if (conditions.length < first) {
-        hasMore = false;
+        hasMore = false
       }
     }
   }
 
-  return allConditions;
+  return allConditions
 }
 
 async function fetchFromPnLSubgraph() {
-  let allConditions = [];
-  let skip = 0;
-  const first = 1000;
-  let hasMore = true;
+  let allConditions = []
+  let skip = 0
+  const first = 1000
+  let hasMore = true
 
   while (hasMore) {
     const query = `
@@ -234,55 +237,56 @@ async function fetchFromPnLSubgraph() {
           creator
         }
       }
-    `;
+    `
 
     const response = await fetch(PNL_SUBGRAPH_URL, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ query }),
-    });
+    })
 
     if (!response.ok) {
-      throw new Error(`PnL subgraph request failed: ${response.statusText}`);
+      throw new Error(`PnL subgraph request failed: ${response.statusText}`)
     }
 
-    const result = await response.json();
+    const result = await response.json()
 
     if (result.errors) {
-      throw new Error(`PnL subgraph query error: ${result.errors[0].message}`);
+      throw new Error(`PnL subgraph query error: ${result.errors[0].message}`)
     }
 
-    const conditions = result.data.conditions || [];
+    const conditions = result.data.conditions || []
 
     if (conditions.length === 0) {
-      hasMore = false;
-    } else {
-      allConditions = allConditions.concat(conditions);
-      skip += first;
+      hasMore = false
+    }
+    else {
+      allConditions = allConditions.concat(conditions)
+      skip += first
 
       if (conditions.length < first) {
-        hasMore = false;
+        hasMore = false
       }
     }
   }
 
-  return allConditions;
+  return allConditions
 }
 
 function mergeConditionsData(activityConditions, pnlConditions) {
-  const merged = [];
+  const merged = []
 
   // Create a map of PnL conditions for quick lookup
-  const pnlMap = new Map();
+  const pnlMap = new Map()
   pnlConditions.forEach((condition) => {
-    pnlMap.set(condition.id, condition);
-  });
+    pnlMap.set(condition.id, condition)
+  })
 
   // Process each activity condition
   activityConditions.forEach((activityCondition) => {
-    const pnlCondition = pnlMap.get(activityCondition.id);
+    const pnlCondition = pnlMap.get(activityCondition.id)
 
     // Only include if we have complete data
     if (pnlCondition && pnlCondition.oracle && pnlCondition.questionId) {
@@ -294,15 +298,16 @@ function mergeConditionsData(activityConditions, pnlConditions) {
         questionId: pnlCondition.questionId,
         outcomeSlotCount: pnlCondition.outcomeSlotCount,
         resolved: pnlCondition.resolved,
-      });
-    } else {
-      console.log(
-        `⚠️ Skipping condition ${activityCondition.id} - missing required fields from PnL subgraph`
-      );
+      })
     }
-  });
+    else {
+      console.log(
+        `⚠️ Skipping condition ${activityCondition.id} - missing required fields from PnL subgraph`,
+      )
+    }
+  })
 
-  return merged;
+  return merged
 }
 
 /**
@@ -310,34 +315,34 @@ function mergeConditionsData(activityConditions, pnlConditions) {
  */
 async function filterExistingConditions(conditions) {
   if (conditions.length === 0) {
-    return [];
+    return []
   }
 
   // Get all condition IDs that already exist in our database
-  const conditionIds = conditions.map((c) => c.id);
+  const conditionIds = conditions.map(c => c.id)
 
   const { data: existingConditions, error } = await supabase
-    .from("conditions")
-    .select("id")
-    .in("id", conditionIds);
+    .from('conditions')
+    .select('id')
+    .in('id', conditionIds)
 
   if (error) {
-    throw new Error(`Failed to check existing conditions: ${error.message}`);
+    throw new Error(`Failed to check existing conditions: ${error.message}`)
   }
 
   // Create a set of existing condition IDs for fast lookup
-  const existingIds = new Set(existingConditions.map((c) => c.id));
+  const existingIds = new Set(existingConditions.map(c => c.id))
 
   // Filter out conditions that already exist
   const newConditions = conditions.filter(
-    (condition) => !existingIds.has(condition.id)
-  );
+    condition => !existingIds.has(condition.id),
+  )
 
   console.log(
-    `📊 Filtered: ${conditions.length} total, ${existingConditions.length} existing, ${newConditions.length} new`
-  );
+    `📊 Filtered: ${conditions.length} total, ${existingConditions.length} existing, ${newConditions.length} new`,
+  )
 
-  return newConditions;
+  return newConditions
 }
 
 /**
@@ -345,10 +350,10 @@ async function filterExistingConditions(conditions) {
  */
 async function processMarket(market) {
   // 1. First create/update the condition in the conditions table
-  await processCondition(market);
+  await processCondition(market)
 
   // 2. Fetch metadata from Irys
-  const metadata = await fetchMetadata(market.arweaveHash);
+  const metadata = await fetchMetadata(market.arweaveHash)
 
   // 3. Process event (create if doesn't exist) - pass creator address
   const eventId = await processEvent(
@@ -360,50 +365,50 @@ async function processMarket(market) {
         ? `${metadata.name} Event`
         : `Event ${market.id.substring(0, 8)}`,
     },
-    market.creator
-  );
+    market.creator,
+  )
 
   // 4. Process market images and data
-  await processMarketData(market, metadata, eventId);
+  await processMarketData(market, metadata, eventId)
 }
 
 /**
  * Fetch metadata JSON from Irys/Arweave
  */
 async function fetchMetadata(arweaveHash) {
-  const url = `${IRYS_GATEWAY}/${arweaveHash}`;
+  const url = `${IRYS_GATEWAY}/${arweaveHash}`
 
-  const response = await fetch(url);
+  const response = await fetch(url)
   if (!response.ok) {
     throw new Error(
-      `Failed to fetch metadata from ${url}: ${response.statusText}`
-    );
+      `Failed to fetch metadata from ${url}: ${response.statusText}`,
+    )
   }
 
-  const metadata = await response.json();
+  const metadata = await response.json()
 
   // Validate required fields
   if (!metadata.name || !metadata.slug) {
     throw new Error(
       `Invalid metadata: missing required fields. Got: ${JSON.stringify(
-        Object.keys(metadata)
-      )}`
-    );
+        Object.keys(metadata),
+      )}`,
+    )
   }
 
   // Event can be optional in some cases
   if (!metadata.event) {
     console.warn(
-      `⚠️ No event data in metadata for ${metadata.name}, creating default event`
-    );
+      `⚠️ No event data in metadata for ${metadata.name}, creating default event`,
+    )
     metadata.event = {
-      slug: metadata.slug + "-event",
-      title: metadata.name + " Event",
-      description: "Auto-generated event",
-    };
+      slug: `${metadata.slug}-event`,
+      title: `${metadata.name} Event`,
+      description: 'Auto-generated event',
+    }
   }
 
-  return metadata;
+  return metadata
 }
 
 /**
@@ -412,31 +417,31 @@ async function fetchMetadata(arweaveHash) {
 async function processCondition(market) {
   // Check if condition already exists
   const { data: existingCondition } = await supabase
-    .from("conditions")
-    .select("id")
-    .eq("id", market.id)
-    .maybeSingle();
+    .from('conditions')
+    .select('id')
+    .eq('id', market.id)
+    .maybeSingle()
 
   if (existingCondition) {
-    console.log(`Condition ${market.id} already exists, updating if needed...`);
+    console.log(`Condition ${market.id} already exists, updating if needed...`)
   }
 
   // Validate required fields from merged subgraph data
   if (!market.oracle) {
-    throw new Error(`Market ${market.id} missing required oracle field`);
+    throw new Error(`Market ${market.id} missing required oracle field`)
   }
   if (!market.questionId) {
-    throw new Error(`Market ${market.id} missing required questionId field`);
+    throw new Error(`Market ${market.id} missing required questionId field`)
   }
   if (!market.creator) {
-    throw new Error(`Market ${market.id} missing required creator field`);
+    throw new Error(`Market ${market.id} missing required creator field`)
   }
   if (!market.arweaveHash) {
-    throw new Error(`Market ${market.id} missing required arweaveHash field`);
+    throw new Error(`Market ${market.id} missing required arweaveHash field`)
   }
 
   // Create/update condition
-  const { error } = await supabase.from("conditions").upsert({
+  const { error } = await supabase.from('conditions').upsert({
     id: market.id,
     oracle: market.oracle,
     question_id: market.questionId,
@@ -445,13 +450,13 @@ async function processCondition(market) {
     arweave_hash: market.arweaveHash,
     creator: market.creator,
     created_at: new Date().toISOString(),
-  });
+  })
 
   if (error) {
-    throw new Error(`Failed to create/update condition: ${error.message}`);
+    throw new Error(`Failed to create/update condition: ${error.message}`)
   }
 
-  console.log(`Processed condition: ${market.id}`);
+  console.log(`Processed condition: ${market.id}`)
 }
 
 /**
@@ -460,39 +465,39 @@ async function processCondition(market) {
 async function processEvent(eventData, creatorAddress) {
   // Validate event data
   if (!eventData || !eventData.slug || !eventData.title) {
-    throw new Error(`Invalid event data: ${JSON.stringify(eventData)}`);
+    throw new Error(`Invalid event data: ${JSON.stringify(eventData)}`)
   }
 
   // Check if event already exists
   const { data: existingEvent } = await supabase
-    .from("events")
-    .select("id")
-    .eq("slug", eventData.slug)
-    .maybeSingle();
+    .from('events')
+    .select('id')
+    .eq('slug', eventData.slug)
+    .maybeSingle()
 
   if (existingEvent) {
     console.log(
-      `Event ${eventData.slug} already exists, using existing ID: ${existingEvent.id}`
-    );
-    return existingEvent.id;
+      `Event ${eventData.slug} already exists, using existing ID: ${existingEvent.id}`,
+    )
+    return existingEvent.id
   }
 
   // Download and save event icon
-  let iconUrl = null;
+  let iconUrl = null
   if (eventData.icon) {
     iconUrl = await downloadAndSaveImage(
       eventData.icon,
-      `events/icons/${eventData.slug}.jpg`
-    );
+      `events/icons/${eventData.slug}.jpg`,
+    )
   }
 
   console.log(
-    `Creating new event: ${eventData.slug} by creator: ${creatorAddress}`
-  );
+    `Creating new event: ${eventData.slug} by creator: ${creatorAddress}`,
+  )
 
   // Create event
   const { data: newEvent, error } = await supabase
-    .from("events")
+    .from('events')
     .insert({
       slug: eventData.slug,
       title: eventData.title,
@@ -502,25 +507,25 @@ async function processEvent(eventData, creatorAddress) {
       show_market_icons: eventData.show_market_icons !== false,
       rules: eventData.rules || null,
     })
-    .select("id")
-    .single();
+    .select('id')
+    .single()
 
   if (error) {
-    throw new Error(`Failed to create event: ${error.message}`);
+    throw new Error(`Failed to create event: ${error.message}`)
   }
 
   if (!newEvent || !newEvent.id) {
-    throw new Error(`Event creation failed: no ID returned`);
+    throw new Error(`Event creation failed: no ID returned`)
   }
 
-  console.log(`Created event ${eventData.slug} with ID: ${newEvent.id}`);
+  console.log(`Created event ${eventData.slug} with ID: ${newEvent.id}`)
 
   // Process tags if they exist
   if (eventData.tags && eventData.tags.length > 0) {
-    await processTags(newEvent.id, eventData.tags);
+    await processTags(newEvent.id, eventData.tags)
   }
 
-  return newEvent.id;
+  return newEvent.id
 }
 
 /**
@@ -528,38 +533,38 @@ async function processEvent(eventData, creatorAddress) {
  */
 async function processMarketData(market, metadata, eventId) {
   // Validate eventId
-  if (!eventId || typeof eventId !== "number") {
+  if (!eventId || typeof eventId !== 'number') {
     throw new Error(
-      `Invalid eventId: ${eventId}. Event must be created first.`
-    );
+      `Invalid eventId: ${eventId}. Event must be created first.`,
+    )
   }
 
   // Check if market already exists
   const { data: existingMarket } = await supabase
-    .from("markets")
-    .select("condition_id")
-    .eq("condition_id", market.id)
-    .maybeSingle();
+    .from('markets')
+    .select('condition_id')
+    .eq('condition_id', market.id)
+    .maybeSingle()
 
   if (existingMarket) {
-    console.log(`Market ${market.id} already exists, skipping...`);
-    return;
+    console.log(`Market ${market.id} already exists, skipping...`)
+    return
   }
 
   // Download and save market icon
-  let iconUrl = null;
+  let iconUrl = null
   if (metadata.icon) {
     iconUrl = await downloadAndSaveImage(
       metadata.icon,
-      `markets/icons/${metadata.slug}.jpg`
-    );
+      `markets/icons/${metadata.slug}.jpg`,
+    )
   }
 
-  console.log(`Creating market with eventId: ${eventId}`);
+  console.log(`Creating market with eventId: ${eventId}`)
 
   // Validate required blockchain fields
   if (!market.oracle) {
-    throw new Error(`Market ${market.id} missing required oracle field`);
+    throw new Error(`Market ${market.id} missing required oracle field`)
   }
 
   // Create market with required fields
@@ -579,20 +584,20 @@ async function processMarketData(market, metadata, eventId) {
     block_number: 0, // Not available from subgraph
     transaction_hash: market.id, // Use condition ID as fallback
     block_timestamp: market.blockTimestamp
-      ? new Date(parseInt(market.blockTimestamp) * 1000).toISOString()
+      ? new Date(Number.parseInt(market.blockTimestamp) * 1000).toISOString()
       : new Date().toISOString(), // OK: fallback to current time
-    metadata: metadata, // Can be null/empty
-  };
+    metadata, // Can be null/empty
+  }
 
-  const { error } = await supabase.from("markets").upsert(marketData);
+  const { error } = await supabase.from('markets').upsert(marketData)
 
   if (error) {
-    throw new Error(`Failed to create market: ${error.message}`);
+    throw new Error(`Failed to create market: ${error.message}`)
   }
 
   // Create outcomes
   if (metadata.outcomes && metadata.outcomes.length > 0) {
-    await processOutcomes(market.id, metadata.outcomes);
+    await processOutcomes(market.id, metadata.outcomes)
   }
 }
 
@@ -605,12 +610,12 @@ async function processOutcomes(conditionId, outcomes) {
     outcome_text: outcome.outcome || outcome.title || `Outcome ${index + 1}`,
     outcome_index: index,
     token_id: `${conditionId}-${index}`, // Generate token_id as condition_id + outcome_index
-  }));
+  }))
 
-  const { error } = await supabase.from("outcomes").insert(outcomeData);
+  const { error } = await supabase.from('outcomes').insert(outcomeData)
 
   if (error) {
-    throw new Error(`Failed to create outcomes: ${error.message}`);
+    throw new Error(`Failed to create outcomes: ${error.message}`)
   }
 }
 
@@ -620,53 +625,53 @@ async function processOutcomes(conditionId, outcomes) {
 async function processTags(eventId, tagNames) {
   for (const tagName of tagNames) {
     // Skip if tagName is an object (invalid tag format)
-    if (typeof tagName !== "string") {
-      console.warn(`Skipping invalid tag:`, tagName);
-      continue;
+    if (typeof tagName !== 'string') {
+      console.warn(`Skipping invalid tag:`, tagName)
+      continue
     }
 
     // Truncate name and slug to fit database constraints
-    const truncatedName = tagName.substring(0, 100); // Limit to 100 chars
+    const truncatedName = tagName.substring(0, 100) // Limit to 100 chars
     const slug = truncatedName
       .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .substring(0, 100);
+      .replace(/[^a-z0-9]+/g, '-')
+      .substring(0, 100)
 
     // Get or create tag
     let { data: tag } = await supabase
-      .from("tags")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
+      .from('tags')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle()
 
     if (!tag) {
       const { data: newTag, error } = await supabase
-        .from("tags")
+        .from('tags')
         .insert({
           name: truncatedName,
-          slug: slug,
+          slug,
         })
-        .select("id")
-        .single();
+        .select('id')
+        .single()
 
       if (error) {
-        console.error(`Failed to create tag ${truncatedName}:`, error);
-        continue;
+        console.error(`Failed to create tag ${truncatedName}:`, error)
+        continue
       }
-      tag = newTag;
+      tag = newTag
     }
 
     // Link event to tag (ignore if already exists)
-    await supabase.from("event_tags").upsert(
+    await supabase.from('event_tags').upsert(
       {
         event_id: eventId,
         tag_id: tag.id,
       },
       {
-        onConflict: "event_id,tag_id",
+        onConflict: 'event_id,tag_id',
         ignoreDuplicates: true,
-      }
-    );
+      },
+    )
   }
 }
 
@@ -676,31 +681,32 @@ async function processTags(eventId, tagNames) {
 async function downloadAndSaveImage(arweaveHash, storagePath) {
   try {
     // Download image from Irys
-    const imageUrl = `${IRYS_GATEWAY}/${arweaveHash}`;
-    const response = await fetch(imageUrl);
+    const imageUrl = `${IRYS_GATEWAY}/${arweaveHash}`
+    const response = await fetch(imageUrl)
 
     if (!response.ok) {
-      throw new Error(`Failed to download image: ${response.statusText}`);
+      throw new Error(`Failed to download image: ${response.statusText}`)
     }
 
-    const imageBuffer = await response.arrayBuffer();
+    const imageBuffer = await response.arrayBuffer()
 
     // Upload to Supabase storage
     const { error } = await supabase.storage
-      .from("forkast-assets")
+      .from('forkast-assets')
       .upload(storagePath, imageBuffer, {
-        contentType: "image/jpeg",
+        contentType: 'image/jpeg',
         upsert: true,
-      });
+      })
 
     if (error) {
-      throw new Error(`Failed to upload image: ${error.message}`);
+      throw new Error(`Failed to upload image: ${error.message}`)
     }
 
-    return storagePath;
-  } catch (error) {
-    console.error(`Failed to process image ${arweaveHash}:`, error);
-    return null; // Continue without image
+    return storagePath
+  }
+  catch (error) {
+    console.error(`Failed to process image ${arweaveHash}:`, error)
+    return null // Continue without image
   }
 }
 
@@ -708,22 +714,22 @@ async function downloadAndSaveImage(arweaveHash, storagePath) {
  * Update last processed timestamp in sync_status table
  */
 async function updateLastProcessedTimestamp(timestamp) {
-  const { error } = await supabase.from("sync_status").upsert(
+  const { error } = await supabase.from('sync_status').upsert(
     {
-      service_name: "market_sync",
-      subgraph_name: "activity",
+      service_name: 'market_sync',
+      subgraph_name: 'activity',
       last_processed_block: timestamp,
       last_sync_timestamp: new Date().toISOString(),
-      sync_type: "incremental",
-      status: "completed",
+      sync_type: 'incremental',
+      status: 'completed',
       total_processed: 1,
     },
     {
-      onConflict: "service_name,subgraph_name",
-    }
-  );
+      onConflict: 'service_name,subgraph_name',
+    },
+  )
 
   if (error) {
-    throw new Error(`Failed to update sync status: ${error.message}`);
+    throw new Error(`Failed to update sync status: ${error.message}`)
   }
 }

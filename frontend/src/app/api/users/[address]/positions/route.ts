@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ address: string }> }
+  { params }: { params: Promise<{ address: string }> },
 ) {
   try {
-    const { address } = await params;
-    const { searchParams } = new URL(request.url);
-    const limit = searchParams.get("limit") || "50";
+    const { address } = await params
+    const { searchParams } = new URL(request.url)
+    const limit = searchParams.get('limit') || '50'
 
     // Fetch user positions with market data
     const { data: positions, error } = await supabaseAdmin
-      .from("user_position_balances")
+      .from('user_position_balances')
       .select(
         `
         *,
@@ -36,34 +36,34 @@ export async function GET(
           current_price,
           is_winning_outcome
         )
-      `
+      `,
       )
-      .eq("user_address", address.toLowerCase())
-      .gt("balance", 0)
-      .order("last_updated_timestamp", { ascending: false })
-      .limit(parseInt(limit));
+      .eq('user_address', address.toLowerCase())
+      .gt('balance', 0)
+      .order('last_updated_timestamp', { ascending: false })
+      .limit(Number.parseInt(limit))
 
     if (error) {
-      console.error("Error fetching user positions:", error);
+      console.error('Error fetching user positions:', error)
       return NextResponse.json(
-        { error: "Failed to fetch positions" },
-        { status: 500 }
-      );
+        { error: 'Failed to fetch positions' },
+        { status: 500 },
+      )
     }
 
     // Calculate user statistics
-    const totalValue =
-      positions?.reduce((sum, pos) => {
-        const currentValue = pos.balance * (pos.outcomes?.current_price || 0);
-        return sum + currentValue;
-      }, 0) || 0;
+    const totalValue
+      = positions?.reduce((sum, pos) => {
+        const currentValue = pos.balance * (pos.outcomes?.current_price || 0)
+        return sum + currentValue
+      }, 0) || 0
 
-    const totalCost =
-      positions?.reduce((sum, pos) => sum + pos.total_cost, 0) || 0;
-    const totalRealizedPnL =
-      positions?.reduce((sum, pos) => sum + pos.realized_pnl, 0) || 0;
-    const totalUnrealizedPnL =
-      positions?.reduce((sum, pos) => sum + pos.unrealized_pnl, 0) || 0;
+    const totalCost
+      = positions?.reduce((sum, pos) => sum + pos.total_cost, 0) || 0
+    const totalRealizedPnL
+      = positions?.reduce((sum, pos) => sum + pos.realized_pnl, 0) || 0
+    const totalUnrealizedPnL
+      = positions?.reduce((sum, pos) => sum + pos.unrealized_pnl, 0) || 0
 
     const response = {
       positions: positions || [],
@@ -75,14 +75,15 @@ export async function GET(
         total_unrealized_pnl: totalUnrealizedPnL,
         total_pnl: totalRealizedPnL + totalUnrealizedPnL,
       },
-    };
+    }
 
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Error in user positions API:", error);
+    return NextResponse.json(response)
+  }
+  catch (error) {
+    console.error('Error in user positions API:', error)
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }

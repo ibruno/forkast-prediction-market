@@ -1,73 +1,76 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import Image from "next/image";
-import { Modal } from "../ui/modal";
-import { useAuth } from "@/hooks/useAuth";
+import Image from 'next/image'
+import { useState } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { Modal } from '../ui/modal'
 
 interface LoginModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
+  isOpen: boolean
+  onClose: () => void
+  title?: string
 }
 
 export function LoginModal({
   isOpen,
   onClose,
-  title = "Welcome to Forkast",
+  title = 'Welcome to Forkast',
 }: LoginModalProps) {
-  const [email, setEmail] = useState("");
-  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [email, setEmail] = useState('')
+  const [isEmailLoading, setIsEmailLoading] = useState(false)
   const {
     connectMetaMask,
     connectCoinbase,
     connectPhantom,
     loginWithMagicEmail,
-  } = useAuth();
+  } = useAuth()
 
   const handleGoogleLogin = () => {
     // TODO: Implement Google OAuth
-  };
+  }
 
   const handleEmailContinue = async () => {
     if (email.trim()) {
-      setIsEmailLoading(true);
+      setIsEmailLoading(true)
       try {
-        await loginWithMagicEmail(email.trim());
-        onClose();
-      } catch (error) {
-        console.error("Error with email login:", error);
+        await loginWithMagicEmail(email.trim())
+        onClose()
+      }
+      catch (error) {
+        console.error('Error with email login:', error)
         // TODO: Show error message to user
-      } finally {
-        setIsEmailLoading(false);
+      }
+      finally {
+        setIsEmailLoading(false)
       }
     }
-  };
+  }
 
   const handleWalletConnect = async (walletType: string) => {
     try {
       switch (walletType) {
-        case "metamask":
-          await connectMetaMask();
-          onClose();
-          break;
-        case "coinbase":
-          await connectCoinbase();
-          break;
-        case "walletconnect":
+        case 'metamask':
+          await connectMetaMask()
+          onClose()
+          break
+        case 'coinbase':
+          await connectCoinbase()
+          break
+        case 'walletconnect':
           // WalletConnect disabled for now
-          break;
-        case "phantom":
-          await connectPhantom();
-          break;
+          break
+        case 'phantom':
+          await connectPhantom()
+          break
         default:
-          console.error("Unknown wallet type:", walletType);
+          console.error('Unknown wallet type:', walletType)
       }
-    } catch (error) {
-      console.error(`Error connecting to ${walletType}:`, error);
+    }
+    catch (error) {
+      console.error(`Error connecting to ${walletType}:`, error)
       // TODO: Show error message to user
     }
-  };
+  }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={title}>
@@ -102,7 +105,7 @@ export function LoginModal({
             type="email"
             placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={e => setEmail(e.target.value)}
             disabled={isEmailLoading}
             className="flex-1 px-3 py-3 border border-gray-300 border-r-0 rounded-l-lg focus:outline-none focus:ring-0 focus:border-blue-500 text-gray-900 placeholder-gray-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
           />
@@ -111,14 +114,14 @@ export function LoginModal({
             disabled={!email.trim() || isEmailLoading}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium py-3 px-6 rounded-r-lg transition-colors duration-200"
           >
-            {isEmailLoading ? "Sending..." : "Continue"}
+            {isEmailLoading ? 'Sending...' : 'Continue'}
           </button>
         </div>
 
         {/* Wallet Buttons */}
         <div className="flex justify-between">
           <button
-            onClick={() => handleWalletConnect("metamask")}
+            onClick={() => handleWalletConnect('metamask')}
             className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
             title="MetaMask"
           >
@@ -132,7 +135,7 @@ export function LoginModal({
           </button>
 
           <button
-            onClick={() => handleWalletConnect("coinbase")}
+            onClick={() => handleWalletConnect('coinbase')}
             className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
             title="Coinbase Wallet"
           >
@@ -146,7 +149,7 @@ export function LoginModal({
           </button>
 
           <button
-            onClick={() => handleWalletConnect("phantom")}
+            onClick={() => handleWalletConnect('phantom')}
             className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
             title="Phantom"
           >
@@ -160,7 +163,7 @@ export function LoginModal({
           </button>
 
           <button
-            onClick={() => handleWalletConnect("walletconnect")}
+            onClick={() => handleWalletConnect('walletconnect')}
             className="flex items-center justify-center flex-1 h-12 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mx-1 first:ml-0 last:mr-0"
             title="WalletConnect"
           >
@@ -194,5 +197,5 @@ export function LoginModal({
         </div>
       </div>
     </Modal>
-  );
+  )
 }

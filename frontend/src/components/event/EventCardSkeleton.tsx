@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 export default function EventCardSkeleton() {
   return (
@@ -22,5 +22,5 @@ export default function EventCardSkeleton() {
         <div className="h-3 bg-muted rounded w-6"></div>
       </div>
     </div>
-  );
+  )
 }

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET() {
   try {
@@ -12,17 +12,17 @@ export async function GET() {
       { data: recentFills },
     ] = await Promise.all([
       // Global order statistics
-      supabaseAdmin.from("orders_matched_global").select("*").single(),
+      supabaseAdmin.from('orders_matched_global').select('*').single(),
 
       // Open Interest global
-      supabaseAdmin.from("global_open_interest").select("*").single(),
+      supabaseAdmin.from('global_open_interest').select('*').single(),
 
       // Balance USDC global
-      supabaseAdmin.from("global_usdc_balance").select("*").single(),
+      supabaseAdmin.from('global_usdc_balance').select('*').single(),
 
       // Top 10 mercados por volume
       supabaseAdmin
-        .from("markets")
+        .from('markets')
         .select(
           `
           condition_id,
@@ -32,35 +32,35 @@ export async function GET() {
           current_volume_24h,
           open_interest,
           event:events(title, slug, icon_url)
-        `
+        `,
         )
-        .eq("is_active", true)
-        .order("total_volume", { ascending: false })
+        .eq('is_active', true)
+        .order('total_volume', { ascending: false })
         .limit(10),
 
       // Last 20 transactions
       supabaseAdmin
-        .from("order_fills")
+        .from('order_fills')
         .select(
           `
           *,
           markets(name, slug, event:events(title, slug))
-        `
+        `,
         )
-        .order("timestamp", { ascending: false })
+        .order('timestamp', { ascending: false })
         .limit(20),
-    ]);
+    ])
 
     // Calculate additional statistics
     const totalActiveMarkets = await supabaseAdmin
-      .from("markets")
-      .select("condition_id", { count: "exact" })
-      .eq("is_active", true);
+      .from('markets')
+      .select('condition_id', { count: 'exact' })
+      .eq('is_active', true)
 
     const totalUsers = await supabaseAdmin
-      .from("user_position_balances")
-      .select("user_address", { count: "exact" })
-      .gt("balance", 0);
+      .from('user_position_balances')
+      .select('user_address', { count: 'exact' })
+      .gt('balance', 0)
 
     const response = {
       global_stats: {
@@ -77,14 +77,15 @@ export async function GET() {
       },
       top_markets: topMarkets || [],
       recent_fills: recentFills || [],
-    };
+    }
 
-    return NextResponse.json(response);
-  } catch (error) {
-    console.error("Error in trading stats API:", error);
+    return NextResponse.json(response)
+  }
+  catch (error) {
+    console.error('Error in trading stats API:', error)
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }

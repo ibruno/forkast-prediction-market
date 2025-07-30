@@ -1,15 +1,15 @@
-import { NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase";
+import { NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ slug: string }> }
+  { params }: { params: Promise<{ slug: string }> },
 ) {
   try {
-    const { slug } = await params;
+    const { slug } = await params
 
     const { data, error } = await supabaseAdmin
-      .from("events")
+      .from('events')
       .select(
         `
         *,
@@ -35,34 +35,34 @@ export async function GET(
             is_main_category
           )
         )
-      `
+      `,
       )
-      .eq("slug", slug)
-      .single();
+      .eq('slug', slug)
+      .single()
 
     if (error) {
-      console.error("Error fetching event:", error);
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      console.error('Error fetching event:', error)
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
 
-    console.log(`[API] Successfully found event: ${data?.title}`);
+    console.log(`[API] Successfully found event: ${data?.title}`)
 
     // Fetch outcomes for each market
-    const marketsWithOutcomes = [];
+    const marketsWithOutcomes = []
 
     if (data.markets) {
       for (const market of data.markets) {
         // Fetch outcomes for this market
         const { data: outcomes } = await supabaseAdmin
-          .from("outcomes")
-          .select("*")
-          .eq("condition_id", market.condition_id)
-          .order("outcome_index");
+          .from('outcomes')
+          .select('*')
+          .eq('condition_id', market.condition_id)
+          .order('outcome_index')
 
         marketsWithOutcomes.push({
           ...market,
           outcomes: outcomes || [],
-        });
+        })
       }
     }
 
@@ -74,14 +74,15 @@ export async function GET(
           ?.map((et: { tag: unknown }) => et.tag)
           .filter(Boolean) || [],
       markets: marketsWithOutcomes,
-    };
+    }
 
-    return NextResponse.json(transformedData);
-  } catch (error) {
-    console.error("Error in event API:", error);
+    return NextResponse.json(transformedData)
+  }
+  catch (error) {
+    console.error('Error in event API:', error)
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+      { error: 'Internal server error' },
+      { status: 500 },
+    )
   }
 }
