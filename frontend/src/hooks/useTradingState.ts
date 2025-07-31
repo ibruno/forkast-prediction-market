@@ -10,7 +10,7 @@ export function useTradingState({ event }: UseTradingStateProps) {
   const [activeTab, setActiveTab] = useState('buy')
   const [amount, setAmount] = useState('')
   const [selectedOutcomeForOrder, setSelectedOutcomeForOrder] = useState('')
-  const [yesNoSelection, setYesNoSelection] = useState<'yes' | 'no' | null>(null)
+  const [yesNoSelection, setYesNoSelection] = useState<'yes' | 'no' | null>('yes')
   const [isLoading, setIsLoading] = useState(false)
   const [showWinCard, setShowWinCard] = useState(false)
   const [claiming, setClaiming] = useState(false)
