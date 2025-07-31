@@ -24,6 +24,7 @@ import Header from '@/components/layout/Header'
 import NavigationTabs from '@/components/layout/NavigationTabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { useTradingState } from '@/hooks/useTradingState'
 import { fetchRelatedEvents } from '@/lib/data'
 import {
   calculateWinnings,
@@ -52,53 +53,32 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   const POLYMARKET_COLORS = ['#2D9CDB', '#FF5952', '#27AE60', '#9B51E0']
 
+  // Use custom trading state hook
+  const tradingState = useTradingState({ event })
+
   // Component states
   const [activeTimeRange, setActiveTimeRange] = useState('1D')
-  const [activeTab, setActiveTab] = useState('buy')
-  const [amount, setAmount] = useState('')
-  const [selectedOutcomeForOrder, setSelectedOutcomeForOrder] = useState('')
   const [newComment, setNewComment] = useState('')
   const [activeCommentsTab, setActiveCommentsTab] = useState('comments')
   const [rulesExpanded, setRulesExpanded] = useState(false)
   const [activityFilter, setActivityFilter] = useState('All')
-  const [yesNoSelection, setYesNoSelection] = useState<'yes' | 'no' | null>(
-    null,
-  )
   const [isFavorite, setIsFavorite] = useState(false)
   const [shareSuccess, setShareSuccess] = useState(false)
   const [contextExpanded, setContextExpanded] = useState(false)
   const [isGeneratingContext, setIsGeneratingContext] = useState(false)
   const [generatedContext, setGeneratedContext] = useState<string[]>([])
-  const [inputRef, setInputRef] = useState<HTMLInputElement | null>(null)
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
   const [dragStartY, setDragStartY] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [showWinCard, setShowWinCard] = useState(false)
-  const [claiming, setClaiming] = useState(false)
-  const [claimed, setClaimed] = useState(false)
   const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([])
   const [loadingRelated, setLoadingRelated] = useState(false)
 
-  // Utility functions
-  const getSelectedOutcome = useCallback(
-    () => event.outcomes.find(o => o.id === selectedOutcomeForOrder),
-    [event.outcomes, selectedOutcomeForOrder],
-  )
-
-  const getYesOutcome = useCallback(
-    () => event.outcomes.find(o => o.isYes === true),
-    [event.outcomes],
-  )
-
-  const yesOutcome = getYesOutcome()
-  const primaryProbability = yesOutcome
-    ? yesOutcome.probability
-    : event.outcomes[0]?.probability || 0
-
-  // Calculate prices in cents
-  const yesPrice = Math.round(primaryProbability)
-  const noPrice = 100 - yesPrice
+  // Utility functions - now using trading state
+  const getSelectedOutcome = tradingState.getSelectedOutcome
+  const getYesOutcome = tradingState.getYesOutcome
+  const primaryProbability = tradingState.primaryProbability
+  const yesPrice = tradingState.yesPrice
+  const noPrice = tradingState.noPrice
 
   // Function to get top 4 outcomes by volume
   const getTopOutcomesForChart = () => {
@@ -214,7 +194,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Function to calculate the amount the user will receive when selling shares
   const calculateSellAmount = (sharesToSell: number) => {
-    if (!selectedOutcomeForOrder || !yesNoSelection)
+    if (!tradingState.selectedOutcomeForOrder || !tradingState.yesNoSelection)
       return 0
 
     // Base sell price based on current probability (slightly lower than buy price)
@@ -223,7 +203,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       return 0
 
     const sellPrice
-        = yesNoSelection === 'yes'
+        = tradingState.yesNoSelection === 'yes'
           ? (selectedOutcome.probability / 100) * 0.95 // 5% spread for sell
           : ((100 - selectedOutcome.probability) / 100) * 0.95
 
@@ -232,7 +212,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Function to get the average selling price
   const getAvgSellPrice = () => {
-    if (!selectedOutcomeForOrder || !yesNoSelection)
+    if (!tradingState.selectedOutcomeForOrder || !tradingState.yesNoSelection)
       return '0'
 
     const selectedOutcome = getSelectedOutcome()
@@ -240,7 +220,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       return '0'
 
     const sellPrice
-        = yesNoSelection === 'yes'
+        = tradingState.yesNoSelection === 'yes'
           ? Math.round(selectedOutcome.probability * 0.95) // 5% spread for sell
           : Math.round((100 - selectedOutcome.probability) * 0.95)
 
@@ -249,32 +229,32 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Handle confirm trade with loading
   const handleConfirmTrade = async () => {
-    if (!amount || Number.parseFloat(amount) <= 0 || !yesNoSelection)
+    if (!tradingState.amount || Number.parseFloat(tradingState.amount) <= 0 || !tradingState.yesNoSelection)
       return
 
-    setIsLoading(true)
-    setShowWinCard(false)
+    tradingState.setIsLoading(true)
+    tradingState.setShowWinCard(false)
 
     // Simulate API call
     setTimeout(() => {
-      setIsLoading(false)
+      tradingState.setIsLoading(false)
 
-      const amountNum = Number.parseFloat(amount)
+      const amountNum = Number.parseFloat(tradingState.amount)
 
-      if (activeTab === 'sell') {
+      if (tradingState.activeTab === 'sell') {
         // Sell logic
         const sellValue = calculateSellAmount(amountNum)
 
         // Show success toast for sell
         toast.success(
-          `Sell ${amount} shares on ${yesNoSelection === 'yes' ? 'Yes' : 'No'}`,
+          `Sell ${tradingState.amount} shares on ${tradingState.yesNoSelection === 'yes' ? 'Yes' : 'No'}`,
           {
             description: (
               <div>
                 <div className="font-medium">{event.title}</div>
                 <div className="mt-1 text-xs opacity-80">
                   Received $$
-                  {formatValue(sellValue)}
+                  {tradingState.formatValue(sellValue)}
                   {' '}
                   @ $
                   {getAvgSellPrice()}
@@ -286,19 +266,19 @@ export default function EventDetail({ event }: EventDetailProps) {
         )
 
         console.log(
-          `Sell executed: ${formatValue(
-            Number.parseFloat(amount),
-          )} shares on ${yesNoSelection} for $${formatValue(sellValue)}`,
+          `Sell executed: ${tradingState.formatValue(
+            Number.parseFloat(tradingState.amount),
+          )} shares on ${tradingState.yesNoSelection} for $${tradingState.formatValue(sellValue)}`,
         )
       }
       else {
         // Buy logic (original)
-        const price = yesNoSelection === 'yes' ? yesPrice : noPrice
-        const shares = formatValue((amountNum / price) * 100)
+        const price = tradingState.yesNoSelection === 'yes' ? yesPrice : noPrice
+        const shares = tradingState.formatValue((amountNum / price) * 100)
 
         // Show success toast for buy
         toast.success(
-          `Buy $${amount} on ${yesNoSelection === 'yes' ? 'Yes' : 'No'}`,
+          `Buy $${tradingState.amount} on ${tradingState.yesNoSelection === 'yes' ? 'Yes' : 'No'}`,
           {
             description: (
               <div>
@@ -316,15 +296,15 @@ export default function EventDetail({ event }: EventDetailProps) {
         )
 
         console.log(
-          `Buy executed: $${amount} on ${yesNoSelection} for market ${event.title}`,
+          `Buy executed: $${tradingState.amount} on ${tradingState.yesNoSelection} for market ${event.title}`,
         )
       }
 
       // Reset states
-      setAmount('')
+      tradingState.setAmount('')
       setIsMobileModalOpen(false)
       // Temporary workaround: displays victory card after 1.5s
-      setTimeout(() => setShowWinCard(true), 1500)
+      setTimeout(() => tradingState.setShowWinCard(true), 1500)
     }, 1000)
   }
 
@@ -364,18 +344,18 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Auto-select outcome for all markets (binary and multi-outcome)
   useLayoutEffect(() => {
-    if (!selectedOutcomeForOrder && event.outcomes.length > 0) {
+    if (!tradingState.selectedOutcomeForOrder && event.outcomes.length > 0) {
       if (event.outcomes.length === 2) {
         // For binary markets, select the "Yes" option (isYes = true)
         const yesOutcome = getYesOutcome()
         if (yesOutcome) {
-          setSelectedOutcomeForOrder(yesOutcome.id)
-          setYesNoSelection('yes')
+          tradingState.setSelectedOutcomeForOrder(yesOutcome.id)
+          tradingState.setYesNoSelection('yes')
         }
         else {
           // If isYes not found, select first option
-          setSelectedOutcomeForOrder(event.outcomes[0].id)
-          setYesNoSelection('yes')
+          tradingState.setSelectedOutcomeForOrder(event.outcomes[0].id)
+          tradingState.setYesNoSelection('yes')
         }
       }
       else if (event.outcomes.length > 2) {
@@ -385,12 +365,12 @@ export default function EventDetail({ event }: EventDetailProps) {
         )
         const highestProbOutcome = sortedOutcomes[0]
         if (highestProbOutcome) {
-          setSelectedOutcomeForOrder(highestProbOutcome.id)
-          setYesNoSelection('yes')
+          tradingState.setSelectedOutcomeForOrder(highestProbOutcome.id)
+          tradingState.setYesNoSelection('yes')
         }
       }
     }
-  }, [event.outcomes, selectedOutcomeForOrder, getYesOutcome])
+  }, [event.outcomes, tradingState.selectedOutcomeForOrder, getYesOutcome, tradingState])
 
   // Block body scroll when mobile modal is open
   useEffect(() => {
@@ -478,33 +458,11 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   const { timeRanges, commentsTabs, trendingData } = mockMarketDetails
 
-  // Function to limit decimal places while typing
-  const limitDecimalPlaces = (
-    value: string,
-    maxDecimals: number = 2,
-  ): string => {
-    // Remove non-numeric characters except dot
-    const cleaned = value.replace(/[^0-9.]/g, '')
-
-    // Allow only one decimal point
-    const parts = cleaned.split('.')
-    if (parts.length > 2) {
-      return `${parts[0]}.${parts[1]}`
-    }
-
-    // Limit decimal places
-    if (parts.length === 2 && parts[1].length > maxDecimals) {
-      return `${parts[0]}.${parts[1].substring(0, maxDecimals)}`
-    }
-
-    return cleaned
-  }
-
   // Function to get user shares for the selected outcome
   const getUserShares = () => {
-    if (!selectedOutcomeForOrder)
+    if (!tradingState.selectedOutcomeForOrder)
       return 0
-    const shareKey = selectedOutcomeForOrder as keyof typeof mockUser.shares
+    const shareKey = tradingState.selectedOutcomeForOrder as keyof typeof mockUser.shares
     return mockUser.shares[shareKey] || 0
   }
 
@@ -550,7 +508,7 @@ export default function EventDetail({ event }: EventDetailProps) {
     price: number,
     forceTabChange = false,
   ) => {
-    const isSelected = yesNoSelection === type
+    const isSelected = tradingState.yesNoSelection === type
     const baseClasses
       = 'flex-1 h-12 rounded-sm font-bold transition-all duration-200 flex items-center justify-center gap-1'
     const selectedClasses
@@ -564,11 +522,11 @@ export default function EventDetail({ event }: EventDetailProps) {
       <button
         type="button"
         onClick={() => {
-          setYesNoSelection(type)
+          tradingState.setYesNoSelection(type)
           if (forceTabChange) {
-            setActiveTab('buy')
+            tradingState.setActiveTab('buy')
           }
-          inputRef?.focus()
+          tradingState.inputRef?.focus()
         }}
         className={`${baseClasses} ${
           isSelected ? selectedClasses : defaultClasses
@@ -588,7 +546,7 @@ export default function EventDetail({ event }: EventDetailProps) {
     const baseButtonClasses
       = 'h-7 px-3 rounded-lg border border-border/50 dark:border-border/20 text-[11px] transition-all duration-200 ease-in-out'
 
-    if (activeTab === 'sell') {
+    if (tradingState.activeTab === 'sell') {
       const userShares = getUserShares()
       const isDisabled = userShares <= 0
 
@@ -606,9 +564,9 @@ export default function EventDetail({ event }: EventDetailProps) {
             if (isDisabled)
               return
             const percentValue = Number.parseInt(percentage.replace('%', '')) / 100
-            const newValue = formatValue(userShares * percentValue)
-            setAmount(newValue)
-            inputRef?.focus()
+            const newValue = tradingState.formatValue(userShares * percentValue)
+            tradingState.setAmount(newValue)
+            tradingState.inputRef?.focus()
           }}
         >
           {percentage}
@@ -627,12 +585,12 @@ export default function EventDetail({ event }: EventDetailProps) {
           className={`${baseButtonClasses} hover:border-border hover:bg-white/10 dark:hover:bg-white/5`}
           onClick={() => {
             const chipValue = Number.parseInt(chip.substring(2))
-            const currentValue = Number.parseFloat(amount) || 0
+            const currentValue = Number.parseFloat(tradingState.amount) || 0
             const newValue = currentValue + chipValue
 
             if (newValue <= 999999999) {
-              setAmount(formatValue(newValue))
-              inputRef?.focus()
+              tradingState.setAmount(tradingState.formatValue(newValue))
+              tradingState.inputRef?.focus()
             }
           }}
         >
@@ -644,14 +602,14 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   const renderWinCard = (isMobileVersion = false) => {
     const outcomeName
-        = yesNoSelection === 'yes'
+        = tradingState.yesNoSelection === 'yes'
           ? getYesOutcome()?.name || 'Yes'
           : getSelectedOutcome()?.name || 'No'
     // shares: user input, valuePerShare: real order value, total: shares * valuePerShare
-    const shares = amount && !Number.isNaN(Number(amount)) ? Number(amount) : 1.1
+    const shares = tradingState.amount && !Number.isNaN(Number(tradingState.amount)) ? Number(tradingState.amount) : 1.1
     const valuePerShare
-        = amount && !Number.isNaN(Number(amount))
-          ? Number.parseFloat((Number.parseFloat(amount) / shares).toFixed(2))
+        = tradingState.amount && !Number.isNaN(Number(tradingState.amount))
+          ? Number.parseFloat((Number.parseFloat(tradingState.amount) / shares).toFixed(2))
           : 1.0
     const total = shares * valuePerShare
 
@@ -678,7 +636,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       const selectedOutcome = getSelectedOutcome()
       if (selectedOutcome) {
         outcomeLabel = `${selectedOutcome.name} - ${
-          yesNoSelection === 'yes' ? 'Yes' : 'No'
+          tradingState.yesNoSelection === 'yes' ? 'Yes' : 'No'
         }`
       }
     }
@@ -698,8 +656,8 @@ export default function EventDetail({ event }: EventDetailProps) {
           {' '}
           {outcomeLabel}
         </div>
-        {!claimed && <hr className="my-4 w-full border-border" />}
-        {!claimed && (
+        {!tradingState.claimed && <hr className="my-4 w-full border-border" />}
+        {!tradingState.claimed && (
           <>
             <div className="mb-2 text-center text-lg font-bold text-foreground">
               Your Earnings
@@ -736,11 +694,11 @@ export default function EventDetail({ event }: EventDetailProps) {
                 transition-colors
               `}
               onClick={async (e) => {
-                setClaiming(true)
+                tradingState.setClaiming(true)
                 triggerBlueConfetti(e)
                 await new Promise(res => setTimeout(res, 1800))
-                setClaiming(false)
-                setClaimed(true)
+                tradingState.setClaiming(false)
+                tradingState.setClaimed(true)
                 // Show success toast for claim
                 toast.success('Redeem shares', {
                   description: (
@@ -750,9 +708,9 @@ export default function EventDetail({ event }: EventDetailProps) {
                   ),
                 })
               }}
-              disabled={claiming}
+              disabled={tradingState.claiming}
             >
-              {claiming
+              {tradingState.claiming
                 ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent">
@@ -775,7 +733,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Function to render the order panel content
   const renderOrderPanel = (isMobileVersion = false) => {
-    if (showWinCard)
+    if (tradingState.showWinCard)
       return renderWinCard(isMobileVersion)
     // Auxiliary CSS classes
     const containerClasses = `${
@@ -790,7 +748,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       <div className={containerClasses}>
         {/* Display the selected option (only for multi-outcome) */}
         {event.outcomes.length > 2
-          && selectedOutcomeForOrder
+          && tradingState.selectedOutcomeForOrder
           && !isMobileVersion && (
           <div className="bg-muted/20 mb-4 rounded-lg">
             <div className="flex items-center gap-3">
@@ -860,14 +818,14 @@ export default function EventDetail({ event }: EventDetailProps) {
             <Image
               src={
                 // If there's a selected option, use its photo, otherwise use creator's photo
-                selectedOutcomeForOrder
+                tradingState.selectedOutcomeForOrder
                   ? getSelectedOutcome()?.avatar
                   || `https://avatar.vercel.sh/${getSelectedOutcome()?.name.toLowerCase()}.png`
                   : event.creatorAvatar
                     || `https://avatar.vercel.sh/${event.title.charAt(0)}.png`
               }
               alt={
-                selectedOutcomeForOrder
+                tradingState.selectedOutcomeForOrder
                   ? getSelectedOutcome()?.name || 'Selected outcome'
                   : event.creator || 'Market creator'
               }
@@ -881,7 +839,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               </div>
               <div className="flex items-center justify-between text-xs text-muted-foreground">
                 <span>
-                  {selectedOutcomeForOrder
+                  {tradingState.selectedOutcomeForOrder
                     ? getSelectedOutcome()?.name
                     : getYesOutcome()?.name || event.outcomes[0]?.name}
                 </span>
@@ -899,12 +857,12 @@ export default function EventDetail({ event }: EventDetailProps) {
           <button
             type="button"
             onClick={() => {
-              setActiveTab('buy')
-              setAmount('') // Reset value when changing tab
-              inputRef?.focus()
+              tradingState.setActiveTab('buy')
+              tradingState.setAmount('') // Reset value when changing tab
+              tradingState.inputRef?.focus()
             }}
             className={`flex-1 pb-2 transition-colors duration-200 ${
-              activeTab === 'buy'
+              tradingState.activeTab === 'buy'
                 ? 'border-b-2 border-emerald-500 text-foreground'
                 : 'border-b-2 border-muted-foreground text-muted-foreground hover:text-muted-foreground'
             }`}
@@ -914,12 +872,12 @@ export default function EventDetail({ event }: EventDetailProps) {
           <button
             type="button"
             onClick={() => {
-              setActiveTab('sell')
-              setAmount('') // Reset value when changing tab
-              inputRef?.focus()
+              tradingState.setActiveTab('sell')
+              tradingState.setAmount('') // Reset value when changing tab
+              tradingState.inputRef?.focus()
             }}
             className={`flex-1 pb-2 transition-colors duration-200 ${
-              activeTab === 'sell'
+              tradingState.activeTab === 'sell'
                 ? 'border-b-2 border-emerald-500 text-foreground'
                 : 'border-b-2 border-muted-foreground text-muted-foreground hover:text-muted-foreground'
             }`}
@@ -935,13 +893,13 @@ export default function EventDetail({ event }: EventDetailProps) {
         </div>
 
         {/* Display available shares (only in Sell mode) */}
-        {activeTab === 'sell' && selectedOutcomeForOrder && (
+        {tradingState.activeTab === 'sell' && tradingState.selectedOutcomeForOrder && (
           <div className="mb-4 flex gap-2">
             <div className="flex-1 text-center">
-              {getYesShares(selectedOutcomeForOrder) > 0
+              {getYesShares(tradingState.selectedOutcomeForOrder) > 0
                 ? (
                     <span className="text-xs text-muted-foreground">
-                      {formatValue(getYesShares(selectedOutcomeForOrder))}
+                      {tradingState.formatValue(getYesShares(tradingState.selectedOutcomeForOrder))}
                       {' '}
                       shares
                     </span>
@@ -953,10 +911,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                   )}
             </div>
             <div className="flex-1 text-center">
-              {getNoShares(selectedOutcomeForOrder) > 0
+              {getNoShares(tradingState.selectedOutcomeForOrder) > 0
                 ? (
                     <span className="text-xs text-muted-foreground">
-                      {formatValue(getNoShares(selectedOutcomeForOrder))}
+                      {tradingState.formatValue(getNoShares(tradingState.selectedOutcomeForOrder))}
                       {' '}
                       shares
                     </span>
@@ -971,7 +929,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         )}
 
         {/* Message when no outcome is selected in Sell mode */}
-        {activeTab === 'sell' && !selectedOutcomeForOrder && (
+        {tradingState.activeTab === 'sell' && !tradingState.selectedOutcomeForOrder && (
           <div className="bg-muted/30 border-border/50 mb-4 rounded-lg border p-3">
             <p className="text-center text-sm text-muted-foreground">
               Select an outcome to sell shares
@@ -979,7 +937,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
         )}
 
-        {activeTab !== 'sell' && <div className="mb-4"></div>}
+        {tradingState.activeTab !== 'sell' && <div className="mb-4"></div>}
 
         {/* Amount/Shares */}
         {isMobileVersion
@@ -989,12 +947,12 @@ export default function EventDetail({ event }: EventDetailProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      const currentValue = Number.parseFloat(amount) || 0
+                      const currentValue = Number.parseFloat(tradingState.amount) || 0
                       const newValue = Math.max(
                         0,
-                        currentValue - (activeTab === 'sell' ? 0.1 : 1),
+                        currentValue - (tradingState.activeTab === 'sell' ? 0.1 : 1),
                       )
-                      setAmount(formatValue(newValue))
+                      tradingState.setAmount(tradingState.formatValue(newValue))
                     }}
                     className={`
                       hover:bg-muted/80
@@ -1006,7 +964,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                   </button>
                   <div className="flex-1 text-center">
                     <input
-                      ref={setInputRef}
+                      ref={tradingState.setInputRef}
                       type="text"
                       className={`
                         w-full border-0 bg-transparent text-center text-4xl font-bold text-foreground
@@ -1014,45 +972,45 @@ export default function EventDetail({ event }: EventDetailProps) {
                         [appearance:textfield]
                         [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
                       `}
-                      placeholder={activeTab === 'sell' ? '0' : '$1.00'}
+                      placeholder={tradingState.activeTab === 'sell' ? '0' : '$1.00'}
                       value={
-                        activeTab === 'sell'
-                          ? amount || ''
-                          : amount
-                            ? `$${amount}`
+                        tradingState.activeTab === 'sell'
+                          ? tradingState.amount || ''
+                          : tradingState.amount
+                            ? `$${tradingState.amount}`
                             : ''
                       }
                       onChange={(e) => {
                         const rawValue
-                      = activeTab === 'sell'
+                      = tradingState.activeTab === 'sell'
                         ? e.target.value
                         : e.target.value.replace(/[^0-9.]/g, '')
 
                         const value
-                      = activeTab === 'sell'
-                        ? limitDecimalPlaces(rawValue, 2)
+                      = tradingState.activeTab === 'sell'
+                        ? tradingState.limitDecimalPlaces(rawValue, 2)
                         : rawValue
 
                         const numericValue = Number.parseFloat(value)
 
-                        if (activeTab === 'sell') {
+                        if (tradingState.activeTab === 'sell') {
                           // For sell, limit by the amount of shares the user has
                           const userShares = getUserShares()
                           if (numericValue <= userShares || value === '') {
-                            setAmount(value)
+                            tradingState.setAmount(value)
                           }
                         }
                         else {
                           // For buy, limit as before
                           if (numericValue <= 99999 || value === '') {
-                            setAmount(value)
+                            tradingState.setAmount(value)
                           }
                         }
                       }}
                       onBlur={(e) => {
                         const value = e.target.value.replace(/[^0-9.]/g, '')
                         if (value && !Number.isNaN(Number.parseFloat(value))) {
-                          setAmount(formatValue(Number.parseFloat(value)))
+                          tradingState.setAmount(tradingState.formatValue(Number.parseFloat(value)))
                         }
                       }}
                     />
@@ -1060,19 +1018,19 @@ export default function EventDetail({ event }: EventDetailProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      const currentValue = Number.parseFloat(amount) || 0
+                      const currentValue = Number.parseFloat(tradingState.amount) || 0
                       const newValue
-                    = currentValue + (activeTab === 'sell' ? 0.1 : 1)
+                    = currentValue + (tradingState.activeTab === 'sell' ? 0.1 : 1)
 
-                      if (activeTab === 'sell') {
+                      if (tradingState.activeTab === 'sell') {
                         const userShares = getUserShares()
                         if (newValue <= userShares) {
-                          setAmount(formatValue(newValue))
+                          tradingState.setAmount(tradingState.formatValue(newValue))
                         }
                       }
                       else {
                         if (newValue <= 99999) {
-                          setAmount(formatValue(newValue))
+                          tradingState.setAmount(tradingState.formatValue(newValue))
                         }
                       }
                     }}
@@ -1091,17 +1049,17 @@ export default function EventDetail({ event }: EventDetailProps) {
               <div className="mb-2 flex items-center gap-3">
                 <div className="flex-shrink-0">
                   <div className="text-lg font-medium">
-                    {activeTab === 'sell' ? 'Shares' : 'Amount'}
+                    {tradingState.activeTab === 'sell' ? 'Shares' : 'Amount'}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {activeTab === 'sell'
+                    {tradingState.activeTab === 'sell'
                       ? ``
-                      : `Balance $${formatValue(mockUser.cash)}`}
+                      : `Balance $${tradingState.formatValue(mockUser.cash)}`}
                   </div>
                 </div>
                 <div className="relative flex-1">
                   <input
-                    ref={setInputRef}
+                    ref={tradingState.setInputRef}
                     type="text"
                     className={`
                       h-14 w-full border-0 bg-transparent text-right text-4xl font-bold text-slate-700
@@ -1110,45 +1068,45 @@ export default function EventDetail({ event }: EventDetailProps) {
                       dark:text-slate-300 dark:placeholder-slate-500
                       [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
                     `}
-                    placeholder={activeTab === 'sell' ? '0' : '$0.00'}
+                    placeholder={tradingState.activeTab === 'sell' ? '0' : '$0.00'}
                     value={
-                      activeTab === 'sell'
-                        ? amount || ''
-                        : amount
-                          ? `$${amount}`
+                      tradingState.activeTab === 'sell'
+                        ? tradingState.amount || ''
+                        : tradingState.amount
+                          ? `$${tradingState.amount}`
                           : ''
                     }
                     onChange={(e) => {
                       const rawValue
-                    = activeTab === 'sell'
+                    = tradingState.activeTab === 'sell'
                       ? e.target.value
                       : e.target.value.replace(/[^0-9.]/g, '')
 
                       const value
-                    = activeTab === 'sell'
-                      ? limitDecimalPlaces(rawValue, 2)
+                    = tradingState.activeTab === 'sell'
+                      ? tradingState.limitDecimalPlaces(rawValue, 2)
                       : rawValue
 
                       const numericValue = Number.parseFloat(value)
 
-                      if (activeTab === 'sell') {
+                      if (tradingState.activeTab === 'sell') {
                         // For sell, limit by the amount of shares the user has
                         const userShares = getUserShares()
                         if (numericValue <= userShares || value === '') {
-                          setAmount(value)
+                          tradingState.setAmount(value)
                         }
                       }
                       else {
                         // For buy, limit as before
                         if (numericValue <= 99999 || value === '') {
-                          setAmount(value)
+                          tradingState.setAmount(value)
                         }
                       }
                     }}
                     onBlur={(e) => {
                       const value = e.target.value.replace(/[^0-9.]/g, '')
                       if (value && !Number.isNaN(Number.parseFloat(value))) {
-                        setAmount(formatValue(Number.parseFloat(value)))
+                        tradingState.setAmount(tradingState.formatValue(Number.parseFloat(value)))
                       }
                     }}
                   />
@@ -1171,25 +1129,25 @@ export default function EventDetail({ event }: EventDetailProps) {
               ease-in-out
               dark:border-border/20
               ${
-      activeTab === 'sell' && getUserShares() <= 0
+      tradingState.activeTab === 'sell' && getUserShares() <= 0
         ? 'cursor-not-allowed opacity-50'
         : 'hover:border-border hover:bg-white/10 dark:hover:bg-white/5'
       }`}
-            disabled={activeTab === 'sell' && getUserShares() <= 0}
+            disabled={tradingState.activeTab === 'sell' && getUserShares() <= 0}
             onClick={() => {
-              if (activeTab === 'sell') {
+              if (tradingState.activeTab === 'sell') {
                 const userShares = getUserShares()
                 if (userShares <= 0)
                   return
-                setAmount(formatValue(userShares))
+                tradingState.setAmount(tradingState.formatValue(userShares))
               }
               else {
                 const maxBalance = mockUser.cash
                 // Limit to 999,999,999
                 const limitedBalance = Math.min(maxBalance, 999999999)
-                setAmount(formatValue(limitedBalance))
+                tradingState.setAmount(tradingState.formatValue(limitedBalance))
               }
-              inputRef?.focus()
+              tradingState.inputRef?.focus()
             }}
           >
             MAX
@@ -1197,7 +1155,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         </div>
 
         {/* To Win / You'll receive Section */}
-        {amount && Number.parseFloat(amount) > 0 && yesNoSelection && (
+        {tradingState.amount && Number.parseFloat(tradingState.amount) > 0 && tradingState.yesNoSelection && (
           <div className={`${isMobileVersion ? 'mb-4 text-center' : 'mb-4'}`}>
             {!isMobileVersion && (
               <hr className="border-border/50 mb-3 dark:border-border/20" />
@@ -1219,7 +1177,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                     isMobileVersion ? 'justify-center' : ''
                   } gap-1`}
                 >
-                  {activeTab === 'sell' ? 'You\'ll receive' : 'To win'}
+                  {tradingState.activeTab === 'sell' ? 'You\'ll receive' : 'To win'}
                   {!isMobileVersion && (
                     <BanknoteIcon className="h-4 w-4 text-emerald-600" />
                   )}
@@ -1228,12 +1186,12 @@ export default function EventDetail({ event }: EventDetailProps) {
                   )}
                   {isMobileVersion && (
                     <span className="text-2xl font-bold text-emerald-600">
-                      {activeTab === 'sell'
-                        ? `$${formatValue(
-                          calculateSellAmount(Number.parseFloat(amount)),
+                      {tradingState.activeTab === 'sell'
+                        ? `$${tradingState.formatValue(
+                          calculateSellAmount(Number.parseFloat(tradingState.amount)),
                         )}`
-                        : `$${formatValue(
-                          calculateWinnings(Number.parseFloat(amount), 0.72),
+                        : `$${tradingState.formatValue(
+                          calculateWinnings(Number.parseFloat(tradingState.amount), 0.72),
                         )}`}
                     </span>
                   )}
@@ -1245,17 +1203,17 @@ export default function EventDetail({ event }: EventDetailProps) {
                     isMobileVersion ? 'text-center' : ''
                   }`}
                 >
-                  {activeTab === 'sell'
+                  {tradingState.activeTab === 'sell'
                     ? `Avg. price ${getAvgSellPrice()}¢`
                     : 'Avg. Price 72¢'}
                 </div>
               </div>
               {!isMobileVersion && (
                 <div className="text-4xl font-bold text-emerald-600">
-                  {activeTab === 'sell'
-                    ? `$${formatValue(calculateSellAmount(Number.parseFloat(amount)))}`
-                    : `$${formatValue(
-                      calculateWinnings(Number.parseFloat(amount), 0.26),
+                  {tradingState.activeTab === 'sell'
+                    ? `$${tradingState.formatValue(calculateSellAmount(Number.parseFloat(tradingState.amount)))}`
+                    : `$${tradingState.formatValue(
+                      calculateWinnings(Number.parseFloat(tradingState.amount), 0.26),
                     )}`}
                 </div>
               )}
@@ -1268,7 +1226,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           className="h-11 w-full text-sm font-bold"
           onClick={(e) => {
             // Trigger confetti based on selection
-            if (yesNoSelection === 'yes') {
+            if (tradingState.yesNoSelection === 'yes') {
               triggerYesConfetti(e)
             }
             else {
@@ -1277,14 +1235,14 @@ export default function EventDetail({ event }: EventDetailProps) {
             handleConfirmTrade()
           }}
           disabled={
-            isLoading
-            || !amount
-            || Number.parseFloat(amount) <= 0
-            || !yesNoSelection
-            || (activeTab === 'sell' && Number.parseFloat(amount) > getUserShares())
+            tradingState.isLoading
+            || !tradingState.amount
+            || Number.parseFloat(tradingState.amount) <= 0
+            || !tradingState.yesNoSelection
+            || (tradingState.activeTab === 'sell' && Number.parseFloat(tradingState.amount) > getUserShares())
           }
         >
-          {isLoading
+          {tradingState.isLoading
             ? (
                 <div className="flex items-center justify-center gap-2">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
@@ -1293,11 +1251,11 @@ export default function EventDetail({ event }: EventDetailProps) {
               )
             : (
                 <>
-                  {activeTab === 'sell'
-                    ? yesNoSelection === 'no'
+                  {tradingState.activeTab === 'sell'
+                    ? tradingState.yesNoSelection === 'no'
                       ? 'Sell No'
                       : 'Sell Yes'
-                    : yesNoSelection === 'no'
+                    : tradingState.yesNoSelection === 'no'
                       ? 'Buy No'
                       : 'Buy Yes'}
                 </>
@@ -1509,7 +1467,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       dark:hover:bg-white/5
                       md:flex-row md:items-center md:px-2
                       ${
-                  selectedOutcomeForOrder === outcome.id
+                  tradingState.selectedOutcomeForOrder === outcome.id
                     ? 'bg-muted/30'
                     : ''
                   } ${
@@ -1518,9 +1476,9 @@ export default function EventDetail({ event }: EventDetailProps) {
                       : 'rounded-b-lg'
                   }`}
                     onClick={() => {
-                      setSelectedOutcomeForOrder(outcome.id)
-                      setActiveTab('buy')
-                      inputRef?.focus()
+                      tradingState.setSelectedOutcomeForOrder(outcome.id)
+                      tradingState.setActiveTab('buy')
+                      tradingState.inputRef?.focus()
                     }}
                   >
                     {/* Mobile: Layout in column */}
@@ -1572,16 +1530,16 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="sm"
                           className={`h-10 flex-1 text-sm font-bold transition-colors ${
-                            selectedOutcomeForOrder === outcome.id
-                            && yesNoSelection === 'yes'
+                            tradingState.selectedOutcomeForOrder === outcome.id
+                            && tradingState.yesNoSelection === 'yes'
                               ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                               : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSelectedOutcomeForOrder(outcome.id)
-                            setYesNoSelection('yes')
-                            setActiveTab('buy')
+                            tradingState.setSelectedOutcomeForOrder(outcome.id)
+                            tradingState.setYesNoSelection('yes')
+                            tradingState.setActiveTab('buy')
                             setIsMobileModalOpen(true)
                           }}
                         >
@@ -1593,16 +1551,16 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="sm"
                           className={`h-10 flex-1 text-sm font-bold transition-colors ${
-                            selectedOutcomeForOrder === outcome.id
-                            && yesNoSelection === 'no'
+                            tradingState.selectedOutcomeForOrder === outcome.id
+                            && tradingState.yesNoSelection === 'no'
                               ? 'bg-rose-500 text-white hover:bg-rose-600'
                               : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSelectedOutcomeForOrder(outcome.id)
-                            setYesNoSelection('no')
-                            setActiveTab('buy')
+                            tradingState.setSelectedOutcomeForOrder(outcome.id)
+                            tradingState.setYesNoSelection('no')
+                            tradingState.setActiveTab('buy')
                             setIsMobileModalOpen(true)
                           }}
                         >
@@ -1665,17 +1623,17 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="lg"
                           className={`h-12 w-full text-sm font-bold transition-colors ${
-                            selectedOutcomeForOrder === outcome.id
-                            && yesNoSelection === 'yes'
+                            tradingState.selectedOutcomeForOrder === outcome.id
+                            && tradingState.yesNoSelection === 'yes'
                               ? 'bg-emerald-500 text-white hover:bg-emerald-600'
                               : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSelectedOutcomeForOrder(outcome.id)
-                            setYesNoSelection('yes')
-                            setActiveTab('buy')
-                            inputRef?.focus()
+                            tradingState.setSelectedOutcomeForOrder(outcome.id)
+                            tradingState.setYesNoSelection('yes')
+                            tradingState.setActiveTab('buy')
+                            tradingState.inputRef?.focus()
                           }}
                         >
                           <div className="flex flex-col items-center">
@@ -1692,17 +1650,17 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="lg"
                           className={`h-12 w-full text-sm font-bold transition-colors ${
-                            selectedOutcomeForOrder === outcome.id
-                            && yesNoSelection === 'no'
+                            tradingState.selectedOutcomeForOrder === outcome.id
+                            && tradingState.yesNoSelection === 'no'
                               ? 'bg-rose-500 text-white hover:bg-rose-600'
                               : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
                           }`}
                           onClick={(e) => {
                             e.stopPropagation()
-                            setSelectedOutcomeForOrder(outcome.id)
-                            setYesNoSelection('no')
-                            setActiveTab('buy')
-                            inputRef?.focus()
+                            tradingState.setSelectedOutcomeForOrder(outcome.id)
+                            tradingState.setYesNoSelection('no')
+                            tradingState.setActiveTab('buy')
+                            tradingState.inputRef?.focus()
                           }}
                         >
                           <div className="flex flex-col items-center">
@@ -2204,7 +2162,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           <div className="flex gap-2">
             <Button
               onClick={() => {
-                setYesNoSelection('yes')
+                tradingState.setYesNoSelection('yes')
                 setIsMobileModalOpen(true)
               }}
               className="h-12 flex-1 bg-emerald-500 text-lg font-bold text-white hover:bg-emerald-600"
@@ -2216,7 +2174,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             </Button>
             <Button
               onClick={() => {
-                setYesNoSelection('no')
+                tradingState.setYesNoSelection('no')
                 setIsMobileModalOpen(true)
               }}
               className="h-12 flex-1 bg-rose-500 text-lg font-bold text-white hover:bg-rose-600"
