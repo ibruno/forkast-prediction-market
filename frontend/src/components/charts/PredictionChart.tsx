@@ -8,7 +8,7 @@ import { scaleLinear, scaleTime } from '@visx/scale'
 import { LinePath } from '@visx/shape'
 import { defaultStyles, TooltipWithBounds, useTooltip } from '@visx/tooltip'
 import { bisector } from 'd3-array'
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useLayoutEffect, useState } from 'react'
 
 // Data types
 interface DataPoint {
@@ -56,12 +56,14 @@ const bisectDate = bisector<DataPoint, Date>(d => d.date).left
 // ];
 // <PredictionChart data={customData} series={customSeries} />
 
+const defaultMargin = { top: 30, right: 60, bottom: 40, left: 0 }
+
 export const PredictionChart: React.FC<PredictionChartProps> = ({
   data: providedData,
   series: providedSeries,
   width = 800,
   height = 400,
-  margin = { top: 30, right: 60, bottom: 40, left: 0 },
+  margin = defaultMargin,
 }) => {
   const [data, setData] = useState<DataPoint[]>([])
   const [series, setSeries] = useState<SeriesConfig[]>([])
@@ -121,7 +123,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
     [showTooltip, data, series, width, height, margin],
   )
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     setIsClient(true)
 
     if (providedData && providedSeries) {

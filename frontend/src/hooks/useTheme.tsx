@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react'
 
 type Theme = 'dark' | 'light' | 'system'
 
@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('system')
   const [actualTheme, setActualTheme] = useState<'dark' | 'light'>('light')
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Check for saved theme preference or default to system
     const savedTheme = localStorage.getItem('theme') as Theme
     if (
@@ -33,9 +33,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const updateActualTheme = () => {
-      let resolvedTheme: 'dark' | 'light' = 'light'
+      let resolvedTheme: 'dark' | 'light'
 
       if (theme === 'system') {
         resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)')
@@ -74,20 +74,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme])
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme((prev) => {
       if (prev === 'light')
         return 'dark'
       if (prev === 'dark')
         return 'system'
-      return 'light' // system -> light
+      return 'light'
     })
-  }
+  }, [])
+
+  const contextValue = useMemo(() => ({
+    theme,
+    toggleTheme,
+    setTheme,
+    actualTheme,
+  }), [theme, toggleTheme, setTheme, actualTheme])
 
   return (
-    <ThemeContext.Provider
-      value={{ theme, toggleTheme, setTheme, actualTheme }}
-    >
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   )

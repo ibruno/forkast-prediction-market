@@ -15,6 +15,7 @@ export default antfu({
     'node/prefer-global/process': 'off',
     'no-console': 'off',
     'react-dom/no-dangerously-set-innerhtml': 'off',
+    'react-refresh/only-export-components': 'off',
     'better-tailwindcss/enforce-consistent-line-wrapping': ['error', {
       group: 'newLine',
       preferSingleLine: true,

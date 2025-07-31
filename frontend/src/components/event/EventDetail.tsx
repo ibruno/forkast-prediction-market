@@ -17,7 +17,7 @@ import {
   TrendingDown,
 } from 'lucide-react'
 import Image from 'next/image'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { toast } from 'sonner'
 import PredictionChart from '@/components/charts/PredictionChart'
 import Header from '@/components/layout/Header'
@@ -348,7 +348,7 @@ export default function EventDetail({ event }: EventDetailProps) {
   }
 
   // Load favorite status from localStorage
-  useEffect(() => {
+  useLayoutEffect(() => {
     const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase()
     const stored = localStorage.getItem(`${siteName}-favorites`)
     if (stored) {
@@ -363,7 +363,7 @@ export default function EventDetail({ event }: EventDetailProps) {
   }, [event.id])
 
   // Auto-select outcome for all markets (binary and multi-outcome)
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!selectedOutcomeForOrder && event.outcomes.length > 0) {
       if (event.outcomes.length === 2) {
         // For binary markets, select the "Yes" option (isYes = true)
@@ -897,6 +897,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         {/* Tabs Buy/Sell */}
         <div className="mb-4 flex text-sm font-semibold">
           <button
+            type="button"
             onClick={() => {
               setActiveTab('buy')
               setAmount('') // Reset value when changing tab
@@ -911,6 +912,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             Buy
           </button>
           <button
+            type="button"
             onClick={() => {
               setActiveTab('sell')
               setAmount('') // Reset value when changing tab
@@ -1748,9 +1750,9 @@ export default function EventDetail({ event }: EventDetailProps) {
             {contextExpanded && (
               <div className="border-border/30 border-t px-3 pb-3">
                 <div className="space-y-2 pt-3">
-                  {generatedContext.map((line, index) => (
+                  {generatedContext.map(line => (
                     <p
-                      key={index}
+                      key={line}
                       className="text-sm leading-relaxed text-muted-foreground"
                     >
                       {line}
@@ -1928,7 +1930,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                           </button>
                         </div>
                       </div>
-                      <button className="text-muted-foreground transition-colors hover:text-foreground">
+                      <button type="button" className="text-muted-foreground transition-colors hover:text-foreground">
                         <MoreHorizontal className="h-4 w-4" />
                       </button>
                     </div>
@@ -1992,8 +1994,8 @@ export default function EventDetail({ event }: EventDetailProps) {
                     Yes Holders
                   </h3>
                   <div className="space-y-3">
-                    {mockMarketDetails.holders.yes.map((holder, index) => (
-                      <div key={index} className="flex items-center gap-3">
+                    {mockMarketDetails.holders.yes.map(holder => (
+                      <div key={holder.name} className="flex items-center gap-3">
                         <Image
                           src={holder.avatar}
                           alt={holder.name}
@@ -2020,8 +2022,8 @@ export default function EventDetail({ event }: EventDetailProps) {
                     No Holders
                   </h3>
                   <div className="space-y-3">
-                    {mockMarketDetails.holders.no.map((holder, index) => (
-                      <div key={index} className="flex items-center gap-3">
+                    {mockMarketDetails.holders.no.map(holder => (
+                      <div key={holder.name} className="flex items-center gap-3">
                         <Image
                           src={holder.avatar}
                           alt={holder.name}
@@ -2068,9 +2070,9 @@ export default function EventDetail({ event }: EventDetailProps) {
 
               {/* List of Activities */}
               <div className="space-y-4">
-                {mockMarketDetails.activities.map((activity, index) => (
+                {mockMarketDetails.activities.map(activity => (
                   <div
-                    key={index}
+                    key={activity.time}
                     className="border-border/30 flex items-center gap-3 border-b py-2 last:border-b-0"
                   >
                     <Image

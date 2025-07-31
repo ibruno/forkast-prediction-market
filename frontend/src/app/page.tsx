@@ -2,7 +2,7 @@
 
 import type { MarketCategory } from '@/types'
 import { useSearchParams } from 'next/navigation'
-import { Suspense, useEffect, useState } from 'react'
+import { Suspense, useEffect, useLayoutEffect, useState } from 'react'
 import EventGrid from '@/components/event/EventGrid'
 import FilterToolbar from '@/components/layout/FilterToolbar'
 import Header from '@/components/layout/Header'
@@ -18,18 +18,18 @@ function HomePageContent() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [favoriteMarkets, setFavoriteMarkets] = useState<Set<string>>(
-    new Set(),
+    () => new Set(),
   )
 
   // Update category when URL params change
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (categoryFromURL) {
       setActiveCategory(categoryFromURL as MarketCategory)
     }
   }, [categoryFromURL])
 
   // Load favorites from localStorage on mount
-  useEffect(() => {
+  useLayoutEffect(() => {
     const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase()
     const stored = localStorage.getItem(`${siteName}-favorites`)
     if (stored) {

@@ -69,12 +69,14 @@ export default function EventGrid({
       return 0
     })
 
+  const skeletons = Array.from({ length: 8 }, (_, i) => `skeleton-${i}`)
+
   if (isLoading) {
     return (
       <main className="container mx-auto max-w-6xl px-4 py-3 md:px-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <EventCardSkeleton key={i} />
+          {skeletons.map(id => (
+            <EventCardSkeleton key={id} />
           ))}
         </div>
       </main>
