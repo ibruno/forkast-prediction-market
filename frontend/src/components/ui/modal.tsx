@@ -20,7 +20,7 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
+    function handleEscape(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         onClose()
       }
@@ -37,7 +37,7 @@ export function Modal({
     }
   }, [isOpen, onClose])
 
-  const handleBackdropClick = (e: React.MouseEvent) => {
+  function handleBackdropClick(e: React.MouseEvent) {
     if (e.target === e.currentTarget) {
       onClose()
     }

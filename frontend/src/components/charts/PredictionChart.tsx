@@ -58,13 +58,13 @@ const bisectDate = bisector<DataPoint, Date>(d => d.date).left
 
 const defaultMargin = { top: 30, right: 60, bottom: 40, left: 0 }
 
-export const PredictionChart: React.FC<PredictionChartProps> = ({
+export function PredictionChart({
   data: providedData,
   series: providedSeries,
   width = 800,
   height = 400,
   margin = defaultMargin,
-}) => {
+}: PredictionChartProps): React.ReactElement {
   const [data, setData] = useState<DataPoint[]>([])
   const [series, setSeries] = useState<SeriesConfig[]>([])
   const [isClient, setIsClient] = useState(false)
@@ -131,7 +131,7 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
       setSeries(providedSeries)
     }
     else {
-      const generateMultiSeriesData = () => {
+      function generateMultiSeriesData() {
         const now = new Date()
         const generatedData: DataPoint[] = []
 
@@ -224,8 +224,13 @@ export const PredictionChart: React.FC<PredictionChartProps> = ({
     nice: true,
   })
 
-  const getDate = (d: DataPoint) => d.date
-  const getX = (d: DataPoint) => xScale(getDate(d))
+  function getDate(d: DataPoint) {
+    return d.date
+  }
+
+  function getX(d: DataPoint) {
+    return xScale(getDate(d))
+  }
 
   return (
     <div className="relative h-full w-full">

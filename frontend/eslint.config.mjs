@@ -16,6 +16,7 @@ export default antfu({
     'no-console': 'off',
     'react-dom/no-dangerously-set-innerhtml': 'off',
     'react-refresh/only-export-components': 'off',
+    'func-style': ['error', 'declaration', { allowArrowFunctions: false }],
     'better-tailwindcss/enforce-consistent-line-wrapping': ['error', {
       group: 'newLine',
       preferSingleLine: true,

@@ -26,7 +26,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   const noPrice = tradingState.noPrice
 
   // Function to calculate the amount the user will receive when selling shares
-  const calculateSellAmount = (sharesToSell: number) => {
+  function calculateSellAmount(sharesToSell: number) {
     if (!tradingState.selectedOutcomeForOrder || !tradingState.yesNoSelection)
       return 0
 
@@ -43,7 +43,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to get the average selling price
-  const getAvgSellPrice = () => {
+  function getAvgSellPrice() {
     if (!tradingState.selectedOutcomeForOrder || !tradingState.yesNoSelection)
       return '0'
 
@@ -60,7 +60,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Confetti effects
-  const triggerYesConfetti = (event?: React.MouseEvent) => {
+  function triggerYesConfetti(event?: React.MouseEvent) {
     let origin: { x?: number, y: number } = { y: 0.6 }
 
     if (event && event.currentTarget) {
@@ -78,7 +78,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
     })
   }
 
-  const triggerNoConfetti = (event?: React.MouseEvent) => {
+  function triggerNoConfetti(event?: React.MouseEvent) {
     let origin: { x?: number, y: number } = { y: 0.6 }
 
     if (event && event.currentTarget) {
@@ -97,7 +97,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Handle confirm trade with loading
-  const handleConfirmTrade = async () => {
+  async function handleConfirmTrade() {
     if (!tradingState.amount || Number.parseFloat(tradingState.amount) <= 0 || !tradingState.yesNoSelection)
       return
 
@@ -177,7 +177,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to get user shares for the selected outcome
-  const getUserShares = () => {
+  function getUserShares() {
     if (!tradingState.selectedOutcomeForOrder)
       return 0
     const shareKey = tradingState.selectedOutcomeForOrder as keyof typeof mockUser.shares
@@ -185,7 +185,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to get shares for Yes outcome
-  const getYesShares = (outcomeId: string) => {
+  function getYesShares(outcomeId: string) {
     if (outcomeId.includes('-yes')) {
       const shareKey = outcomeId as keyof typeof mockUser.shares
       return mockUser.shares[shareKey] || 0
@@ -200,7 +200,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to get shares for No outcome
-  const getNoShares = (outcomeId: string) => {
+  function getNoShares(outcomeId: string) {
     if (outcomeId.includes('-no')) {
       const shareKey = outcomeId as keyof typeof mockUser.shares
       return mockUser.shares[shareKey] || 0
@@ -215,11 +215,11 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to render Yes/No buttons
-  const renderYesNoButton = (
+  function renderYesNoButton(
     type: 'yes' | 'no',
     price: number,
     forceTabChange = false,
-  ) => {
+  ) {
     const isSelected = tradingState.yesNoSelection === type
     const baseClasses
       = 'flex-1 h-12 rounded-sm font-bold transition-all duration-200 flex items-center justify-center gap-1'
@@ -254,7 +254,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to render action buttons (percentage and value)
-  const renderActionButtons = (isMobileVersion: boolean) => {
+  function renderActionButtons(isMobileVersion: boolean) {
     const baseButtonClasses
       = 'h-7 px-3 rounded-lg border border-border/50 dark:border-border/20 text-[11px] transition-all duration-200 ease-in-out'
 
@@ -312,7 +312,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
     }
   }
 
-  const renderWinCard = (isMobileVersion = false) => {
+  function renderWinCard(isMobileVersion = false) {
     const outcomeName
         = tradingState.yesNoSelection === 'yes'
           ? getYesOutcome()?.name || 'Yes'
@@ -325,9 +325,9 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
     const total = shares * valuePerShare
 
     // Function to trigger blue confetti from the button
-    const triggerBlueConfetti = (
+    function triggerBlueConfetti(
       event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
+    ) {
       if (!event || !event.currentTarget)
         return
       const rect = event.currentTarget.getBoundingClientRect()
@@ -443,7 +443,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   }
 
   // Function to render the order panel content
-  const renderOrderPanel = (isMobileVersion = false) => {
+  function renderOrderPanel(isMobileVersion = false) {
     if (tradingState.showWinCard)
       return renderWinCard(isMobileVersion)
 

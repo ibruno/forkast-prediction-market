@@ -23,14 +23,14 @@ export default function NavigationTabs({
   >([])
 
   useEffect(() => {
-    const loadCategories = async () => {
+    async function loadCategories() {
       const mainCategories = await getMainCategories()
       setCategories(mainCategories)
     }
     loadCategories()
   }, [])
 
-  const handleCategoryClick = (category: MarketCategory) => {
+  function handleCategoryClick(category: MarketCategory) {
     if (isHomePage) {
       // If on home page, use normal behavior
       onCategoryChange(category)

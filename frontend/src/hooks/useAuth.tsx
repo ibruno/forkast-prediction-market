@@ -30,7 +30,7 @@ export function useAuth() {
   const [isInitialized, setIsInitialized] = useState(false)
 
   // Helper function to update user state with persistence
-  const updateUser = (newUser: User | null) => {
+  function updateUser(newUser: User | null) {
     setUser(newUser)
     if (typeof window !== 'undefined') {
       if (newUser) {
@@ -44,7 +44,7 @@ export function useAuth() {
 
   // Initialize user state from localStorage and check Magic login
   useEffect(() => {
-    const initializeAuth = async () => {
+    async function initializeAuth() {
       if (typeof window !== 'undefined') {
         // Check localStorage first
         const savedUser = localStorage.getItem('forkast_user')
@@ -91,10 +91,11 @@ export function useAuth() {
 
   // Listen for Magic login events
   useEffect(() => {
-    const magicInstance = getMagic()
-    if (magicInstance) {
-      const checkMagicLogin = async () => {
-        try {
+    async function checkMagicLogin() {
+      try {
+        const magicInstance = getMagic()
+
+        if (magicInstance) {
           const isLoggedIn = await magicInstance.user.isLoggedIn()
           if (isLoggedIn && (!user || user.walletType !== 'magic')) {
             const metadata = await magicInstance.user.getInfo()
@@ -112,20 +113,20 @@ export function useAuth() {
             updateUser(null)
           }
         }
-        catch (error) {
-          console.error('Error checking Magic login:', error)
-        }
       }
-
-      // Check periodically for Magic login changes
-      const interval = setInterval(checkMagicLogin, 1000)
-
-      return () => clearInterval(interval)
+      catch (error) {
+        console.error('Error checking Magic login:', error)
+      }
     }
+
+    // Check periodically for Magic login changes
+    const interval = setInterval(checkMagicLogin, 1000)
+
+    return () => clearInterval(interval)
   }, [user])
 
   // Check if MetaMask is installed
-  const isMetaMaskInstalled = () => {
+  function isMetaMaskInstalled() {
     return (
       typeof window !== 'undefined'
       && window.ethereum
@@ -134,7 +135,7 @@ export function useAuth() {
   }
 
   // Connect to MetaMask
-  const connectMetaMask = async () => {
+  async function connectMetaMask() {
     if (!isMetaMaskInstalled()) {
       throw new Error('MetaMask is not installed')
     }
@@ -174,7 +175,7 @@ export function useAuth() {
   }
 
   // Connect to other wallets (placeholder functions)
-  const connectCoinbase = async () => {
+  async function connectCoinbase() {
     setIsLoading(true)
     try {
       // TODO: Implement Coinbase Wallet connection
@@ -190,12 +191,12 @@ export function useAuth() {
     }
   }
 
-  const connectWalletConnect = async () => {
+  async function connectWalletConnect() {
     // WalletConnect disabled for now
     throw new Error('WalletConnect is not available')
   }
 
-  const connectPhantom = async () => {
+  async function connectPhantom() {
     setIsLoading(true)
     try {
       // TODO: Implement Phantom connection
@@ -212,7 +213,7 @@ export function useAuth() {
   }
 
   // Magic.link email login
-  const loginWithMagicEmail = async (email: string) => {
+  async function loginWithMagicEmail(email: string) {
     const magicInstance = getMagic()
     if (!magicInstance) {
       throw new Error('Magic not initialized')
@@ -236,6 +237,7 @@ export function useAuth() {
           return userData
         }
       }
+
       throw new Error('Failed to get user metadata')
     }
     catch (error) {
@@ -248,7 +250,7 @@ export function useAuth() {
   }
 
   // Disconnect wallet
-  const disconnect = async () => {
+  async function disconnect() {
     if (user?.walletType === 'magic') {
       try {
         const magicInstance = getMagic()
@@ -265,7 +267,7 @@ export function useAuth() {
 
   // Check connection status on mount
   useEffect(() => {
-    const checkConnection = async () => {
+    async function checkConnection() {
       if (isMetaMaskInstalled() && user) {
         try {
           if (!window.ethereum)
@@ -306,7 +308,7 @@ export function useAuth() {
   // Listen for account changes
   useEffect(() => {
     if (isMetaMaskInstalled() && window.ethereum) {
-      const handleAccountsChanged = (...args: unknown[]) => {
+      function handleAccountsChanged(...args: unknown[]) {
         const accounts = args[0] as string[]
         if (accounts.length === 0) {
           updateUser(null)

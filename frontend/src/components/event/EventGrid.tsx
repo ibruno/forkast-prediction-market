@@ -28,12 +28,13 @@ export default function EventGrid({
   const [events, setEvents] = useState<Market[]>([])
 
   useEffect(() => {
-    const loadEvents = async () => {
+    async function loadEvents() {
       setIsLoading(true)
       const allEvents = await getAllMarkets(activeCategory)
       setEvents(allEvents)
       setIsLoading(false)
     }
+
     loadEvents()
   }, [activeCategory])
 

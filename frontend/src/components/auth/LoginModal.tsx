@@ -25,11 +25,11 @@ export function LoginModal({
     loginWithMagicEmail,
   } = useAuth()
 
-  const handleGoogleLogin = () => {
+  function handleGoogleLogin() {
     // TODO: Implement Google OAuth
   }
 
-  const handleEmailContinue = async () => {
+  async function handleEmailContinue() {
     if (email.trim()) {
       setIsEmailLoading(true)
       try {
@@ -46,7 +46,7 @@ export function LoginModal({
     }
   }
 
-  const handleWalletConnect = async (walletType: string) => {
+  async function handleWalletConnect(walletType: string) {
     try {
       switch (walletType) {
         case 'metamask':

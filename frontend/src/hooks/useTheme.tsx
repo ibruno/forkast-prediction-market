@@ -34,7 +34,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useLayoutEffect(() => {
-    const updateActualTheme = () => {
+    function updateActualTheme() {
       let resolvedTheme: 'dark' | 'light'
 
       if (theme === 'system') {
@@ -67,10 +67,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // Listen for system theme changes only if theme is "system"
     if (theme === 'system') {
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-      const handleChange = () => updateActualTheme()
-
-      mediaQuery.addEventListener('change', handleChange)
-      return () => mediaQuery.removeEventListener('change', handleChange)
+      mediaQuery.addEventListener('change', updateActualTheme)
+      return () => mediaQuery.removeEventListener('change', updateActualTheme)
     }
   }, [theme])
 

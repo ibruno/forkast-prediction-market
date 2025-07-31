@@ -52,7 +52,7 @@ function HomePageContent() {
     )
   }, [favoriteMarkets])
 
-  const handleToggleFavorite = (eventId: string) => {
+  function handleToggleFavorite(eventId: string) {
     setFavoriteMarkets((prev) => {
       const newSet = new Set(prev)
       if (newSet.has(eventId)) {
@@ -65,7 +65,7 @@ function HomePageContent() {
     })
   }
 
-  const handleToggleFavoritesFilter = () => {
+  function handleToggleFavoritesFilter() {
     setShowFavoritesOnly(!showFavoritesOnly)
   }
 

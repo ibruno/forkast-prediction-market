@@ -38,15 +38,15 @@ export function useTradingState({ event }: UseTradingStateProps) {
   const noPrice = 100 - yesPrice
 
   // Function to format values with 2 decimal places
-  const formatValue = (value: number): string => {
+  function formatValue(value: number): string {
     return value.toFixed(2)
   }
 
   // Function to limit decimal places while typing
-  const limitDecimalPlaces = (
+  function limitDecimalPlaces(
     value: string,
     maxDecimals: number = 2,
-  ): string => {
+  ): string {
     // Remove non-numeric characters except dot
     const cleaned = value.replace(/[^0-9.]/g, '')
 

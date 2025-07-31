@@ -33,15 +33,15 @@ export default function EventCard({
   const [tradeAmount, setTradeAmount] = useState('1')
 
   // Function to format monetary values with 2 decimal places
-  const formatValue = (value: number): string => {
+  function formatValue(value: number): string {
     return value.toFixed(2)
   }
 
   // Function to limit decimal places during typing
-  const limitDecimalPlaces = (
+  function limitDecimalPlaces(
     value: string,
     maxDecimals: number = 2,
-  ): string => {
+  ): string {
     // Remove non-numeric characters except dot
     const cleaned = value.replace(/[^0-9.]/g, '')
 
@@ -68,7 +68,7 @@ export default function EventCard({
   const yesOutcome = event.outcomes.find(o => o.isYes === true)
   const noOutcome = event.outcomes.find(o => o.isYes === false)
 
-  const formatVolume = (volume: number) => {
+  function formatVolume(volume: number) {
     if (volume >= 1000000) {
       return `$${(volume / 1000000).toFixed(1)}M`
     }
@@ -78,7 +78,7 @@ export default function EventCard({
     return `$${volume.toFixed(0)}`
   }
 
-  const handleTrade = async (outcomeId: string, type: 'yes' | 'no') => {
+  async function handleTrade(outcomeId: string, type: 'yes' | 'no') {
     const outcome = event.outcomes.find(o => o.id === outcomeId)
     if (outcome) {
       setSelectedOutcome({
@@ -93,7 +93,7 @@ export default function EventCard({
     }
   }
 
-  const handleConfirmTrade = async () => {
+  async function handleConfirmTrade() {
     if (!selectedOutcome || !tradeAmount)
       return
 
@@ -145,13 +145,13 @@ export default function EventCard({
     }, 1000)
   }
 
-  const handleCancelTrade = () => {
+  function handleCancelTrade() {
     setSelectedOutcome(null)
     setTradeAmount('1')
     onToggle?.(false)
   }
 
-  const calculateWinnings = (amount: string) => {
+  function calculateWinnings(amount: string) {
     if (!amount || !selectedOutcome)
       return '0.00'
     const amountNum = Number.parseFloat(amount)
@@ -168,7 +168,7 @@ export default function EventCard({
   }
 
   // Confetti effects
-  const triggerYesConfetti = (event?: React.MouseEvent) => {
+  function triggerYesConfetti(event?: React.MouseEvent) {
     let origin: { x?: number, y: number } = { y: 0.6 }
 
     // If an event is passed, calculate the button position
@@ -187,7 +187,7 @@ export default function EventCard({
     })
   }
 
-  const triggerNoConfetti = (event?: React.MouseEvent) => {
+  function triggerNoConfetti(event?: React.MouseEvent) {
     let origin: { x?: number, y: number } = { y: 0.6 }
 
     // If an event is passed, calculate the button position

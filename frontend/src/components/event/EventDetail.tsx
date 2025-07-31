@@ -37,7 +37,7 @@ interface EventDetailProps {
 
 export default function EventDetail({ event }: EventDetailProps) {
   // Basic SVG sanitization function
-  const sanitizeSvg = (svg: string) => {
+  function sanitizeSvg(svg: string) {
     return svg
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/on\w+="[^"]*"/g, '')
@@ -75,14 +75,14 @@ export default function EventDetail({ event }: EventDetailProps) {
   const noPrice = tradingState.noPrice
 
   // Function to get top 4 outcomes by volume
-  const getTopOutcomesForChart = () => {
+  function getTopOutcomesForChart() {
     return [...event.outcomes]
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 4)
   }
 
   // Function to generate chart data based on actual outcomes
-  const generateChartData = () => {
+  function generateChartData() {
     const topOutcomes = getTopOutcomesForChart()
     const now = new Date()
     const data = []
@@ -143,7 +143,7 @@ export default function EventDetail({ event }: EventDetailProps) {
   const chartConfig = generateChartData()
 
   // Function to generate market context
-  const generateMarketContext = async () => {
+  async function generateMarketContext() {
     setIsGeneratingContext(true)
 
     // Simulate AI generation delay
@@ -225,7 +225,7 @@ export default function EventDetail({ event }: EventDetailProps) {
   }, [isMobileModalOpen])
 
   // Handle favorite toggle
-  const handleFavoriteToggle = () => {
+  function handleFavoriteToggle() {
     const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase()
     const stored = localStorage.getItem(`${siteName}-favorites`)
     let favArray: string[] = []
@@ -253,7 +253,7 @@ export default function EventDetail({ event }: EventDetailProps) {
   }
 
   // Handle share
-  const handleShare = async () => {
+  async function handleShare() {
     try {
       const url = window.location.href
       await navigator.clipboard.writeText(url)

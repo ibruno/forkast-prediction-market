@@ -23,7 +23,7 @@ export default function Header() {
   const logoSvg = process.env.NEXT_PUBLIC_SITE_LOGO_SVG
 
   // Basic SVG sanitization to remove potential script tags and event handlers
-  const sanitizeSvg = (svg: string) => {
+  function sanitizeSvg(svg: string) {
     return svg
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
       .replace(/on\w+="[^"]*"/g, '')
