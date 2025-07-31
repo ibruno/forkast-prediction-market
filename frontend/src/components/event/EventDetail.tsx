@@ -4,17 +4,17 @@ import type { RelatedEvent } from '@/lib/data'
 import type { Market } from '@/types'
 import confetti from 'canvas-confetti'
 import {
-  Banknote,
-  Check,
-  CircleCheck,
-  Heart,
-  MoreHorizontal,
-  RefreshCw,
-  Share,
-  Shield,
-  Sparkles,
-  Star,
-  TrendingDown,
+  BanknoteIcon,
+  CheckIcon,
+  CircleCheckIcon,
+  HeartIcon,
+  MoreHorizontalIcon,
+  RefreshCwIcon,
+  ShareIcon,
+  ShieldIcon,
+  SparklesIcon,
+  StarIcon,
+  TrendingDownIcon,
 } from 'lucide-react'
 import Image from 'next/image'
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
@@ -692,7 +692,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       isMobileVersion ? 'w-full' : 'w-full lg:w-[320px]'
       }`}
       >
-        <CircleCheck size={56} className="mb-2 text-primary" />
+        <CircleCheckIcon size={56} className="mb-2 text-primary" />
         <div className="mb-1 text-center text-xl font-bold text-primary">
           Outcome:
           {' '}
@@ -1221,7 +1221,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 >
                   {activeTab === 'sell' ? 'You\'ll receive' : 'To win'}
                   {!isMobileVersion && (
-                    <Banknote className="h-4 w-4 text-emerald-600" />
+                    <BanknoteIcon className="h-4 w-4 text-emerald-600" />
                   )}
                   {isMobileVersion && (
                     <span className="text-xl text-emerald-600">💰</span>
@@ -1340,7 +1340,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               {event.title}
             </h1>
             <div className="flex gap-2 text-muted-foreground">
-              <Star
+              <StarIcon
                 className={`h-4 w-4 cursor-pointer transition-colors hover:text-foreground ${
                   isFavorite ? 'fill-yellow-400 text-yellow-400' : ''
                 }`}
@@ -1348,10 +1348,10 @@ export default function EventDetail({ event }: EventDetailProps) {
               />
               {shareSuccess
                 ? (
-                    <Check className="h-4 w-4 text-emerald-500" />
+                    <CheckIcon className="h-4 w-4 text-emerald-500" />
                   )
                 : (
-                    <Share
+                    <ShareIcon
                       className="h-4 w-4 cursor-pointer transition-colors hover:text-foreground"
                       onClick={handleShare}
                     />
@@ -1394,7 +1394,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
                         {/* Red arrow with percentage */}
                         <div className="flex items-center gap-1 text-rose-600">
-                          <TrendingDown className="h-4 w-4" />
+                          <TrendingDownIcon className="h-4 w-4" />
                           <span className="text-xs font-semibold">
                             {trendingData.changePercentage}
                             %
@@ -1489,7 +1489,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                     href="#"
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <RefreshCw className="h-3 w-3" />
+                    <RefreshCwIcon className="h-3 w-3" />
                   </a>
                 </div>
                 <div className="w-[24%]"></div>
@@ -1561,7 +1561,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             %
                           </span>
                           <div className="flex items-center gap-1 text-rose-600">
-                            <TrendingDown className="h-3 w-3" />
+                            <TrendingDownIcon className="h-3 w-3" />
                             <span className="text-xs font-semibold">3%</span>
                           </div>
                         </div>
@@ -1654,7 +1654,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             %
                           </span>
                           <div className="flex items-center gap-1 text-rose-600">
-                            <TrendingDown className="h-3 w-3" />
+                            <TrendingDownIcon className="h-3 w-3" />
                             <span className="text-xs font-semibold">3%</span>
                           </div>
                         </div>
@@ -1738,7 +1738,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 onClick={generateMarketContext}
                 disabled={isGeneratingContext}
               >
-                <Sparkles
+                <SparklesIcon
                   className={`h-3 w-3 ${
                     isGeneratingContext ? 'animate-spin' : ''
                   }`}
@@ -1880,7 +1880,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                   dark:border-border/20
                 `}
                 >
-                  <Shield className="h-3 w-3" />
+                  <ShieldIcon className="h-3 w-3" />
                   Beware of external links, they may be phishing attacks.
                 </div>
               </div>
@@ -1926,12 +1926,12 @@ export default function EventDetail({ event }: EventDetailProps) {
                               hover:text-foreground
                             `}
                           >
-                            <Heart className="h-3 w-3" />
+                            <HeartIcon className="h-3 w-3" />
                           </button>
                         </div>
                       </div>
                       <button type="button" className="text-muted-foreground transition-colors hover:text-foreground">
-                        <MoreHorizontal className="h-4 w-4" />
+                        <MoreHorizontalIcon className="h-4 w-4" />
                       </button>
                     </div>
 
@@ -1972,7 +1972,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                                 hover:text-foreground
                               `}
                             >
-                              <Heart className="h-3 w-3" />
+                              <HeartIcon className="h-3 w-3" />
                             </button>
                           </div>
                         </div>
@@ -2137,7 +2137,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               {loadingRelated
                 ? (
                     <div className="flex items-center justify-center py-8">
-                      <RefreshCw className="h-6 w-6 animate-spin text-muted-foreground" />
+                      <RefreshCwIcon className="h-6 w-6 animate-spin text-muted-foreground" />
                       <span className="ml-2 text-sm text-muted-foreground">
                         Loading related events...
                       </span>
