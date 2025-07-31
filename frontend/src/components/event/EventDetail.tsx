@@ -562,6 +562,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
     return (
       <button
+        type="button"
         onClick={() => {
           setYesNoSelection(type)
           if (forceTabChange) {
@@ -593,6 +594,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
       return ['25%', '50%', '75%'].map(percentage => (
         <button
+          type="button"
           key={percentage}
           className={`${baseButtonClasses} ${
             isDisabled
@@ -620,6 +622,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
       return chipValues.map(chip => (
         <button
+          type="button"
           key={chip}
           className={`${baseButtonClasses} hover:border-border hover:bg-white/10 dark:hover:bg-white/5`}
           onClick={() => {
@@ -726,6 +729,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               </div>
             </div>
             <button
+              type="button"
               className={`
                 hover:bg-primary/90
                 mt-6 flex h-11 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-white
@@ -981,6 +985,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               <div className="mb-4">
                 <div className="mb-4 flex items-center justify-center gap-4">
                   <button
+                    type="button"
                     onClick={() => {
                       const currentValue = Number.parseFloat(amount) || 0
                       const newValue = Math.max(
@@ -1051,6 +1056,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                     />
                   </div>
                   <button
+                    type="button"
                     onClick={() => {
                       const currentValue = Number.parseFloat(amount) || 0
                       const newValue
@@ -1157,6 +1163,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           {renderActionButtons(isMobileVersion)}
           {/* Max button */}
           <button
+            type="button"
             className={`
               border-border/50 h-7 rounded-lg border px-3 text-[11px] font-semibold transition-all duration-200
               ease-in-out
@@ -1904,13 +1911,18 @@ export default function EventDetail({ event }: EventDetailProps) {
                           conditions.
                         </p>
                         <div className="mt-2 flex items-center gap-3">
-                          <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+                          <button
+                            type="button"
+                            className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                          >
                             Reply
                           </button>
-                          <button className={`
-                            flex items-center gap-1 text-xs text-muted-foreground transition-colors
-                            hover:text-foreground
-                          `}
+                          <button
+                            type="button"
+                            className={`
+                              flex items-center gap-1 text-xs text-muted-foreground transition-colors
+                              hover:text-foreground
+                            `}
                           >
                             <Heart className="h-3 w-3" />
                           </button>
@@ -1945,13 +1957,18 @@ export default function EventDetail({ event }: EventDetailProps) {
                             accelerating this year.
                           </p>
                           <div className="mt-2 flex items-center gap-3">
-                            <button className="text-xs text-muted-foreground transition-colors hover:text-foreground">
+                            <button
+                              type="button"
+                              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                            >
                               Reply
                             </button>
-                            <button className={`
-                              flex items-center gap-1 text-xs text-muted-foreground transition-colors
-                              hover:text-foreground
-                            `}
+                            <button
+                              type="button"
+                              className={`
+                                flex items-center gap-1 text-xs text-muted-foreground transition-colors
+                                hover:text-foreground
+                              `}
                             >
                               <Heart className="h-3 w-3" />
                             </button>
@@ -2035,6 +2052,7 @@ export default function EventDetail({ event }: EventDetailProps) {
               <div className="mb-4 flex gap-2">
                 {mockMarketDetails.activityFilters.map(filter => (
                   <button
+                    type="button"
                     key={filter}
                     className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
                       activityFilter === filter

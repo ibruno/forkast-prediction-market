@@ -78,6 +78,7 @@ export function LoginModal({
         {/* Google Login Button */}
         <button
           onClick={handleGoogleLogin}
+          type="button"
           className={`
             flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-4 py-3 font-medium text-white
             transition-colors duration-200
@@ -120,6 +121,7 @@ export function LoginModal({
           <button
             onClick={handleEmailContinue}
             disabled={!email.trim() || isEmailLoading}
+            type="button"
             className={`
               rounded-r-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors duration-200
               hover:bg-blue-700
@@ -134,6 +136,7 @@ export function LoginModal({
         <div className="flex justify-between">
           <button
             onClick={() => handleWalletConnect('metamask')}
+            type="button"
             className={`
               mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
               duration-200
@@ -154,6 +157,7 @@ export function LoginModal({
 
           <button
             onClick={() => handleWalletConnect('coinbase')}
+            type="button"
             className={`
               mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
               duration-200
@@ -174,6 +178,7 @@ export function LoginModal({
 
           <button
             onClick={() => handleWalletConnect('phantom')}
+            type="button"
             className={`
               mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
               duration-200
@@ -194,6 +199,7 @@ export function LoginModal({
 
           <button
             onClick={() => handleWalletConnect('walletconnect')}
+            type="button"
             className={`
               mx-1 flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
               duration-200

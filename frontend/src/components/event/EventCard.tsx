@@ -258,6 +258,7 @@ export default function EventCard({
           {isInTradingMode
             ? (
                 <button
+                  type="button"
                   onClick={(e) => {
                     e.stopPropagation()
                     handleCancelTrade()
@@ -364,6 +365,7 @@ export default function EventCard({
 
                   {/* Confirm Trade Button */}
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       // Trigger confetti based on selection
@@ -431,6 +433,7 @@ export default function EventCard({
                             </span>
                             <div className="flex gap-1">
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleTrade(outcome.id, 'yes')
@@ -450,6 +453,7 @@ export default function EventCard({
                                 </span>
                               </button>
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   handleTrade(outcome.id, 'no')
@@ -481,6 +485,7 @@ export default function EventCard({
                   {isBinaryMarket && yesOutcome && noOutcome && (
                     <div className="mb-2 mt-auto grid grid-cols-2 gap-2">
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleTrade(yesOutcome.id, 'yes')
@@ -499,6 +504,7 @@ export default function EventCard({
                         <ChevronsUp className="h-4 w-4" />
                       </button>
                       <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation()
                           handleTrade(noOutcome.id, 'no')
@@ -534,6 +540,7 @@ export default function EventCard({
             </div>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={(e) => {
                   e.stopPropagation()
                   onToggleFavorite?.(event.id)

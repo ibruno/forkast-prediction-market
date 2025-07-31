@@ -47,6 +47,7 @@ export default function NavigationTabs({
         {categories.map((category, index) => (
           <div key={category.id} className="flex items-center">
             <button
+              type="button"
               onClick={() => handleCategoryClick(category.id)}
               className={`flex items-center gap-1.5 whitespace-nowrap border-b-2 py-2 pb-1 transition-colors ${
                 activeCategory === category.id

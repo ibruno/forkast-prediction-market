@@ -58,6 +58,7 @@ export default function Header() {
       <div className="container flex h-14 items-center">
         {/* Logo */}
         <button
+          type="button"
           onClick={() => (window.location.href = '/')}
           className={`
             flex flex-shrink-0 items-center gap-2 font-semibold text-foreground transition-opacity
@@ -147,12 +148,13 @@ export default function Header() {
                   </Button>
                 )}
           {/* Notifications */}
-          <button className="p-1 text-muted-foreground hover:text-foreground">
+          <button type="button" className="p-1 text-muted-foreground hover:text-foreground">
             <Bell className="h-5 w-5" />
           </button>
           {/* User Menu */}
           <div className="relative" ref={dropdownRef}>
             <button
+              type="button"
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="flex items-center gap-1 p-1 text-muted-foreground hover:text-foreground"
             >
@@ -201,6 +203,7 @@ export default function Header() {
                             <div className="text-xs text-foreground">Theme</div>
                             <div className="flex gap-1">
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setTheme('light')
@@ -215,6 +218,7 @@ export default function Header() {
                                 <Sun className="h-3.5 w-3.5" />
                               </button>
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setTheme('system')
@@ -229,6 +233,7 @@ export default function Header() {
                                 <Monitor className="h-3.5 w-3.5" />
                               </button>
                               <button
+                                type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
                                   setTheme('dark')
@@ -246,6 +251,7 @@ export default function Header() {
                           </div>
 
                           <button
+                            type="button"
                             onClick={disconnect}
                             className={`
                               flex w-full cursor-pointer items-center justify-between rounded px-3 py-1.5 text-left
@@ -261,6 +267,7 @@ export default function Header() {
                   : (
                       <div className="space-y-1 p-1">
                         <button
+                          type="button"
                           onClick={() => {
                             setShowLoginModal(true)
                             setShowUserMenu(false)
@@ -275,6 +282,7 @@ export default function Header() {
                         </button>
 
                         <button
+                          type="button"
                           onClick={() => {
                             setShowLoginModal(true)
                             setShowUserMenu(false)
@@ -300,6 +308,7 @@ export default function Header() {
                           <div className="text-xs text-foreground">Theme</div>
                           <div className="flex gap-1">
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 setTheme('light')
@@ -314,6 +323,7 @@ export default function Header() {
                               <Sun className="h-3.5 w-3.5" />
                             </button>
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 setTheme('system')
@@ -328,6 +338,7 @@ export default function Header() {
                               <Monitor className="h-3.5 w-3.5" />
                             </button>
                             <button
+                              type="button"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 setTheme('dark')
@@ -362,10 +373,12 @@ export default function Header() {
 
 function MenuLink({ label }: { label: string }) {
   return (
-    <button className={`
-      flex w-full cursor-pointer items-center justify-between rounded px-3 py-1.5 text-left text-xs text-foreground
-      hover:bg-accent
-    `}
+    <button
+      type="button"
+      className={`
+        flex w-full cursor-pointer items-center justify-between rounded px-3 py-1.5 text-left text-xs text-foreground
+        hover:bg-accent
+      `}
     >
       {label}
     </button>

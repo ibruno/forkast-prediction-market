@@ -2,6 +2,7 @@ import antfu from '@antfu/eslint-config'
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss'
 
 export default antfu({
+  react: true,
   nextjs: true,
 }, {
   plugins: {
@@ -13,6 +14,7 @@ export default antfu({
     'better-tailwindcss/no-unregistered-classes': 'off',
     'node/prefer-global/process': 'off',
     'no-console': 'off',
+    'react-dom/no-dangerously-set-innerhtml': 'off',
     'better-tailwindcss/enforce-consistent-line-wrapping': ['error', {
       group: 'newLine',
       preferSingleLine: true,
