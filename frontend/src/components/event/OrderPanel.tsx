@@ -21,7 +21,6 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
 
   // Utility functions
   const getSelectedOutcome = tradingState.getSelectedOutcome
-  const getYesOutcome = tradingState.getYesOutcome
   const yesPrice = tradingState.yesPrice
   const noPrice = tradingState.noPrice
 
@@ -244,7 +243,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
           isSelected ? selectedClasses : defaultClasses
         } ${type === 'yes' ? 'text-md' : 'text-sm'}`}
       >
-        <span className="opacity-70">{type === 'yes' ? 'Yes' : 'No'}</span>
+        <span className="opacity-70">{type === 'yes' ? tradingState.yesOutcome?.name : 'No'}</span>
         <span className="font-bold">
           {price}
           ¢
@@ -315,7 +314,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
   function renderWinCard(isMobileVersion = false) {
     const outcomeName
         = tradingState.yesNoSelection === 'yes'
-          ? getYesOutcome()?.name || 'Yes'
+          ? tradingState.yesOutcome?.name || 'Yes'
           : getSelectedOutcome()?.name || 'No'
     const shares = tradingState.amount && !Number.isNaN(Number(tradingState.amount)) ? Number(tradingState.amount) : 1.1
     const valuePerShare
@@ -551,7 +550,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
                 <span>
                   {tradingState.selectedOutcomeForOrder
                     ? getSelectedOutcome()?.name
-                    : getYesOutcome()?.name || event.outcomes[0]?.name}
+                    : tradingState.yesOutcome?.name || event.outcomes[0]?.name}
                 </span>
                 <span>
                   Bal. $$
@@ -963,10 +962,10 @@ export default function OrderPanel({ event, isMobileVersion = false }: OrderPane
                   {tradingState.activeTab === 'sell'
                     ? tradingState.yesNoSelection === 'no'
                       ? 'Sell No'
-                      : 'Sell Yes'
+                      : `Sell ${tradingState.yesOutcome?.name}`
                     : tradingState.yesNoSelection === 'no'
                       ? 'Buy No'
-                      : 'Buy Yes'}
+                      : `Buy ${tradingState.yesOutcome?.name}`}
                 </>
               )}
         </Button>
