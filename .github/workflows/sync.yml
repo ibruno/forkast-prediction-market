@@ -29,12 +29,15 @@ jobs:
           git checkout main
           git merge upstream/main --no-edit || echo "Nothing to merge"
 
+      - name: Set git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Create dummy commit
         run: |
           git commit --allow-empty -m "chore: sync with forkast"
 
       - name: Push changes to origin
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           git push origin main
