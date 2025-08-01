@@ -1,9 +1,9 @@
-name: Fork Sync
+name: Sync Fork
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '*/5 * * * *'
+    - cron: '0 6 * * *'
 
 jobs:
   sync:
@@ -14,6 +14,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
+
+      - name: Skip if it's forkast
+        if: ${{ github.repository == 'forkast-prediction-market/forkast-prediction-market' }}
+        run: |
+          echo "This is the original repo. Skipping sync."
+          exit 0
 
       - name: Set safe directory
         run: |
