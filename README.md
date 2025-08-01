@@ -33,7 +33,7 @@ Follow these simple steps to launch your own prediction market:
 
 ### 1. Fork the Repository
 
-Click the "Fork" button in the top right corner.
+Click the "Fork" button in the top right corner
 
 ### 2. Configure Your Environment & Services
 
