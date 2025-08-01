@@ -7,16 +7,15 @@ import Image from 'next/image'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { useTradingState } from '@/hooks/useTradingState'
 import { calculateWinnings, mockUser } from '@/lib/mockData'
 
 interface OrderPanelProps {
   event: Market
   isMobileVersion?: boolean
+  tradingState: ReturnType<typeof import('@/hooks/useTradingState').useTradingState>
 }
 
-export default function OrderPanel({ event, isMobileVersion = false }: OrderPanelProps) {
-  const tradingState = useTradingState({ event })
+export default function OrderPanel({ event, isMobileVersion = false, tradingState }: OrderPanelProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Utility functions

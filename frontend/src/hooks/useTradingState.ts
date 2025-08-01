@@ -9,7 +9,7 @@ export function useTradingState({ event }: UseTradingStateProps) {
   // Trading-related state
   const [activeTab, setActiveTab] = useState('buy')
   const [amount, setAmount] = useState('')
-  const [selectedOutcomeForOrder, setSelectedOutcomeForOrder] = useState('')
+  const [selectedOutcomeForOrder, setSelectedOutcomeForOrder] = useState<string | null>(null)
   const [yesNoSelection, setYesNoSelection] = useState<'yes' | 'no' | null>('yes')
   const [isLoading, setIsLoading] = useState(false)
   const [showWinCard, setShowWinCard] = useState(false)
@@ -19,7 +19,12 @@ export function useTradingState({ event }: UseTradingStateProps) {
 
   // Utility functions
   const getSelectedOutcome = useCallback(
-    () => event.outcomes.find(o => o.id === selectedOutcomeForOrder),
+    () => {
+      if (!selectedOutcomeForOrder) {
+        return event.outcomes[0] || null
+      }
+      return event.outcomes.find(o => o.id === selectedOutcomeForOrder) || null
+    },
     [event.outcomes, selectedOutcomeForOrder],
   )
 

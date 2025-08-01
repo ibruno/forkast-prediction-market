@@ -1174,7 +1174,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         </div>
         {/* Right column - Order panel (Sticky) - Hidden on mobile */}
         <div className="hidden md:block lg:sticky lg:top-28 lg:self-start">
-          <OrderPanel event={event} />
+          <OrderPanel event={event} tradingState={tradingState} />
         </div>
       </main>
 
@@ -1342,7 +1342,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             </div>
 
             {/* Modal Content */}
-            <OrderPanel event={event} isMobileVersion={true} />
+            <OrderPanel event={event} isMobileVersion={true} tradingState={tradingState} />
           </div>
         </div>
       )}
