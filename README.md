@@ -1,4 +1,4 @@
-# 🚀 Launch Your Own Decentralized Prediction Market in Minutes!
+# 🚀 Launch Your Own Decentralized Prediction Market in Minutes
 
 Welcome to the open-source project that revolutionizes how you can launch and monetize your own Web3 prediction market, similar to Polymarket, but with complete control and transparency.
 
