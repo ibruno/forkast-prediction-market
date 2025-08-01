@@ -93,34 +93,6 @@ export async function fetchEvents(
   }
 }
 
-export async function fetchEventBySlug(
-  slug: string,
-): Promise<EventWithMarkets | null> {
-  const cacheKey = `event-${slug}`
-  const cached = getCachedData<EventWithMarkets>(cacheKey)
-  if (cached)
-    return cached
-
-  try {
-    const baseUrl = getBaseUrl()
-    const response = await fetch(`${baseUrl}/api/events/${slug}`)
-
-    if (!response.ok) {
-      if (response.status === 404)
-        return null
-      throw new Error(`Failed to fetch event: ${response.status}`)
-    }
-
-    const data = await response.json()
-    setCachedData(cacheKey, data)
-    return data
-  }
-  catch (error) {
-    console.error('Error fetching event:', error)
-    return null
-  }
-}
-
 export interface RelatedEvent {
   id: number
   slug: string

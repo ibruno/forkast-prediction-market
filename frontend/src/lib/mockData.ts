@@ -1,6 +1,6 @@
 import type { EventWithMarkets, Tag } from './supabase'
 import type { FilterPill, Market, MarketCategory } from '@/types'
-import { fetchEventBySlug, fetchEvents, fetchTags } from './data'
+import { fetchEvents, fetchTags } from './data'
 
 // Function to form complete URL for Supabase Storage images
 export function getSupabaseImageUrl(iconPath: string | null): string | null {
@@ -667,20 +667,5 @@ export async function getAllMarkets(
   catch (error) {
     console.error('Error fetching markets:', error)
     return mockMarkets // fallback to mock data
-  }
-}
-
-// Function to fetch specific market by slug
-export async function getMarketBySlug(slug: string): Promise<Market | null> {
-  try {
-    const event = await fetchEventBySlug(slug)
-    if (!event)
-      return null
-
-    return convertEventToMarket(event)
-  }
-  catch (error) {
-    console.error('Error fetching market by slug:', error)
-    return null
   }
 }
