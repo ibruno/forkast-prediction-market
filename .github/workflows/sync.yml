@@ -1,12 +1,12 @@
 name: Fork Sync
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '*/5 * * * *'
-  workflow_dispatch:
 
 jobs:
-  commit-after-sync:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout fork
@@ -23,6 +23,10 @@ jobs:
         run: |
           git remote get-url upstream || git remote add upstream https://github.com/forkast-prediction-market/forkast-prediction-market.git
           git fetch upstream
+
+      - name: Fix origin URL to fork
+        run: |
+          git remote set-url origin https://github.com/${{ github.repository }}.git
 
       - name: Merge upstream/main into fork
         run: |
