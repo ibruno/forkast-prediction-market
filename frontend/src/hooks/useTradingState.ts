@@ -1,5 +1,5 @@
 import type { Market } from '@/types'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 interface UseTradingStateProps {
   event: Market
@@ -32,6 +32,8 @@ export function useTradingState({ event }: UseTradingStateProps) {
     () => event.outcomes.find(o => o.isYes === true),
     [event.outcomes],
   )
+
+  const isMultiOutcome = useMemo(() => event.outcomes.length > 2, [event])
 
   const yesOutcome = getYesOutcome()
   const primaryProbability = yesOutcome
@@ -97,6 +99,7 @@ export function useTradingState({ event }: UseTradingStateProps) {
     primaryProbability,
     yesPrice,
     noPrice,
+    isMultiOutcome,
 
     // Utility functions
     formatValue,

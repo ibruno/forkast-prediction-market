@@ -242,7 +242,15 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
           isSelected ? selectedClasses : defaultClasses
         } ${type === 'yes' ? 'text-md' : 'text-sm'}`}
       >
-        <span className="opacity-70">{type === 'yes' ? tradingState.yesOutcome?.name : 'No'}</span>
+        <span className="opacity-70">
+          {type === 'yes'
+            ? tradingState.isMultiOutcome
+              ? 'Yes'
+              : event.outcomes[0].name
+            : tradingState.isMultiOutcome
+              ? 'No'
+              : event.outcomes[1].name }
+        </span>
         <span className="font-bold">
           {price}
           ¢
@@ -960,11 +968,11 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
                 <>
                   {tradingState.activeTab === 'sell'
                     ? tradingState.yesNoSelection === 'no'
-                      ? 'Sell No'
-                      : `Sell ${tradingState.yesOutcome?.name}`
+                      ? `Sell ${tradingState.isMultiOutcome ? 'No' : event.outcomes[1].name}`
+                      : `Sell ${tradingState.isMultiOutcome ? 'Yes' : event.outcomes[0].name}`
                     : tradingState.yesNoSelection === 'no'
-                      ? 'Buy No'
-                      : `Buy ${tradingState.yesOutcome?.name}`}
+                      ? `Buy ${tradingState.isMultiOutcome ? 'No' : event.outcomes[1].name}`
+                      : `Buy ${tradingState.isMultiOutcome ? 'Yes' : event.outcomes[0].name}`}
                 </>
               )}
         </Button>
