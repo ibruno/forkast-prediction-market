@@ -91,7 +91,7 @@ export default async function MarketPage({ params }: MarketPageProps) {
       .select(
         `
         *,
-        markets(
+        markets!inner(
           condition_id,
           name,
           slug,
@@ -103,7 +103,11 @@ export default async function MarketPage({ params }: MarketPageProps) {
           is_resolved,
           current_volume_24h,
           total_volume,
-          open_interest
+          open_interest,
+          conditions!markets_condition_id_fkey(
+            oracle,
+            outcomes(*)
+          )
         ),
         event_tags(
           tag:tags(
@@ -118,50 +122,22 @@ export default async function MarketPage({ params }: MarketPageProps) {
       .eq('slug', slug)
       .single()
 
-    if (error || !data) {
+    if (error) {
+      console.error('Error fetching event:', error)
       notFound()
     }
 
-    // Fetch outcomes for each market
-    const marketsWithOutcomes = []
-
-    if (data.markets) {
-      for (const market of data.markets) {
-        const { data: outcomes } = await supabaseAdmin
-          .from('outcomes')
-          .select('*')
-          .eq('condition_id', market.condition_id)
-          .order('outcome_index')
-
-        marketsWithOutcomes.push({
-          ...market,
-          outcomes: outcomes || [],
-        })
-      }
-    }
-
-    // Fetch oracle once per event (using the first market)
-    let eventOracle = null
-    if (data.markets && data.markets.length > 0) {
-      const { data: condition } = await supabaseAdmin
-        .from('conditions')
-        .select('oracle')
-        .eq('id', data.markets[0].condition_id)
-        .single()
-
-      eventOracle = condition?.oracle || null
-    }
-
-    // Transformar dados
+    // Transform data to include outcomes from conditions
     const transformedData = {
       ...data,
       tags: data.event_tags?.map((et: any) => et.tag).filter(Boolean) || [],
-      markets: marketsWithOutcomes,
+      markets: data.markets.map((market: any) => ({
+        ...market,
+        oracle: market.conditions?.oracle,
+        outcomes: market.conditions?.outcomes || [],
+      })),
     }
     const market = convertEventToMarket(transformedData)
-
-    // Add event oracle to market
-    market.oracle = eventOracle
 
     return <EventDetail event={market} />
   }
