@@ -347,7 +347,7 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
       })
     }
 
-    const isMultiOutcome = event.outcomes.length > 2
+    const isMultiOutcome = event.active_markets_count > 1
     let outcomeLabel = outcomeName
     if (isMultiOutcome) {
       const selectedOutcome = getSelectedOutcome()
@@ -464,7 +464,7 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
     return (
       <div className={containerClasses}>
         {/* Display the selected option (only for multi-outcome) */}
-        {event.outcomes.length > 2
+        {event.active_markets_count > 1
           && tradingState.selectedOutcomeForOrder
           && !isMobileVersion && (
           <div className="bg-muted/20 mb-4 rounded-lg">

@@ -1,6 +1,7 @@
 // Market Types
 export interface Market {
   id: string
+  active_markets_count: number
   slug: string
   title: string
   description: string

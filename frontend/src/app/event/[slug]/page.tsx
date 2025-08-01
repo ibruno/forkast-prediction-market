@@ -12,7 +12,7 @@ interface MarketPageProps {
 // Function to convert Event from Supabase to Market (server-side)
 function convertEventToMarket(event: any): Market {
   // Se o evento tem apenas 1 market, usamos os outcomes como Yes/No
-  if (event.markets.length === 1) {
+  if (event.active_markets_count === 1) {
     const market = event.markets[0]
     const outcomes = market.outcomes.map((outcome: any) => ({
       id: `${event.id}-${outcome.outcome_index}`,
@@ -26,6 +26,7 @@ function convertEventToMarket(event: any): Market {
 
     return {
       id: event.id.toString(),
+      active_markets_count: event.active_markets_count,
       slug: event.slug,
       title: market.short_title || market.name,
       description: market.description || event.description || '',
@@ -61,6 +62,7 @@ function convertEventToMarket(event: any): Market {
 
   return {
     id: event.id.toString(),
+    active_markets_count: event.active_markets_count,
     slug: event.slug,
     title: event.title,
     description: event.description || '',
@@ -137,7 +139,10 @@ export default async function MarketPage({ params }: MarketPageProps) {
         outcomes: market.conditions?.outcomes || [],
       })),
     }
+
     const market = convertEventToMarket(transformedData)
+
+    console.log(transformedData)
 
     return <EventDetail event={market} />
   }

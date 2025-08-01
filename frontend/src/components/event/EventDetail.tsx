@@ -178,8 +178,8 @@ export default function EventDetail({ event }: EventDetailProps) {
 
   // Auto-select outcome for all markets (binary and multi-outcome)
   useLayoutEffect(() => {
-    if (!tradingState.selectedOutcomeForOrder && event.outcomes.length > 0) {
-      if (event.outcomes.length === 2) {
+    if (!tradingState.selectedOutcomeForOrder && event.active_markets_count > 0) {
+      if (event.active_markets_count === 1) {
         // For binary markets, select the "Yes" option (isYes = true)
         const yesOutcome = getYesOutcome()
         if (yesOutcome) {
@@ -192,7 +192,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           tradingState.setYesNoSelection('yes')
         }
       }
-      else if (event.outcomes.length > 2) {
+      else if (event.active_markets_count > 1) {
         // For multi-option markets, select option with highest probability
         const sortedOutcomes = [...event.outcomes].sort(
           (a, b) => b.probability - a.probability,
@@ -204,7 +204,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         }
       }
     }
-  }, [event.outcomes, tradingState.selectedOutcomeForOrder, getYesOutcome, tradingState])
+  }, [event.active_markets_count, event.outcomes, tradingState.selectedOutcomeForOrder, getYesOutcome, tradingState])
 
   // Block body scroll when mobile modal is open
   useEffect(() => {
@@ -358,7 +358,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           <div className="mt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {event.outcomes.length <= 2
+                {event.active_markets_count === 1
                   ? (
                       <>
                         <span
@@ -447,7 +447,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* List of Outcomes (only if > 2) */}
-          {event.outcomes.length > 2 && (
+          {event.active_markets_count > 1 && (
             <div className="mt-6 overflow-hidden bg-background">
               {/* Header */}
               <div className={`
@@ -1179,7 +1179,7 @@ export default function EventDetail({ event }: EventDetailProps) {
       </main>
 
       {/* Floating buttons for mobile - only binary markets */}
-      {event.outcomes.length === 2 && (
+      {event.active_markets_count === 1 && (
         <div className="border-border/50 fixed bottom-0 left-0 right-0 border-t bg-background p-4 md:hidden">
           <div className="flex gap-2">
             <Button
