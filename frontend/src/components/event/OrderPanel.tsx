@@ -244,10 +244,10 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
       >
         <span className="opacity-70">
           {type === 'yes'
-            ? tradingState.isMultiOutcome
+            ? tradingState.isMultiMarket
               ? 'Yes'
               : event.outcomes[0].name
-            : tradingState.isMultiOutcome
+            : tradingState.isMultiMarket
               ? 'No'
               : event.outcomes[1].name }
         </span>
@@ -347,9 +347,8 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
       })
     }
 
-    const isMultiOutcome = event.active_markets_count > 1
     let outcomeLabel = outcomeName
-    if (isMultiOutcome) {
+    if (tradingState.isMultiMarket) {
       const selectedOutcome = getSelectedOutcome()
       if (selectedOutcome) {
         outcomeLabel = `${selectedOutcome.name} - ${
@@ -968,11 +967,11 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
                 <>
                   {tradingState.activeTab === 'sell'
                     ? tradingState.yesNoSelection === 'no'
-                      ? `Sell ${tradingState.isMultiOutcome ? 'No' : event.outcomes[1].name}`
-                      : `Sell ${tradingState.isMultiOutcome ? 'Yes' : event.outcomes[0].name}`
+                      ? `Sell ${tradingState.isMultiMarket ? 'No' : event.outcomes[1].name}`
+                      : `Sell ${tradingState.isMultiMarket ? 'Yes' : event.outcomes[0].name}`
                     : tradingState.yesNoSelection === 'no'
-                      ? `Buy ${tradingState.isMultiOutcome ? 'No' : event.outcomes[1].name}`
-                      : `Buy ${tradingState.isMultiOutcome ? 'Yes' : event.outcomes[0].name}`}
+                      ? `Buy ${tradingState.isMultiMarket ? 'No' : event.outcomes[1].name}`
+                      : `Buy ${tradingState.isMultiMarket ? 'Yes' : event.outcomes[0].name}`}
                 </>
               )}
         </Button>

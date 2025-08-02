@@ -33,7 +33,7 @@ export function useTradingState({ event }: UseTradingStateProps) {
     [event.outcomes],
   )
 
-  const isMultiOutcome = useMemo(() => event.active_markets_count > 1, [event])
+  const isMultiMarket = useMemo(() => event.active_markets_count > 1, [event])
 
   const yesOutcome = getYesOutcome()
   const primaryProbability = yesOutcome
@@ -99,7 +99,7 @@ export function useTradingState({ event }: UseTradingStateProps) {
     primaryProbability,
     yesPrice,
     noPrice,
-    isMultiOutcome,
+    isMultiMarket,
 
     // Utility functions
     formatValue,
