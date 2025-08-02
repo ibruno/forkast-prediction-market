@@ -7,6 +7,7 @@ on:
 
 jobs:
   sync:
+    if: ${{ github.repository != 'forkast-prediction-market/forkast-prediction-market' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout fork
@@ -14,12 +15,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0
-
-      - name: Skip if it's forkast
-        if: ${{ github.repository == 'forkast-prediction-market/forkast-prediction-market' }}
-        run: |
-          echo "This is the original repo. Skipping sync."
-          exit 0
 
       - name: Set safe directory
         run: |
