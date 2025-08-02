@@ -25,6 +25,39 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var theme = localStorage.getItem('theme');
+                  var resolvedTheme;
+                  
+                  if (theme === 'dark' || theme === 'light') {
+                    resolvedTheme = theme;
+                  } else {
+                    // Check system preference
+                    var mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                    resolvedTheme = mediaQuery.matches ? 'dark' : 'light';
+                  }
+                  
+                  // Apply theme immediately
+                  var root = document.documentElement;
+                  if (resolvedTheme === 'dark') {
+                    root.classList.add('dark');
+                  } else {
+                    root.classList.remove('dark');
+                  }
+                } catch (e) {
+                  // Fallback to light theme if localStorage is not available
+                  document.documentElement.classList.remove('dark');
+                }
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="antialiased">
         <ThemeProvider>
           <ThemeColor />

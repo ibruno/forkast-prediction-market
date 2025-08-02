@@ -16,24 +16,35 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>('system')
   const [actualTheme, setActualTheme] = useState<'dark' | 'light'>('light')
+  const [mounted, setMounted] = useState(false)
 
+  // Initialize theme from localStorage on mount
   useLayoutEffect(() => {
-    // Check for saved theme preference or default to system
-    const savedTheme = localStorage.getItem('theme') as Theme
-    if (
-      savedTheme
-      && (savedTheme === 'dark'
-        || savedTheme === 'light'
-        || savedTheme === 'system')
-    ) {
-      setTheme(savedTheme)
+    try {
+      const savedTheme = localStorage.getItem('theme') as Theme
+      if (
+        savedTheme
+        && (savedTheme === 'dark'
+          || savedTheme === 'light'
+          || savedTheme === 'system')
+      ) {
+        setTheme(savedTheme)
+      }
+      else {
+        setTheme('system')
+      }
     }
-    else {
+    catch {
+      // localStorage not available, keep default
       setTheme('system')
     }
+    setMounted(true)
   }, [])
 
   useLayoutEffect(() => {
+    if (!mounted)
+      return
+
     function updateActualTheme() {
       let resolvedTheme: 'dark' | 'light'
 
@@ -59,7 +70,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Save theme preference
-      localStorage.setItem('theme', theme)
+      try {
+        localStorage.setItem('theme', theme)
+      }
+      catch {
+        // localStorage not available
+      }
     }
 
     updateActualTheme()
@@ -70,7 +86,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       mediaQuery.addEventListener('change', updateActualTheme)
       return () => mediaQuery.removeEventListener('change', updateActualTheme)
     }
-  }, [theme])
+  }, [theme, mounted])
 
   const toggleTheme = useCallback(() => {
     setTheme((prev) => {

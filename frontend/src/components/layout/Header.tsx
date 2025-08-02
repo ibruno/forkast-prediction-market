@@ -14,7 +14,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
-  const { theme, setTheme } = useTheme()
+  const { theme, setTheme, actualTheme } = useTheme()
   const { user, disconnect, isInitialized } = useAuth()
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -209,7 +209,7 @@ export default function Header() {
                                   setTheme('light')
                                 }}
                                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                                  theme === 'light'
+                                  actualTheme === 'light'
                                     ? 'bg-primary text-primary-foreground'
                                     : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
                                 }`}
@@ -314,7 +314,7 @@ export default function Header() {
                                 setTheme('light')
                               }}
                               className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
-                                theme === 'light'
+                                actualTheme === 'light'
                                   ? 'bg-primary text-primary-foreground'
                                   : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
                               }`}
