@@ -1,5 +1,5 @@
 import type { EventWithMarkets, Tag } from './supabase'
-import type { FilterPill, Event, EventCategory } from '@/types'
+import type { Event, EventCategory, FilterPill } from '@/types'
 import { fetchEvents, fetchTags } from './data'
 
 // Function to form complete URL for Supabase Storage images
@@ -17,6 +17,7 @@ export function getSupabaseImageUrl(iconPath: string | null): string | null {
 export const mockMarkets: Event[] = [
   {
     id: '1',
+    active_markets_count: 1,
     slug: 'will-elon-musk-announce-a-presidential-run-by-end-of-2025',
     title: 'Will Elon Musk announce a Presidential run by end of 2025?',
     description:
@@ -53,6 +54,7 @@ export const mockMarkets: Event[] = [
   },
   {
     id: '2',
+    active_markets_count: 1,
     slug: 'will-bitcoin-reach-150000-by-end-of-2025',
     title: 'Will Bitcoin reach $150,000 by end of 2025?',
     description:
@@ -89,6 +91,7 @@ export const mockMarkets: Event[] = [
   },
   {
     id: '3',
+    active_markets_count: 1,
     slug: 'will-openai-release-gpt-5-by-mid-2025',
     title: 'Will OpenAI release GPT-5 by mid-2025?',
     description:
@@ -124,6 +127,7 @@ export const mockMarkets: Event[] = [
   },
   {
     id: '4',
+    active_markets_count: 1,
     slug: 'will-taylor-swift-win-a-grammy-for-album-of-the-year-at-the-2026-ceremony',
     title:
       'Will Taylor Swift win a Grammy for Album of the Year at the 2026 ceremony?',
@@ -160,6 +164,7 @@ export const mockMarkets: Event[] = [
   },
   {
     id: '5',
+    active_markets_count: 1,
     slug: 'who-will-win-the-2026-fifa-world-cup',
     title: 'Who will win the 2026 FIFA World Cup?',
     description:
@@ -217,6 +222,7 @@ export const mockMarkets: Event[] = [
   },
   {
     id: '6',
+    active_markets_count: 1,
     slug: 'will-a-major-earthquake-70-hit-california-in-2025',
     title: 'Will a major earthquake (7.0+) hit California in 2025?',
     description:
@@ -266,7 +272,9 @@ export const marketCategories: {
   { id: 'world', label: 'World' },
 ]
 
-export function getFilterPillsByCategory(category: EventCategory): FilterPill[] {
+export function getFilterPillsByCategory(
+  category: EventCategory,
+): FilterPill[] {
   const basePills: FilterPill[] = [
     { id: 'all', label: 'All', category, isActive: true },
   ]
@@ -530,6 +538,7 @@ function convertEventToMarket(event: EventWithMarkets): Event {
 
     return {
       id: event.id.toString(),
+      active_markets_count: event.markets.length,
       slug: event.slug,
       title: market.short_title || market.name,
       description: market.description || event.description || '',
@@ -563,6 +572,7 @@ function convertEventToMarket(event: EventWithMarkets): Event {
 
   return {
     id: event.id.toString(),
+    active_markets_count: event.markets.length,
     slug: event.slug,
     title: event.title,
     description: event.description || '',

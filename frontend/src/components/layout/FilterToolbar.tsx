@@ -1,6 +1,6 @@
 'use client'
 
-import type { FilterPill, EventCategory } from '@/types'
+import type { EventCategory, FilterPill } from '@/types'
 import { Search, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
