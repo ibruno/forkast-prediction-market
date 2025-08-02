@@ -1,8 +1,8 @@
-import type { Market } from '@/types'
+import type { Event } from '@/types'
 import { useCallback, useMemo, useState } from 'react'
 
 interface UseTradingStateProps {
-  event: Market
+  event: Event
 }
 
 export function useTradingState({ event }: UseTradingStateProps) {

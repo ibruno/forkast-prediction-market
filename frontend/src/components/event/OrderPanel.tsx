@@ -1,6 +1,6 @@
 'use client'
 
-import type { Market } from '@/types'
+import type { Event } from '@/types'
 import confetti from 'canvas-confetti'
 import { BanknoteIcon, CircleCheckIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { calculateWinnings, mockUser } from '@/lib/mockData'
 
 interface OrderPanelProps {
-  event: Market
+  event: Event
   isMobileVersion?: boolean
   tradingState: ReturnType<typeof import('@/hooks/useTradingState').useTradingState>
 }

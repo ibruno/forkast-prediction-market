@@ -1,6 +1,6 @@
 'use client'
 
-import type { FilterPill, MarketCategory } from '@/types'
+import type { FilterPill, EventCategory } from '@/types'
 import { Search, Star } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input'
 import { getFilterPillsByCategory } from '@/lib/mockData'
 
 interface FilterToolbarProps {
-  activeCategory: MarketCategory
+  activeCategory: EventCategory
   searchQuery: string
   onSearchChange: (query: string) => void
   showFavoritesOnly: boolean

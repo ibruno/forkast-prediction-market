@@ -1,6 +1,6 @@
 'use client'
 
-import type { Market, MarketCategory } from '@/types'
+import type { Event, EventCategory } from '@/types'
 import { BarChart3, Search, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -9,7 +9,7 @@ import EventCard from './EventCard'
 import EventCardSkeleton from './EventCardSkeleton'
 
 interface EventGridProps {
-  activeCategory: MarketCategory
+  activeCategory: EventCategory
   searchQuery: string
   showFavoritesOnly: boolean
   favoriteMarkets: Set<string>
@@ -25,7 +25,7 @@ export default function EventGrid({
 }: EventGridProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [openCardId, setOpenCardId] = useState<string | null>(null)
-  const [events, setEvents] = useState<Market[]>([])
+  const [events, setEvents] = useState<Event[]>([])
 
   useEffect(() => {
     async function loadEvents() {
@@ -40,7 +40,7 @@ export default function EventGrid({
 
   // Filter events based on category and search
   const filteredEvents = events
-    .filter((event: Market) => {
+    .filter((event: Event) => {
       const matchesCategory
         = activeCategory === 'trending'
           ? true // Show all markets for trending, will be sorted by volume
@@ -61,7 +61,7 @@ export default function EventGrid({
 
       return matchesCategory && matchesSearch && matchesFavorites
     })
-    .sort((a: Market, b: Market) => {
+    .sort((a: Event, b: Event) => {
       // Sort by volume descending when trending category is active
       if (activeCategory === 'trending') {
         return b.volume - a.volume
@@ -138,7 +138,7 @@ export default function EventGrid({
     <main className="container mx-auto max-w-6xl px-4 py-3 md:px-6">
       {/* Events Grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredEvents.map((event: Market) => (
+        {filteredEvents.map((event: Event) => (
           <EventCard
             key={event.id}
             event={event}

@@ -1,7 +1,7 @@
 'use client'
 
 import type { RelatedEvent } from '@/lib/data'
-import type { Market } from '@/types'
+import type { Event } from '@/types'
 import {
   CheckIcon,
   HeartIcon,
@@ -32,7 +32,7 @@ import {
 import { formatOracleAddress, formatRules } from '@/lib/utils'
 
 interface EventDetailProps {
-  event: Market
+  event: Event
 }
 
 export default function EventDetail({ event }: EventDetailProps) {

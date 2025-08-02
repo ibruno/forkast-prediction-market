@@ -1,11 +1,11 @@
 // Market Types
-export interface Market {
+export interface Event {
   id: string
   active_markets_count: number
   slug: string
   title: string
   description: string
-  category: MarketCategory
+  category: EventCategory
   probability: number // 0-100
   volume: number // in USDC
   endDate: Date
@@ -30,7 +30,7 @@ export interface MarketOutcome {
   avatar?: string // URL for outcome avatar/image
 }
 
-export type MarketCategory = string // Dynamic categories from database
+export type EventCategory = string // Dynamic categories from database
 
 // User Types
 export interface User {
@@ -44,7 +44,7 @@ export interface User {
 export interface FilterPill {
   id: string
   label: string
-  category: MarketCategory
+  category: EventCategory
   isActive: boolean
 }
 

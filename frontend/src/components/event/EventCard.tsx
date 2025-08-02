@@ -1,6 +1,6 @@
 'use client'
 
-import type { Market } from '@/types'
+import type { Event } from '@/types'
 import confetti from 'canvas-confetti'
 import { ChevronsDown, ChevronsUp, DollarSign, Star } from 'lucide-react'
 import Image from 'next/image'
@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface EventCardProps {
-  event: Market
+  event: Event
   isOpen?: boolean
   onToggle?: (isOpen: boolean) => void
   isFavorited?: boolean

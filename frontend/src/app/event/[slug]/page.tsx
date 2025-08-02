@@ -1,17 +1,15 @@
-import type { Market } from '@/types'
+import type { Event } from '@/types'
 import { notFound } from 'next/navigation'
 import EventDetail from '@/components/event/EventDetail'
 import { supabaseAdmin } from '@/lib/supabase'
 
-interface MarketPageProps {
+interface EventPageProps {
   params: Promise<{
     slug: string
   }>
 }
 
-// Function to convert Event from Supabase to Market (server-side)
-function convertEventToMarket(event: any): Market {
-  // Se o evento tem apenas 1 market, usamos os outcomes como Yes/No
+function eventResource(event: any): Event {
   if (event.active_markets_count === 1) {
     const market = event.markets[0]
     const outcomes = market.outcomes.map((outcome: any) => ({
@@ -48,7 +46,6 @@ function convertEventToMarket(event: any): Market {
     }
   }
 
-  // Multiple markets
   const outcomes = event.markets.map((market: any) => ({
     id: `${event.id}-${market.slug}`,
     name: market.short_title || market.name,
@@ -83,11 +80,10 @@ function convertEventToMarket(event: any): Market {
   }
 }
 
-export default async function MarketPage({ params }: MarketPageProps) {
+export default async function EventPage({ params }: EventPageProps) {
   const { slug } = await params
 
   try {
-    // Direct query to Supabase (more reliable than internal fetch)
     const { data, error } = await supabaseAdmin
       .from('events')
       .select(
@@ -129,7 +125,6 @@ export default async function MarketPage({ params }: MarketPageProps) {
       notFound()
     }
 
-    // Transform data to include outcomes from conditions
     const transformedData = {
       ...data,
       tags: data.event_tags?.map((et: any) => et.tag).filter(Boolean) || [],
@@ -140,11 +135,11 @@ export default async function MarketPage({ params }: MarketPageProps) {
       })),
     }
 
-    const market = convertEventToMarket(transformedData)
+    const event = eventResource(transformedData)
 
     console.log(transformedData)
 
-    return <EventDetail event={market} />
+    return <EventDetail event={event} />
   }
   catch (error) {
     console.error('Error fetching event:', error)

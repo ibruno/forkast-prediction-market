@@ -1,6 +1,6 @@
 'use client'
 
-import type { MarketCategory } from '@/types'
+import type { EventCategory } from '@/types'
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useLayoutEffect, useState } from 'react'
 import EventGrid from '@/components/event/EventGrid'
@@ -12,8 +12,8 @@ function HomePageContent() {
   const searchParams = useSearchParams()
   const categoryFromURL = searchParams?.get('category')
 
-  const [activeCategory, setActiveCategory] = useState<MarketCategory>(
-    (categoryFromURL as MarketCategory) || 'trending',
+  const [activeCategory, setActiveCategory] = useState<EventCategory>(
+    (categoryFromURL as EventCategory) || 'trending',
   )
   const [searchQuery, setSearchQuery] = useState('')
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
@@ -24,7 +24,7 @@ function HomePageContent() {
   // Update category when URL params change
   useLayoutEffect(() => {
     if (categoryFromURL) {
-      setActiveCategory(categoryFromURL as MarketCategory)
+      setActiveCategory(categoryFromURL as EventCategory)
     }
   }, [categoryFromURL])
 

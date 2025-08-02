@@ -1,14 +1,14 @@
 'use client'
 
-import type { MarketCategory } from '@/types'
+import type { EventCategory } from '@/types'
 import { TrendingUp } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { getMainCategories } from '@/lib/mockData'
 
 interface NavigationTabsProps {
-  activeCategory: MarketCategory
-  onCategoryChange: (category: MarketCategory) => void
+  activeCategory: EventCategory
+  onCategoryChange: (category: EventCategory) => void
 }
 
 export default function NavigationTabs({
@@ -19,7 +19,7 @@ export default function NavigationTabs({
   const pathname = usePathname()
   const isHomePage = pathname === '/'
   const [categories, setCategories] = useState<
-    { id: MarketCategory, label: string }[]
+    { id: EventCategory, label: string }[]
   >([])
 
   useEffect(() => {
@@ -30,7 +30,7 @@ export default function NavigationTabs({
     loadCategories()
   }, [])
 
-  function handleCategoryClick(category: MarketCategory) {
+  function handleCategoryClick(category: EventCategory) {
     if (isHomePage) {
       // If on home page, use normal behavior
       onCategoryChange(category)

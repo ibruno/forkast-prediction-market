@@ -1,5 +1,5 @@
 import type { EventWithMarkets, Tag } from './supabase'
-import type { FilterPill, Market, MarketCategory } from '@/types'
+import type { FilterPill, Event, EventCategory } from '@/types'
 import { fetchEvents, fetchTags } from './data'
 
 // Function to form complete URL for Supabase Storage images
@@ -14,7 +14,7 @@ export function getSupabaseImageUrl(iconPath: string | null): string | null {
   return `${supabaseUrl}/storage/v1/object/public/forkast-assets/${iconPath}`
 }
 
-export const mockMarkets: Market[] = [
+export const mockMarkets: Event[] = [
   {
     id: '1',
     slug: 'will-elon-musk-announce-a-presidential-run-by-end-of-2025',
@@ -253,7 +253,7 @@ export const mockMarkets: Market[] = [
 ]
 
 export const marketCategories: {
-  id: MarketCategory
+  id: EventCategory
   label: string
 }[] = [
   { id: 'trending', label: 'Trending' },
@@ -266,7 +266,7 @@ export const marketCategories: {
   { id: 'world', label: 'World' },
 ]
 
-export function getFilterPillsByCategory(category: MarketCategory): FilterPill[] {
+export function getFilterPillsByCategory(category: EventCategory): FilterPill[] {
   const basePills: FilterPill[] = [
     { id: 'all', label: 'All', category, isActive: true },
   ]
@@ -514,7 +514,7 @@ export const mockUser = {
 // ============================================================
 
 // Function to convert Event from Supabase to Market for frontend
-function convertEventToMarket(event: EventWithMarkets): Market {
+function convertEventToMarket(event: EventWithMarkets): Event {
   // Se o evento tem apenas 1 market, usamos os outcomes como Yes/No
   if (event.markets.length === 1) {
     const market = event.markets[0]
@@ -583,7 +583,7 @@ function convertEventToMarket(event: EventWithMarkets): Market {
 }
 
 // Function to map database tags to frontend categories
-function getCategoryFromTags(tags: Tag[]): MarketCategory {
+function getCategoryFromTags(tags: Tag[]): EventCategory {
   // Find the first main tag (is_main_category = true)
   const mainTag = tags.find(tag => tag.is_main_category)
 
@@ -601,12 +601,12 @@ function getCategoryFromTags(tags: Tag[]): MarketCategory {
 
 // Function to fetch main categories from database
 export async function getMainCategories(): Promise<
-  { id: MarketCategory, label: string }[]
+  { id: EventCategory, label: string }[]
 > {
   try {
     const tags = await fetchTags(true) // apenas main categories
     const categories = tags.map(tag => ({
-      id: tag.slug as MarketCategory,
+      id: tag.slug as EventCategory,
       label: tag.name,
     }))
 
@@ -628,9 +628,9 @@ export async function getMainCategories(): Promise<
 
 // Function to fetch all markets/events
 export async function getAllMarkets(
-  category?: MarketCategory,
+  category?: EventCategory,
   limit?: number,
-): Promise<Market[]> {
+): Promise<Event[]> {
   try {
     let categorySlug = category
 
