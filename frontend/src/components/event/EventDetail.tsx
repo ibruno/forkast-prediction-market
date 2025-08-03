@@ -2,9 +2,7 @@
 
 import type { Event } from '@/types'
 import {
-  CheckIcon,
   RefreshCwIcon,
-  ShareIcon,
   SparklesIcon,
   StarIcon,
   TrendingDownIcon,
@@ -15,6 +13,7 @@ import PredictionChart from '@/components/charts/PredictionChart'
 import EventActivity from '@/components/event/EventActivity'
 import EventComments from '@/components/event/EventComments'
 import RelatedEvents from '@/components/event/EventRelated'
+import EventShare from '@/components/event/EventShare'
 import EventTopHolders from '@/components/event/EventTopHolders'
 import OrderPanel from '@/components/event/OrderPanel'
 import Header from '@/components/layout/Header'
@@ -45,7 +44,6 @@ export default function EventDetail({ event }: EventDetailProps) {
   const [activeCommentsTab, setActiveCommentsTab] = useState('comments')
   const [rulesExpanded, setRulesExpanded] = useState(false)
   const [isFavorite, setIsFavorite] = useState(false)
-  const [shareSuccess, setShareSuccess] = useState(false)
   const [contextExpanded, setContextExpanded] = useState(false)
   const [isGeneratingContext, setIsGeneratingContext] = useState(false)
   const [generatedContext, setGeneratedContext] = useState<string[]>([])
@@ -237,19 +235,6 @@ export default function EventDetail({ event }: EventDetailProps) {
     setIsFavorite(!isFavorite)
   }
 
-  // Handle share
-  async function handleShare() {
-    try {
-      const url = window.location.href
-      await navigator.clipboard.writeText(url)
-      setShareSuccess(true)
-      setTimeout(() => setShareSuccess(false), 2000)
-    }
-    catch (error) {
-      console.error('Error copying URL:', error)
-    }
-  }
-
   const { timeRanges, eventTabs, trendingData } = mockMarketDetails
 
   return (
@@ -286,16 +271,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 }`}
                 onClick={handleFavoriteToggle}
               />
-              {shareSuccess
-                ? (
-                    <CheckIcon className="h-4 w-4 text-emerald-500" />
-                  )
-                : (
-                    <ShareIcon
-                      className="h-4 w-4 cursor-pointer transition-colors hover:text-foreground"
-                      onClick={handleShare}
-                    />
-                  )}
+              <EventShare />
             </div>
           </div>
 
