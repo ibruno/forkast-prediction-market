@@ -12,6 +12,7 @@ import {
 import Image from 'next/image'
 import { useEffect, useLayoutEffect, useState } from 'react'
 import PredictionChart from '@/components/charts/PredictionChart'
+import EventActivity from '@/components/event/EventActivity'
 import EventComments from '@/components/event/EventComments'
 import RelatedEvents from '@/components/event/EventRelated'
 import EventTopHolders from '@/components/event/EventTopHolders'
@@ -51,7 +52,6 @@ export default function EventDetail({ event }: EventDetailProps) {
   const [activeTimeRange, setActiveTimeRange] = useState('1D')
   const [activeCommentsTab, setActiveCommentsTab] = useState('comments')
   const [rulesExpanded, setRulesExpanded] = useState(false)
-  const [activityFilter, setActivityFilter] = useState('All')
   const [isFavorite, setIsFavorite] = useState(false)
   const [shareSuccess, setShareSuccess] = useState(false)
   const [contextExpanded, setContextExpanded] = useState(false)
@@ -799,91 +799,9 @@ export default function EventDetail({ event }: EventDetailProps) {
 
           {activeCommentsTab === 'comments' && <EventComments />}
           {activeCommentsTab === 'holders' && <EventTopHolders />}
-
-          {/* Activity */}
-          {activeCommentsTab === 'activity' && (
-            <div className="mt-6">
-              {/* Filters */}
-              <div className="mb-4 flex gap-2">
-                {mockMarketDetails.activityFilters.map(filter => (
-                  <button
-                    type="button"
-                    key={filter}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                      activityFilter === filter
-                        ? 'bg-muted text-foreground'
-                        : 'border-border/50 border hover:bg-muted/50'
-                    }`}
-                    onClick={() => setActivityFilter(filter)}
-                  >
-                    {filter}
-                  </button>
-                ))}
-              </div>
-
-              {/* List of Activities */}
-              <div className="space-y-4">
-                {mockMarketDetails.activities.map(activity => (
-                  <div
-                    key={activity.time}
-                    className="border-border/30 flex items-center gap-3 border-b py-2 last:border-b-0"
-                  >
-                    <Image
-                      src={activity.avatar}
-                      alt={activity.user}
-                      width={32}
-                      height={32}
-                      className="flex-shrink-0 rounded-full"
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm font-medium">
-                        {activity.user}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {' '}
-                        {activity.action}
-                        {' '}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {activity.amount}
-                      </span>
-                      <span
-                        className={`ml-1 text-sm font-semibold ${
-                          activity.type === 'Yes'
-                            ? 'text-emerald-600'
-                            : 'text-rose-600'
-                        }`}
-                      >
-                        {activity.type}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {' '}
-                        for
-                        {' '}
-                        {activity.market}
-                        {' '}
-                        at
-                        {' '}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {activity.price}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {' '}
-                        (
-                        {activity.total}
-                        )
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {activity.time}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {activeCommentsTab === 'activity' && <EventActivity />}
         </div>
+
         {/* Right column - Order panel (Sticky) - Hidden on mobile */}
         <div className="hidden gap-4 md:block lg:sticky lg:top-28 lg:grid lg:self-start">
           <OrderPanel event={event} tradingState={tradingState} />
