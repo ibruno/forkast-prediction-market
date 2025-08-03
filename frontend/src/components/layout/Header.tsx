@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/hooks/useTheme'
 import { mockUser } from '@/lib/mockData'
+import { sanitizeSvg } from '@/lib/utils'
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -21,16 +22,6 @@ export default function Header() {
   // Get site configuration from environment variables
   const siteName = process.env.NEXT_PUBLIC_SITE_NAME
   const logoSvg = process.env.NEXT_PUBLIC_SITE_LOGO_SVG
-
-  // Basic SVG sanitization to remove potential script tags and event handlers
-  function sanitizeSvg(svg: string) {
-    return svg
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/on\w+="[^"]*"/g, '')
-      .replace(/on\w+='[^']*'/g, '')
-      .replace(/javascript:/gi, '')
-      .replace(/data:/gi, '')
-  }
 
   const sanitizedLogoSvg = logoSvg ? sanitizeSvg(logoSvg) : ''
 

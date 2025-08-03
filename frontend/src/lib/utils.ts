@@ -33,3 +33,12 @@ export function formatOracleAddress(address: string): string {
   const suffix = address.substring(address.length - 4)
   return `${prefix}...${suffix}`
 }
+
+export function sanitizeSvg(svg: string) {
+  return svg
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/on\w+="[^"]*"/g, '')
+    .replace(/on\w+='[^']*'/g, '')
+    .replace(/javascript:/gi, '')
+    .replace(/data:/gi, '')
+}

@@ -26,7 +26,7 @@ import {
   formatVolume,
   mockMarketDetails,
 } from '@/lib/mockData'
-import { formatOracleAddress, formatRules } from '@/lib/utils'
+import { formatOracleAddress, formatRules, sanitizeSvg } from '@/lib/utils'
 
 interface EventDetailProps {
   event: Event
@@ -34,14 +34,6 @@ interface EventDetailProps {
 
 export default function EventDetail({ event }: EventDetailProps) {
   // Basic SVG sanitization function
-  function sanitizeSvg(svg: string) {
-    return svg
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      .replace(/on\w+="[^"]*"/g, '')
-      .replace(/on\w+='[^']*'/g, '')
-      .replace(/javascript:/gi, '')
-      .replace(/data:/gi, '')
-  }
 
   const POLYMARKET_COLORS = ['#2D9CDB', '#FF5952', '#27AE60', '#9B51E0']
 
