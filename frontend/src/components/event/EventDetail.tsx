@@ -250,7 +250,7 @@ export default function EventDetail({ event }: EventDetailProps) {
     }
   }
 
-  const { timeRanges, commentsTabs, trendingData } = mockMarketDetails
+  const { timeRanges, eventTabs, trendingData } = mockMarketDetails
 
   return (
     <div className="min-h-screen bg-background">
@@ -774,7 +774,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
           {/* Comments tabs */}
           <ul className="border-border/50 mt-8 flex h-12 gap-8 border-b text-sm font-semibold dark:border-border/20">
-            {commentsTabs.map(tab => (
+            {eventTabs.map(tab => (
               <li
                 key={tab}
                 className={`cursor-pointer transition-colors duration-200 ${
