@@ -362,9 +362,7 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
         className={`
           border-border/50 flex flex-col items-center justify-center rounded-lg border p-6
           dark:border-border/20
-          ${
-      isMobileVersion ? 'w-full' : 'w-full lg:w-[320px]'
-      }`}
+          ${isMobileVersion ? 'w-full' : 'w-full lg:w-[320px]'}`}
       >
         <CircleCheckIcon size={56} className="mb-2 text-primary" />
         <div className="mb-1 text-center text-xl font-bold text-primary">

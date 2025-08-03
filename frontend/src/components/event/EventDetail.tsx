@@ -1,6 +1,5 @@
 'use client'
 
-import type { RelatedEvent } from '@/lib/data'
 import type { Event } from '@/types'
 import {
   CheckIcon,
@@ -14,19 +13,18 @@ import {
   TrendingDownIcon,
 } from 'lucide-react'
 import Image from 'next/image'
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useState } from 'react'
 import PredictionChart from '@/components/charts/PredictionChart'
+import RelatedEvents from '@/components/event/EventRelated'
 import OrderPanel from '@/components/event/OrderPanel'
 import Header from '@/components/layout/Header'
 import NavigationTabs from '@/components/layout/NavigationTabs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useTradingState } from '@/hooks/useTradingState'
-import { fetchRelatedEvents } from '@/lib/data'
 import {
   formatDate,
   formatVolume,
-  getSupabaseImageUrl,
   mockMarketDetails,
 } from '@/lib/mockData'
 import { formatOracleAddress, formatRules } from '@/lib/utils'
@@ -65,8 +63,6 @@ export default function EventDetail({ event }: EventDetailProps) {
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
   const [dragStartY, setDragStartY] = useState<number | null>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [relatedEvents, setRelatedEvents] = useState<RelatedEvent[]>([])
-  const [loadingRelated, setLoadingRelated] = useState(false)
 
   // Utility functions - now using trading state
   const getYesOutcome = tradingState.getYesOutcome
@@ -264,31 +260,6 @@ export default function EventDetail({ event }: EventDetailProps) {
       console.error('Error copying URL:', error)
     }
   }
-
-  // Load related events
-  const loadRelatedEvents = useCallback(async () => {
-    if (loadingRelated || relatedEvents.length > 0)
-      return
-
-    setLoadingRelated(true)
-    try {
-      const related = await fetchRelatedEvents(event.slug)
-      setRelatedEvents(related)
-    }
-    catch (error) {
-      console.error('Error loading related events:', error)
-    }
-    finally {
-      setLoadingRelated(false)
-    }
-  }, [loadingRelated, relatedEvents.length, event.slug])
-
-  // Load related events when tab is clicked
-  useEffect(() => {
-    if (activeCommentsTab === 'related') {
-      loadRelatedEvents()
-    }
-  }, [activeCommentsTab, loadRelatedEvents])
 
   const { timeRanges, commentsTabs, trendingData } = mockMarketDetails
 
@@ -1110,71 +1081,11 @@ export default function EventDetail({ event }: EventDetailProps) {
               </div>
             </div>
           )}
-
-          {/* Related Markets */}
-          {activeCommentsTab === 'related' && (
-            <div className="mt-6 space-y-4">
-              {loadingRelated
-                ? (
-                    <div className="flex items-center justify-center py-8">
-                      <RefreshCwIcon className="h-6 w-6 animate-spin text-muted-foreground" />
-                      <span className="ml-2 text-sm text-muted-foreground">
-                        Loading related events...
-                      </span>
-                    </div>
-                  )
-                : relatedEvents.length > 0
-                  ? (
-                      relatedEvents.map(relatedEvent => (
-                        <div
-                          key={relatedEvent.id}
-                          className={`
-                            border-border/50 flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-all
-                            duration-200
-                            dark:border-border/20
-                            hover:bg-muted/50
-                          `}
-                          onClick={() =>
-                            window.open(`/event/${relatedEvent.slug}`, '_blank')}
-                        >
-                          <Image
-                            src={
-                              getSupabaseImageUrl(relatedEvent.icon_url)
-                              || `https://avatar.vercel.sh/${relatedEvent.slug}.png`
-                            }
-                            alt={relatedEvent.title}
-                            width={48}
-                            height={48}
-                            className="flex-shrink-0 rounded-lg"
-                          />
-                          <div className="flex-1">
-                            <h4 className="mb-1 line-clamp-2 text-sm font-medium">
-                              {relatedEvent.market.name}
-                            </h4>
-                            <div className="flex items-center gap-3 text-xs">
-                              <span className="text-muted-foreground">Vol. N/A</span>
-                              <span className="rounded bg-emerald-600/30 px-2 py-0.5 font-semibold text-emerald-600">
-                                Yes 50¢
-                              </span>
-                              <span className="rounded bg-rose-600/30 px-2 py-0.5 font-semibold text-rose-600">
-                                No 50¢
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    )
-                  : (
-                      <div className="py-8 text-center text-muted-foreground">
-                        <p className="text-sm">No related events found.</p>
-                      </div>
-                    )}
-            </div>
-          )}
         </div>
         {/* Right column - Order panel (Sticky) - Hidden on mobile */}
-        <div className="hidden md:block lg:sticky lg:top-28 lg:self-start">
+        <div className="hidden gap-4 md:block lg:sticky lg:top-28 lg:grid lg:self-start">
           <OrderPanel event={event} tradingState={tradingState} />
+          <RelatedEvents event={event} />
         </div>
       </main>
 

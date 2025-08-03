@@ -459,7 +459,7 @@ export const mockMarketDetails = {
 
   // UI configurations
   timeRanges: ['1H', '6H', '1D', '1W', '1M', 'ALL'],
-  commentsTabs: ['comments', 'holders', 'activity', 'related'],
+  commentsTabs: ['comments', 'holders', 'activity'],
   activityFilters: ['All', 'Min amount'],
 
   // Dummy data for statistics
