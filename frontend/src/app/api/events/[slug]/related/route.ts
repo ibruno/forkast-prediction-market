@@ -74,7 +74,7 @@ export async function GET(
       })
       .filter(event => event.common_tags_count > 0) // Only with common tags
       .sort((a, b) => b.common_tags_count - a.common_tags_count)
-      .slice(0, 5)
+      .slice(0, 3)
 
     return NextResponse.json(eventsWithCommonTags)
   }

@@ -21,7 +21,7 @@ export default function RelatedEvents({ event }: EventDetailProps) {
       setLoading(false)
     }
 
-    fetchEvents().then(() => {})
+    fetchEvents().catch(() => {})
   }, [event.slug])
 
   if (loading) {
