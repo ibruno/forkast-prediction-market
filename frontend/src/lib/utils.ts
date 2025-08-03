@@ -6,10 +6,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-/**
- * Função para tratar caracteres de escape em rules do JSON
- * Converte \n em quebras de linha e \" em aspas normais
- */
 export function formatRules(rules: string): string {
   if (!rules)
     return ''
@@ -21,10 +17,6 @@ export function formatRules(rules: string): string {
     .replace(/"$/, '') // Remove quotes at the end
 }
 
-/**
- * Função para formatar endereço do oracle (abreviado)
- * Converte 0x1234567890abcdef... em 0x1234...abcdef
- */
 export function formatOracleAddress(address: string): string {
   if (!address || !address.startsWith('0x'))
     return '0x0000...0000'
