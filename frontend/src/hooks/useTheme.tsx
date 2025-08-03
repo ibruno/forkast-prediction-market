@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useState } from 'react'
+import { createContext, use, useCallback, useLayoutEffect, useMemo, useState } from 'react'
 
 type Theme = 'dark' | 'light' | 'system'
 
@@ -106,14 +106,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }), [theme, toggleTheme, setTheme, actualTheme])
 
   return (
-    <ThemeContext.Provider value={contextValue}>
+    <ThemeContext value={contextValue}>
       {children}
-    </ThemeContext.Provider>
+    </ThemeContext>
   )
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext)
+  const context = use(ThemeContext)
   if (context === undefined) {
     throw new Error('useTheme must be used within a ThemeProvider')
   }
