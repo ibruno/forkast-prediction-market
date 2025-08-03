@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase'
 
 export async function GET(
   request: Request,
@@ -9,7 +9,7 @@ export async function GET(
     const { slug } = await params
 
     // Fetch related events based on shared tags
-    const { data: relatedEvents, error } = await supabase
+    const { data: relatedEvents, error } = await supabaseAdmin
       .from('events')
       .select(
         `
@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // Fetch current event tags
-    const { data: currentEventTags } = await supabase
+    const { data: currentEventTags } = await supabaseAdmin
       .from('events')
       .select(
         `

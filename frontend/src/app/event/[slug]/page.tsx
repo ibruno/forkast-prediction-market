@@ -137,8 +137,6 @@ export default async function EventPage({ params }: EventPageProps) {
 
     const event = eventResource(transformedData)
 
-    console.log(transformedData)
-
     return <EventDetail event={event} />
   }
   catch (error) {
