@@ -1,6 +1,8 @@
 'use client'
 
 import type { Event } from '@/types'
+import { DialogTitle } from '@radix-ui/react-dialog'
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
 import {
   RefreshCwIcon,
   SparklesIcon,
@@ -8,7 +10,7 @@ import {
   TrendingDownIcon,
 } from 'lucide-react'
 import Image from 'next/image'
-import { useEffect, useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import PredictionChart from '@/components/charts/PredictionChart'
 import EventActivity from '@/components/event/EventActivity'
 import EventComments from '@/components/event/EventComments'
@@ -19,12 +21,9 @@ import OrderPanel from '@/components/event/OrderPanel'
 import Header from '@/components/layout/Header'
 import NavigationTabs from '@/components/layout/NavigationTabs'
 import { Button } from '@/components/ui/button'
+import { Drawer, DrawerContent } from '@/components/ui/drawer'
 import { useTradingState } from '@/hooks/useTradingState'
-import {
-  formatDate,
-  formatVolume,
-  mockMarketDetails,
-} from '@/lib/mockData'
+import { formatDate, formatVolume, mockMarketDetails } from '@/lib/mockData'
 import { formatOracleAddress, formatRules, sanitizeSvg } from '@/lib/utils'
 
 interface EventDetailProps {
@@ -32,8 +31,6 @@ interface EventDetailProps {
 }
 
 export default function EventDetail({ event }: EventDetailProps) {
-  // Basic SVG sanitization function
-
   const POLYMARKET_COLORS = ['#2D9CDB', '#FF5952', '#27AE60', '#9B51E0']
 
   // Use custom trading state hook
@@ -48,8 +45,6 @@ export default function EventDetail({ event }: EventDetailProps) {
   const [isGeneratingContext, setIsGeneratingContext] = useState(false)
   const [generatedContext, setGeneratedContext] = useState<string[]>([])
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
-  const [dragStartY, setDragStartY] = useState<number | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
 
   // Utility functions - now using trading state
   const getYesOutcome = tradingState.getYesOutcome
@@ -188,24 +183,6 @@ export default function EventDetail({ event }: EventDetailProps) {
       }
     }
   }, [event.active_markets_count, event.outcomes, tradingState.selectedOutcomeForOrder, getYesOutcome, tradingState])
-
-  // Block body scroll when mobile modal is open
-  useEffect(() => {
-    if (isMobileModalOpen) {
-      document.body.style.overflow = 'hidden'
-      document.body.style.touchAction = 'none'
-    }
-    else {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.style.overflow = ''
-      document.body.style.touchAction = ''
-    }
-  }, [isMobileModalOpen])
 
   // Handle favorite toggle
   function handleFavoriteToggle() {
@@ -772,7 +749,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
         {/* Right column - Order panel (Sticky) - Hidden on mobile */}
         <div className="hidden gap-4 md:block lg:sticky lg:top-28 lg:grid lg:self-start">
-          <OrderPanel event={event} tradingState={tradingState} />
+          <OrderPanel event={event} />
           <RelatedEvents event={event} />
         </div>
       </main>
@@ -809,251 +786,15 @@ export default function EventDetail({ event }: EventDetailProps) {
         </div>
       )}
 
-      {/* Mobile bottom sheet */}
-      {isMobileModalOpen && (
-        <div className="fixed inset-0 z-[50] flex items-end md:hidden">
-          {/* Backdrop */}
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setIsMobileModalOpen(false)}
-            onTouchMove={e => e.preventDefault()}
-            onWheel={e => e.preventDefault()}
-          />
+      <Drawer open={isMobileModalOpen} onClose={() => setIsMobileModalOpen(false)}>
+        <DrawerContent>
+          <VisuallyHidden>
+            <DialogTitle>{event.title}</DialogTitle>
+          </VisuallyHidden>
 
-          {/* Modal content */}
-          <div
-            data-modal="mobile-sheet"
-            className={`
-              relative max-h-[90vh] w-full transform overflow-y-auto rounded-t-xl bg-background transition-transform
-              duration-300 ease-out
-            `}
-            onTouchStart={(e) => {
-              e.stopPropagation()
-              setDragStartY(e.touches[0].clientY)
-              setIsDragging(false)
-            }}
-            onTouchMove={(e) => {
-              if (dragStartY === null)
-                return
-
-              e.stopPropagation()
-              const currentY = e.touches[0].clientY
-              const deltaY = currentY - dragStartY
-
-              // Only allow dragging down
-              if (deltaY > 0) {
-                e.preventDefault()
-                setIsDragging(true)
-                const modal = e.currentTarget
-                modal.style.transform = `translateY(${Math.min(
-                  deltaY,
-                  200,
-                )}px)`
-                modal.style.opacity = String(Math.max(0.5, 1 - deltaY / 300))
-              }
-            }}
-            onTouchEnd={(e) => {
-              if (dragStartY === null)
-                return
-
-              e.stopPropagation()
-              const currentY = e.changedTouches[0].clientY
-              const deltaY = currentY - dragStartY
-              const modal = e.currentTarget
-
-              // Reset transform
-              modal.style.transform = ''
-              modal.style.opacity = ''
-
-              // Close if dragged down more than 100px
-              if (deltaY > 100) {
-                setIsMobileModalOpen(false)
-              }
-
-              setDragStartY(null)
-              setIsDragging(false)
-            }}
-            onMouseDown={(e) => {
-              // Support for Safari simulating mobile and desktop
-              e.preventDefault()
-              setDragStartY(e.clientY)
-              setIsDragging(false)
-            }}
-            onMouseMove={(e) => {
-              if (dragStartY === null || !isDragging)
-                return
-
-              e.preventDefault()
-              const currentY = e.clientY
-              const deltaY = currentY - dragStartY
-
-              // Only allow dragging down
-              if (deltaY > 0) {
-                const modal = e.currentTarget
-                modal.style.transform = `translateY(${Math.min(
-                  deltaY,
-                  200,
-                )}px)`
-                modal.style.opacity = String(Math.max(0.5, 1 - deltaY / 300))
-              }
-            }}
-            onMouseUp={(e) => {
-              if (dragStartY === null)
-                return
-
-              e.preventDefault()
-              const currentY = e.clientY
-              const deltaY = currentY - dragStartY
-              const modal = e.currentTarget
-
-              // Reset transform
-              modal.style.transform = ''
-              modal.style.opacity = ''
-
-              // Close if dragged down more than 100px
-              if (deltaY > 100) {
-                setIsMobileModalOpen(false)
-              }
-
-              setDragStartY(null)
-              setIsDragging(false)
-            }}
-          >
-            {/* Handle bar - grip to drag */}
-            <div
-              className="flex cursor-grab justify-center pb-2 pt-4 active:cursor-grabbing"
-              onMouseDown={(e) => {
-                // Start drag specifically on the handle bar
-                e.preventDefault()
-                e.stopPropagation()
-                setDragStartY(e.clientY)
-                setIsDragging(true)
-              }}
-              onTouchStart={(e) => {
-                // Start drag specifically on the handle bar
-                e.preventDefault()
-                e.stopPropagation()
-                setDragStartY(e.touches[0].clientY)
-                setIsDragging(true)
-              }}
-            >
-              <div className="h-1.5 w-24 rounded-full bg-black/20 shadow-sm" />
-            </div>
-
-            {/* Modal Content */}
-            <OrderPanel event={event} isMobileVersion={true} tradingState={tradingState} />
-          </div>
-        </div>
-      )}
-
-      {/* Global drag events for compatibility with Safari simulating mobile */}
-      {isMobileModalOpen && (
-        <div>
-          {isDragging && (
-            <div
-              className="fixed inset-0 z-[9998]"
-              onMouseMove={(e) => {
-                if (dragStartY === null)
-                  return
-
-                e.preventDefault()
-                const currentY = e.clientY
-                const deltaY = currentY - dragStartY
-
-                // Only allow dragging down
-                if (deltaY > 0) {
-                  const modal = document.querySelector(
-                    '[data-modal="mobile-sheet"]',
-                  ) as HTMLElement
-                  if (modal) {
-                    modal.style.transform = `translateY(${Math.min(
-                      deltaY,
-                      200,
-                    )}px)`
-                    modal.style.opacity = String(
-                      Math.max(0.5, 1 - deltaY / 300),
-                    )
-                  }
-                }
-              }}
-              onMouseUp={(e) => {
-                if (dragStartY === null)
-                  return
-
-                e.preventDefault()
-                const currentY = e.clientY
-                const deltaY = currentY - dragStartY
-                const modal = document.querySelector(
-                  '[data-modal="mobile-sheet"]',
-                ) as HTMLElement
-
-                if (modal) {
-                  // Reset transform
-                  modal.style.transform = ''
-                  modal.style.opacity = ''
-                }
-
-                // Close if dragged down more than 100px
-                if (deltaY > 100) {
-                  setIsMobileModalOpen(false)
-                }
-
-                setDragStartY(null)
-                setIsDragging(false)
-              }}
-              onTouchMove={(e) => {
-                if (dragStartY === null)
-                  return
-
-                e.preventDefault()
-                const currentY = e.touches[0].clientY
-                const deltaY = currentY - dragStartY
-
-                // Only allow dragging down
-                if (deltaY > 0) {
-                  const modal = document.querySelector(
-                    '[data-modal="mobile-sheet"]',
-                  ) as HTMLElement
-                  if (modal) {
-                    modal.style.transform = `translateY(${Math.min(
-                      deltaY,
-                      200,
-                    )}px)`
-                    modal.style.opacity = String(
-                      Math.max(0.5, 1 - deltaY / 300),
-                    )
-                  }
-                }
-              }}
-              onTouchEnd={(e) => {
-                if (dragStartY === null)
-                  return
-
-                e.preventDefault()
-                const currentY = e.changedTouches[0].clientY
-                const deltaY = currentY - dragStartY
-                const modal = document.querySelector(
-                  '[data-modal="mobile-sheet"]',
-                ) as HTMLElement
-
-                if (modal) {
-                  // Reset transform
-                  modal.style.transform = ''
-                  modal.style.opacity = ''
-                }
-
-                // Close if dragged down more than 100px
-                if (deltaY > 100) {
-                  setIsMobileModalOpen(false)
-                }
-
-                setDragStartY(null)
-                setIsDragging(false)
-              }}
-            />
-          )}
-        </div>
-      )}
+          <OrderPanel event={event} isMobileVersion={true} />
+        </DrawerContent>
+      </Drawer>
     </div>
   )
 }

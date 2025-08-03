@@ -7,15 +7,17 @@ import Image from 'next/image'
 import { useRef } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { useTradingState } from '@/hooks/useTradingState'
 import { calculateWinnings, mockUser } from '@/lib/mockData'
 
-interface OrderPanelProps {
+interface Props {
   event: Event
   isMobileVersion?: boolean
-  tradingState: ReturnType<typeof import('@/hooks/useTradingState').useTradingState>
 }
 
-export default function OrderPanel({ event, isMobileVersion = false, tradingState }: OrderPanelProps) {
+export default function OrderPanel({ event, isMobileVersion = false }: Props) {
+  const tradingState = useTradingState({ event })
+
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Utility functions
@@ -483,49 +485,6 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
           </div>
         )}
 
-        {/* Mobile header with title and market info */}
-        {isMobileVersion && (
-          <div className="mb-4 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <span className="text-lg font-semibold">Buy</span>
-              <svg
-                className="h-4 w-4 text-muted-foreground"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <span className="text-sm">Market</span>
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"
-                />
-              </svg>
-            </div>
-          </div>
-        )}
-
-        {/* Divider for mobile */}
-        {isMobileVersion && (
-          <hr className="border-border/50 mb-4 dark:border-border/20" />
-        )}
-
         {/* Market info for mobile */}
         {isMobileVersion && (
           <div className="mb-4 flex items-center gap-3">
@@ -557,7 +516,7 @@ export default function OrderPanel({ event, isMobileVersion = false, tradingStat
                     : tradingState.yesOutcome?.name || event.outcomes[0]?.name}
                 </span>
                 <span>
-                  Bal. $$
+                  Bal. $
                   {tradingState.formatValue(mockUser.cash)}
                 </span>
               </div>
