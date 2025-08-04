@@ -1,218 +1,220 @@
-'use client'
+"use client";
 
-import type { Event } from '@/types'
-import { DialogTitle } from '@radix-ui/react-dialog'
-import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
+import type { Event } from "@/types";
+import { DialogTitle } from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
   RefreshCwIcon,
   SparklesIcon,
-  StarIcon,
+  BookmarkIcon,
   TrendingDownIcon,
-} from 'lucide-react'
-import Image from 'next/image'
-import { useLayoutEffect, useState } from 'react'
-import PredictionChart from '@/components/charts/PredictionChart'
-import EventActivity from '@/components/event/EventActivity'
-import EventComments from '@/components/event/EventComments'
-import RelatedEvents from '@/components/event/EventRelated'
-import EventShare from '@/components/event/EventShare'
-import EventTopHolders from '@/components/event/EventTopHolders'
-import OrderPanel from '@/components/event/OrderPanel'
-import Header from '@/components/layout/Header'
-import NavigationTabs from '@/components/layout/NavigationTabs'
-import { Button } from '@/components/ui/button'
-import { Drawer, DrawerContent } from '@/components/ui/drawer'
-import { useTradingState } from '@/hooks/useTradingState'
-import { formatDate, formatVolume, mockMarketDetails } from '@/lib/mockData'
-import { formatOracleAddress, formatRules, sanitizeSvg } from '@/lib/utils'
+} from "lucide-react";
+import Image from "next/image";
+import { useLayoutEffect, useState } from "react";
+import PredictionChart from "@/components/charts/PredictionChart";
+import EventActivity from "@/components/event/EventActivity";
+import EventComments from "@/components/event/EventComments";
+import RelatedEvents from "@/components/event/EventRelated";
+import EventShare from "@/components/event/EventShare";
+import EventTopHolders from "@/components/event/EventTopHolders";
+import OrderPanel from "@/components/event/OrderPanel";
+import Header from "@/components/layout/Header";
+import NavigationTabs from "@/components/layout/NavigationTabs";
+import { Button } from "@/components/ui/button";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { useTradingState } from "@/hooks/useTradingState";
+import { formatDate, formatVolume, mockMarketDetails } from "@/lib/mockData";
+import { formatOracleAddress, formatRules, sanitizeSvg } from "@/lib/utils";
 
 interface EventDetailProps {
-  event: Event
+  event: Event;
 }
 
 export default function EventDetail({ event }: EventDetailProps) {
-  const POLYMARKET_COLORS = ['#2D9CDB', '#FF5952', '#27AE60', '#9B51E0']
+  const POLYMARKET_COLORS = ["#2D9CDB", "#FF5952", "#27AE60", "#9B51E0"];
 
   // Use custom trading state hook
-  const tradingState = useTradingState({ event })
+  const tradingState = useTradingState({ event });
 
   // Component states
-  const [activeTimeRange, setActiveTimeRange] = useState('1D')
-  const [activeCommentsTab, setActiveCommentsTab] = useState('comments')
-  const [rulesExpanded, setRulesExpanded] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(false)
-  const [contextExpanded, setContextExpanded] = useState(false)
-  const [isGeneratingContext, setIsGeneratingContext] = useState(false)
-  const [generatedContext, setGeneratedContext] = useState<string[]>([])
-  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false)
+  const [activeTimeRange, setActiveTimeRange] = useState("1D");
+  const [activeCommentsTab, setActiveCommentsTab] = useState("comments");
+  const [rulesExpanded, setRulesExpanded] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [contextExpanded, setContextExpanded] = useState(false);
+  const [isGeneratingContext, setIsGeneratingContext] = useState(false);
+  const [generatedContext, setGeneratedContext] = useState<string[]>([]);
+  const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
 
   // Utility functions - now using trading state
-  const getYesOutcome = tradingState.getYesOutcome
-  const primaryProbability = tradingState.primaryProbability
-  const yesPrice = tradingState.yesPrice
-  const noPrice = tradingState.noPrice
+  const getYesOutcome = tradingState.getYesOutcome;
+  const primaryProbability = tradingState.primaryProbability;
+  const yesPrice = tradingState.yesPrice;
+  const noPrice = tradingState.noPrice;
 
   // Function to get top 4 outcomes by volume
   function getTopOutcomesForChart() {
-    return [...event.outcomes]
-      .sort((a, b) => b.volume - a.volume)
-      .slice(0, 4)
+    return [...event.outcomes].sort((a, b) => b.volume - a.volume).slice(0, 4);
   }
 
   // Function to generate chart data based on actual outcomes
   function generateChartData() {
-    const topOutcomes = getTopOutcomesForChart()
-    const now = new Date()
-    const data = []
+    const topOutcomes = getTopOutcomesForChart();
+    const now = new Date();
+    const data = [];
 
-    const colors = POLYMARKET_COLORS
+    const colors = POLYMARKET_COLORS;
 
     // Generate series configuration based on actual outcomes
     const series = topOutcomes.map((outcome, index) => ({
       key: `outcome_${outcome.id}`,
       name: outcome.name,
-      color: colors[index] || '#8B5CF6',
-    }))
+      color: colors[index] || "#8B5CF6",
+    }));
 
     // Generate simulated historical data for the last 30 days
     for (let i = 29; i >= 0; i--) {
-      const date = new Date(now)
-      date.setDate(date.getDate() - i)
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
 
-      const dataPoint: { date: Date, [key: string]: number | Date } = { date }
+      const dataPoint: { date: Date; [key: string]: number | Date } = { date };
 
       // For each outcome, generate a trend based on current probability
       topOutcomes.forEach((outcome) => {
-        const key = `outcome_${outcome.id}`
-        const baseProbability = outcome.probability
+        const key = `outcome_${outcome.id}`;
+        const baseProbability = outcome.probability;
 
         // Add temporal and random variation
-        const timeVariation = Math.sin((29 - i) * 0.1) * 5
-        const randomVariation = (Math.random() - 0.5) * 8
-        const variation = timeVariation + randomVariation
+        const timeVariation = Math.sin((29 - i) * 0.1) * 5;
+        const randomVariation = (Math.random() - 0.5) * 8;
+        const variation = timeVariation + randomVariation;
 
-        let value = baseProbability + variation
-        value = Math.max(5, Math.min(85, value)) // Limit between 5% and 85%
+        let value = baseProbability + variation;
+        value = Math.max(5, Math.min(85, value)); // Limit between 5% and 85%
 
-        dataPoint[key] = value
-      })
+        dataPoint[key] = value;
+      });
 
       // Normalize so the sum is close to 100%
       const total = topOutcomes.reduce(
         (sum, outcome) => sum + (dataPoint[`outcome_${outcome.id}`] as number),
-        0,
-      )
+        0
+      );
 
       if (total > 0) {
         topOutcomes.forEach((outcome) => {
-          const key = `outcome_${outcome.id}`
-          const currentValue = dataPoint[key] as number
-          dataPoint[key] = (currentValue / total) * 100
-        })
+          const key = `outcome_${outcome.id}`;
+          const currentValue = dataPoint[key] as number;
+          dataPoint[key] = (currentValue / total) * 100;
+        });
       }
 
-      data.push(dataPoint)
+      data.push(dataPoint);
     }
 
-    return { data, series }
+    return { data, series };
   }
 
   // Generate dynamic data for the chart
-  const chartConfig = generateChartData()
+  const chartConfig = generateChartData();
 
   // Function to generate market context
   async function generateMarketContext() {
-    setIsGeneratingContext(true)
+    setIsGeneratingContext(true);
 
     // Simulate AI generation delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     // Generate contextual content based on market title and type
     const contextLines = [
       `This market tracks ${event.title.toLowerCase()} with current probability trends indicating ${primaryProbability}% likelihood of the positive outcome.`,
       `Historical data shows similar events have had volatility patterns with key decision points typically occurring near market resolution dates.`,
       `Market sentiment and external factors including recent news developments, expert opinions, and related market movements may influence final outcomes.`,
-    ]
+    ];
 
-    setGeneratedContext(contextLines)
-    setContextExpanded(true)
-    setIsGeneratingContext(false)
+    setGeneratedContext(contextLines);
+    setContextExpanded(true);
+    setIsGeneratingContext(false);
   }
 
   // Load favorite status from localStorage
   useLayoutEffect(() => {
-    const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase()
-    const stored = localStorage.getItem(`${siteName}-favorites`)
+    const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase();
+    const stored = localStorage.getItem(`${siteName}-favorites`);
     if (stored) {
       try {
-        const favArray = JSON.parse(stored)
-        setIsFavorite(favArray.includes(event.id))
-      }
-      catch (error) {
-        console.error('Error loading favorites:', error)
+        const favArray = JSON.parse(stored);
+        setIsFavorite(favArray.includes(event.id));
+      } catch (error) {
+        console.error("Error loading favorites:", error);
       }
     }
-  }, [event.id])
+  }, [event.id]);
 
   // Auto-select outcome for all markets (binary and multi-outcome)
   useLayoutEffect(() => {
-    if (!tradingState.selectedOutcomeForOrder && event.active_markets_count > 0) {
+    if (
+      !tradingState.selectedOutcomeForOrder &&
+      event.active_markets_count > 0
+    ) {
       if (event.active_markets_count === 1) {
         // For binary markets, select the "Yes" option (isYes = true)
-        const yesOutcome = getYesOutcome()
+        const yesOutcome = getYesOutcome();
         if (yesOutcome) {
-          tradingState.setSelectedOutcomeForOrder(yesOutcome.id)
-          tradingState.setYesNoSelection('yes')
-        }
-        else {
+          tradingState.setSelectedOutcomeForOrder(yesOutcome.id);
+          tradingState.setYesNoSelection("yes");
+        } else {
           // If isYes not found, select first option
-          tradingState.setSelectedOutcomeForOrder(event.outcomes[0].id)
-          tradingState.setYesNoSelection('yes')
+          tradingState.setSelectedOutcomeForOrder(event.outcomes[0].id);
+          tradingState.setYesNoSelection("yes");
         }
-      }
-      else if (event.active_markets_count > 1) {
+      } else if (event.active_markets_count > 1) {
         // For multi-option markets, select option with highest probability
         const sortedOutcomes = [...event.outcomes].sort(
-          (a, b) => b.probability - a.probability,
-        )
-        const highestProbOutcome = sortedOutcomes[0]
+          (a, b) => b.probability - a.probability
+        );
+        const highestProbOutcome = sortedOutcomes[0];
         if (highestProbOutcome) {
-          tradingState.setSelectedOutcomeForOrder(highestProbOutcome.id)
-          tradingState.setYesNoSelection('yes')
+          tradingState.setSelectedOutcomeForOrder(highestProbOutcome.id);
+          tradingState.setYesNoSelection("yes");
         }
       }
     }
-  }, [event.active_markets_count, event.outcomes, tradingState.selectedOutcomeForOrder, getYesOutcome, tradingState])
+  }, [
+    event.active_markets_count,
+    event.outcomes,
+    tradingState.selectedOutcomeForOrder,
+    getYesOutcome,
+    tradingState,
+  ]);
 
   // Handle favorite toggle
   function handleFavoriteToggle() {
-    const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase()
-    const stored = localStorage.getItem(`${siteName}-favorites`)
-    let favArray: string[] = []
+    const siteName = process.env.NEXT_PUBLIC_SITE_NAME!.toLowerCase();
+    const stored = localStorage.getItem(`${siteName}-favorites`);
+    let favArray: string[] = [];
 
     if (stored) {
       try {
-        favArray = JSON.parse(stored)
-      }
-      catch (error) {
-        console.error('Error parsing favorites:', error)
+        favArray = JSON.parse(stored);
+      } catch (error) {
+        console.error("Error parsing favorites:", error);
       }
     }
 
     if (isFavorite) {
       // Remove from favorites
-      favArray = favArray.filter(id => id !== event.id)
-    }
-    else {
+      favArray = favArray.filter((id) => id !== event.id);
+    } else {
       // Add to favorites
-      favArray.push(event.id)
+      favArray.push(event.id);
     }
 
-    localStorage.setItem(`${siteName}-favorites`, JSON.stringify(favArray))
-    setIsFavorite(!isFavorite)
+    localStorage.setItem(`${siteName}-favorites`, JSON.stringify(favArray));
+    setIsFavorite(!isFavorite);
   }
 
-  const { timeRanges, eventTabs, trendingData } = mockMarketDetails
+  const { timeRanges, eventTabs, trendingData } = mockMarketDetails;
 
   return (
     <div className="min-h-screen bg-background">
@@ -222,7 +224,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         onCategoryChange={() => {}}
       />
 
-      <main className="container grid gap-8 pt-8 pb-12 md:pb-12 lg:grid-cols-[3fr_1fr] lg:gap-10">
+      <main className="container grid gap-8 pb-12 pt-8 md:pb-12 lg:grid-cols-[3fr_1fr] lg:gap-10">
         {/* Left column - Main content */}
         <div className="pb-20 md:pb-0">
           {/* Add padding bottom on mobile for the floating button */}
@@ -230,21 +232,21 @@ export default function EventDetail({ event }: EventDetailProps) {
           <div className="mb-6 flex items-center gap-4">
             <Image
               src={
-                event.creatorAvatar
-                || `https://avatar.vercel.sh/${event.title.charAt(0)}.png`
+                event.creatorAvatar ||
+                `https://avatar.vercel.sh/${event.title.charAt(0)}.png`
               }
-              alt={event.creator || 'Market creator'}
+              alt={event.creator || "Market creator"}
               width={64}
               height={64}
-              className="shrink-0 rounded-xl"
+              className="flex-shrink-0 rounded-xl"
             />
-            <h1 className="line-clamp-3 flex-1 text-lg leading-tight font-bold md:text-xl lg:text-2xl">
+            <h1 className="line-clamp-3 flex-1 text-lg font-bold leading-tight md:text-xl lg:text-2xl">
               {event.title}
             </h1>
             <div className="flex gap-2 text-muted-foreground">
-              <StarIcon
-                className={`h-4 w-4 cursor-pointer transition-colors hover:text-foreground ${
-                  isFavorite ? 'fill-yellow-400 text-yellow-400' : ''
+              <BookmarkIcon
+                className={`h-4 w-4 cursor-pointer transition-colors hover:text-primary ${
+                  isFavorite ? "fill-current text-primary" : ""
                 }`}
                 onClick={handleFavoriteToggle}
               />
@@ -271,47 +273,43 @@ export default function EventDetail({ event }: EventDetailProps) {
           <div className="mt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {event.active_markets_count === 1
-                  ? (
-                      <>
-                        <span
-                          className={`inline-flex items-center gap-1 text-xl font-bold ${
-                            primaryProbability > 0.5
-                              ? 'text-emerald-600'
-                              : 'text-rose-600'
-                          }`}
-                        >
-                          {Math.round(primaryProbability)}
-                          % chance
-                        </span>
+                {event.active_markets_count === 1 ? (
+                  <>
+                    <span
+                      className={`inline-flex items-center gap-1 text-xl font-bold ${
+                        primaryProbability > 0.5
+                          ? "text-emerald-600"
+                          : "text-rose-600"
+                      }`}
+                    >
+                      {Math.round(primaryProbability)}% chance
+                    </span>
 
-                        {/* Red arrow with percentage */}
-                        <div className="flex items-center gap-1 text-rose-600">
-                          <TrendingDownIcon className="h-4 w-4" />
-                          <span className="text-xs font-semibold">
-                            {trendingData.changePercentage}
-                            %
-                          </span>
-                        </div>
-                      </>
-                    )
-                  : (
-                      <div className="flex flex-wrap items-center gap-4">
-                        {getTopOutcomesForChart().map((outcome, index) => (
-                          <div key={outcome.id} className="flex items-center gap-2">
-                            <div
-                              className="h-3 w-3 rounded-full"
-                              style={{
-                                backgroundColor: POLYMARKET_COLORS[index % 4],
-                              }}
-                            />
-                            <span className="text-sm font-medium text-muted-foreground">
-                              {outcome.name}
-                            </span>
-                          </div>
-                        ))}
+                    {/* Red arrow with percentage */}
+                    <div className="flex items-center gap-1 text-rose-600">
+                      <TrendingDownIcon className="h-4 w-4" />
+                      <span className="text-xs font-semibold">
+                        {trendingData.changePercentage}%
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-4">
+                    {getTopOutcomesForChart().map((outcome, index) => (
+                      <div key={outcome.id} className="flex items-center gap-2">
+                        <div
+                          className="h-3 w-3 rounded-full"
+                          style={{
+                            backgroundColor: POLYMARKET_COLORS[index % 4],
+                          }}
+                        />
+                        <span className="text-sm font-medium text-muted-foreground">
+                          {outcome.name}
+                        </span>
                       </div>
-                    )}
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Logo for prints - always present */}
@@ -343,13 +341,13 @@ export default function EventDetail({ event }: EventDetailProps) {
               </div>
             </div>
             <ul className="mt-2 flex justify-center gap-4 text-[11px] font-medium">
-              {timeRanges.map(range => (
+              {timeRanges.map((range) => (
                 <li
                   key={range}
                   className={`cursor-pointer transition-colors duration-200 ${
                     activeTimeRange === range
-                      ? 'border-b-2 border-foreground text-foreground'
-                      : 'text-muted-foreground hover:text-foreground'
+                      ? "border-b-2 border-foreground text-foreground"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                   onClick={() => setActiveTimeRange(range)}
                 >
@@ -363,14 +361,20 @@ export default function EventDetail({ event }: EventDetailProps) {
           {event.active_markets_count > 1 && (
             <div className="mt-6 overflow-hidden bg-background">
               {/* Header */}
-              <div className="hidden items-center rounded-t-lg border-b bg-muted/10 py-3 md:flex">
+              <div
+                className={`
+                bg-muted/10 border-border/50 hidden items-center rounded-t-lg border-b py-3
+                dark:border-border/20
+                md:flex
+              `}
+              >
                 <div className="w-1/2">
-                  <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     OUTCOMES
                   </span>
                 </div>
                 <div className="flex w-3/5 items-center justify-center gap-1">
-                  <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
+                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                     CHANCE
                   </span>
                   <a
@@ -394,21 +398,21 @@ export default function EventDetail({ event }: EventDetailProps) {
                       flex cursor-pointer flex-col items-start rounded-lg px-3 py-4 transition-all duration-200
                       ease-in-out
                       hover:bg-black/5
-                      md:flex-row md:items-center md:px-2
                       dark:hover:bg-white/5
+                      md:flex-row md:items-center md:px-2
                       ${
-                  tradingState.selectedOutcomeForOrder === outcome.id
-                    ? 'bg-muted/30'
-                    : ''
-                  } ${
-                    index !== sortedOutcomes.length - 1
-                      ? 'border-b'
-                      : 'rounded-b-lg'
-                  }`}
+                        tradingState.selectedOutcomeForOrder === outcome.id
+                          ? "bg-muted/30"
+                          : ""
+                      } ${
+                      index !== sortedOutcomes.length - 1
+                        ? "border-border/50 border-b dark:border-border/20"
+                        : "rounded-b-lg"
+                    }`}
                     onClick={() => {
-                      tradingState.setSelectedOutcomeForOrder(outcome.id)
-                      tradingState.setActiveTab('buy')
-                      tradingState.inputRef?.focus()
+                      tradingState.setSelectedOutcomeForOrder(outcome.id);
+                      tradingState.setActiveTab("buy");
+                      tradingState.inputRef?.focus();
                     }}
                   >
                     {/* Mobile: Layout in column */}
@@ -419,13 +423,13 @@ export default function EventDetail({ event }: EventDetailProps) {
                           {event.show_market_icons !== false && (
                             <Image
                               src={
-                                outcome.avatar
-                                || `https://avatar.vercel.sh/${outcome.name.toLowerCase()}.png`
+                                outcome.avatar ||
+                                `https://avatar.vercel.sh/${outcome.name.toLowerCase()}.png`
                               }
                               alt={outcome.name}
                               width={42}
                               height={42}
-                              className="shrink-0 rounded-full"
+                              className="flex-shrink-0 rounded-full"
                             />
                           )}
                           <div>
@@ -434,19 +438,17 @@ export default function EventDetail({ event }: EventDetailProps) {
                             </div>
                             <div className="text-xs text-muted-foreground">
                               $
-                              {outcome.volume?.toLocaleString('en-US', {
+                              {outcome.volume?.toLocaleString("en-US", {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2,
-                              }) || '0.00'}
-                              {' '}
+                              }) || "0.00"}{" "}
                               Vol.
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-2xl font-bold text-foreground">
-                            {Math.round(outcome.probability)}
-                            %
+                            {Math.round(outcome.probability)}%
                           </span>
                           <div className="flex items-center gap-1 text-rose-600">
                             <TrendingDownIcon className="h-3 w-3" />
@@ -460,44 +462,39 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="sm"
                           className={`h-10 flex-1 text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder === outcome.id
-                            && tradingState.yesNoSelection === 'yes'
-                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                              : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
+                            tradingState.selectedOutcomeForOrder ===
+                              outcome.id &&
+                            tradingState.yesNoSelection === "yes"
+                              ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                              : "bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40"
                           }`}
                           onClick={(e) => {
-                            e.stopPropagation()
-                            tradingState.setSelectedOutcomeForOrder(outcome.id)
-                            tradingState.setYesNoSelection('yes')
-                            tradingState.setActiveTab('buy')
-                            setIsMobileModalOpen(true)
+                            e.stopPropagation();
+                            tradingState.setSelectedOutcomeForOrder(outcome.id);
+                            tradingState.setYesNoSelection("yes");
+                            tradingState.setActiveTab("buy");
+                            setIsMobileModalOpen(true);
                           }}
                         >
-                          Buy Yes
-                          {' '}
-                          {Math.round(outcome.probability)}
-                          ¢
+                          Buy Yes {Math.round(outcome.probability)}¢
                         </Button>
                         <Button
                           size="sm"
                           className={`h-10 flex-1 text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder === outcome.id
-                            && tradingState.yesNoSelection === 'no'
-                              ? 'bg-rose-500 text-white hover:bg-rose-600'
-                              : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
+                            tradingState.selectedOutcomeForOrder ===
+                              outcome.id && tradingState.yesNoSelection === "no"
+                              ? "bg-rose-500 text-white hover:bg-rose-600"
+                              : "bg-rose-600/30 text-rose-600 hover:bg-rose-500/40"
                           }`}
                           onClick={(e) => {
-                            e.stopPropagation()
-                            tradingState.setSelectedOutcomeForOrder(outcome.id)
-                            tradingState.setYesNoSelection('no')
-                            tradingState.setActiveTab('buy')
-                            setIsMobileModalOpen(true)
+                            e.stopPropagation();
+                            tradingState.setSelectedOutcomeForOrder(outcome.id);
+                            tradingState.setYesNoSelection("no");
+                            tradingState.setActiveTab("buy");
+                            setIsMobileModalOpen(true);
                           }}
                         >
-                          Buy No
-                          {' '}
-                          {100 - Math.round(outcome.probability)}
-                          ¢
+                          Buy No {100 - Math.round(outcome.probability)}¢
                         </Button>
                       </div>
                     </div>
@@ -509,13 +506,13 @@ export default function EventDetail({ event }: EventDetailProps) {
                         {event.show_market_icons !== false && (
                           <Image
                             src={
-                              outcome.avatar
-                              || `https://avatar.vercel.sh/${outcome.name.toLowerCase()}.png`
+                              outcome.avatar ||
+                              `https://avatar.vercel.sh/${outcome.name.toLowerCase()}.png`
                             }
                             alt={outcome.name}
                             width={42}
                             height={42}
-                            className="shrink-0 rounded-full"
+                            className="flex-shrink-0 rounded-full"
                           />
                         )}
                         <div>
@@ -524,11 +521,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                           </div>
                           <div className="text-xs text-muted-foreground">
                             $
-                            {outcome.volume?.toLocaleString('en-US', {
+                            {outcome.volume?.toLocaleString("en-US", {
                               minimumFractionDigits: 2,
                               maximumFractionDigits: 2,
-                            }) || '0.00'}
-                            {' '}
+                            }) || "0.00"}{" "}
                             Vol.
                           </div>
                         </div>
@@ -538,8 +534,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       <div className="flex w-3/5 justify-center">
                         <div className="flex items-center gap-2">
                           <span className="text-4xl font-bold text-foreground">
-                            {Math.round(outcome.probability)}
-                            %
+                            {Math.round(outcome.probability)}%
                           </span>
                           <div className="flex items-center gap-1 text-rose-600">
                             <TrendingDownIcon className="h-3 w-3" />
@@ -553,25 +548,23 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="lg"
                           className={`h-12 w-full text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder === outcome.id
-                            && tradingState.yesNoSelection === 'yes'
-                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                              : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
+                            tradingState.selectedOutcomeForOrder ===
+                              outcome.id &&
+                            tradingState.yesNoSelection === "yes"
+                              ? "bg-emerald-500 text-white hover:bg-emerald-600"
+                              : "bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40"
                           }`}
                           onClick={(e) => {
-                            e.stopPropagation()
-                            tradingState.setSelectedOutcomeForOrder(outcome.id)
-                            tradingState.setYesNoSelection('yes')
-                            tradingState.setActiveTab('buy')
-                            tradingState.inputRef?.focus()
+                            e.stopPropagation();
+                            tradingState.setSelectedOutcomeForOrder(outcome.id);
+                            tradingState.setYesNoSelection("yes");
+                            tradingState.setActiveTab("buy");
+                            tradingState.inputRef?.focus();
                           }}
                         >
                           <div className="flex flex-col items-center">
                             <span>
-                              Buy Yes
-                              {' '}
-                              {Math.round(outcome.probability)}
-                              ¢
+                              Buy Yes {Math.round(outcome.probability)}¢
                             </span>
                           </div>
                         </Button>
@@ -580,25 +573,22 @@ export default function EventDetail({ event }: EventDetailProps) {
                         <Button
                           size="lg"
                           className={`h-12 w-full text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder === outcome.id
-                            && tradingState.yesNoSelection === 'no'
-                              ? 'bg-rose-500 text-white hover:bg-rose-600'
-                              : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
+                            tradingState.selectedOutcomeForOrder ===
+                              outcome.id && tradingState.yesNoSelection === "no"
+                              ? "bg-rose-500 text-white hover:bg-rose-600"
+                              : "bg-rose-600/30 text-rose-600 hover:bg-rose-500/40"
                           }`}
                           onClick={(e) => {
-                            e.stopPropagation()
-                            tradingState.setSelectedOutcomeForOrder(outcome.id)
-                            tradingState.setYesNoSelection('no')
-                            tradingState.setActiveTab('buy')
-                            tradingState.inputRef?.focus()
+                            e.stopPropagation();
+                            tradingState.setSelectedOutcomeForOrder(outcome.id);
+                            tradingState.setYesNoSelection("no");
+                            tradingState.setActiveTab("buy");
+                            tradingState.inputRef?.focus();
                           }}
                         >
                           <div className="flex flex-col items-center">
                             <span>
-                              Buy No
-                              {' '}
-                              {100 - Math.round(outcome.probability)}
-                              ¢
+                              Buy No {100 - Math.round(outcome.probability)}¢
                             </span>
                           </div>
                         </Button>
@@ -612,8 +602,13 @@ export default function EventDetail({ event }: EventDetailProps) {
           {/* Order Book - Commented for now */}
 
           {/* Market Context */}
-          <div className="mt-3 rounded-lg border transition-all duration-200 ease-in-out">
-            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
+          <div
+            className={`
+            border-border/50 mt-3 rounded-lg border transition-all duration-200 ease-in-out
+            dark:border-border/20
+          `}
+          >
+            <div className="hover:bg-muted/50 flex items-center justify-between p-4">
               <span className="text-lg font-medium">Market Context</span>
               <Button
                 variant="outline"
@@ -624,17 +619,17 @@ export default function EventDetail({ event }: EventDetailProps) {
               >
                 <SparklesIcon
                   className={`h-3 w-3 ${
-                    isGeneratingContext ? 'animate-spin' : ''
+                    isGeneratingContext ? "animate-spin" : ""
                   }`}
                 />
-                {isGeneratingContext ? 'Generating...' : 'Generate'}
+                {isGeneratingContext ? "Generating..." : "Generate"}
               </Button>
             </div>
 
             {contextExpanded && (
-              <div className="border-t px-3 pb-3">
+              <div className="border-border/30 border-t px-3 pb-3">
                 <div className="space-y-2 pt-3">
-                  {generatedContext.map(line => (
+                  {generatedContext.map((line) => (
                     <p
                       key={line}
                       className="text-sm leading-relaxed text-muted-foreground"
@@ -648,8 +643,13 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Rules */}
-          <div className="mt-3 rounded-lg border transition-all duration-200 ease-in-out">
-            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
+          <div
+            className={`
+            border-border/50 mt-3 rounded-lg border transition-all duration-200 ease-in-out
+            dark:border-border/20
+          `}
+          >
+            <div className="hover:bg-muted/50 flex items-center justify-between p-4">
               <span className="text-lg font-medium">Rules</span>
               <Button
                 variant="outline"
@@ -657,29 +657,28 @@ export default function EventDetail({ event }: EventDetailProps) {
                 className="flex items-center gap-1"
                 onClick={() => setRulesExpanded(!rulesExpanded)}
               >
-                {rulesExpanded ? 'Show less ▴' : 'Show more ▾'}
+                {rulesExpanded ? "Show less ▴" : "Show more ▾"}
               </Button>
             </div>
 
             {rulesExpanded && (
-              <div className="border-t px-3 pb-3">
+              <div className="border-border/30 border-t px-3 pb-3">
                 <div className="space-y-2 pt-3">
                   {event.rules && (
-                    <div className="text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
+                    <div className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
                       {formatRules(event.rules)}
                     </div>
                   )}
 
                   {/* Oracle Info */}
-                  <div className="mt-3 rounded-lg border p-3">
+                  <div className="border-border/50 mt-3 rounded-lg border p-3 dark:border-border/20">
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-3">
                         <div
-                          className={`h-10 w-10 bg-linear-to-r ${mockMarketDetails.resolver.gradientColors}
-                            flex shrink-0 items-center justify-center rounded-sm
+                          className={`h-10 w-10 bg-gradient-to-r ${mockMarketDetails.resolver.gradientColors}
+                            flex flex-shrink-0 items-center justify-center rounded-sm
                           `}
-                        >
-                        </div>
+                        ></div>
                         <div>
                           <div className="text-xs text-muted-foreground">
                             Resolver
@@ -688,7 +687,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             href={
                               event.oracle
                                 ? `https://polygonscan.com/address/${event.oracle}`
-                                : '#'
+                                : "#"
                             }
                             target="_blank"
                             rel="noopener noreferrer"
@@ -696,7 +695,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                           >
                             {event.oracle
                               ? formatOracleAddress(event.oracle)
-                              : ''}
+                              : ""}
                           </a>
                         </div>
                       </div>
@@ -713,14 +712,14 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Comments tabs */}
-          <ul className="mt-8 flex h-12 gap-8 border-b text-sm font-semibold">
-            {eventTabs.map(tab => (
+          <ul className="border-border/50 mt-8 flex h-12 gap-8 border-b text-sm font-semibold dark:border-border/20">
+            {eventTabs.map((tab) => (
               <li
                 key={tab}
                 className={`cursor-pointer transition-colors duration-200 ${
                   activeCommentsTab === tab
-                    ? 'border-b-2 border-emerald-500 text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? "border-b-2 border-emerald-500 text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
                 onClick={() => setActiveCommentsTab(tab)}
               >
@@ -729,9 +728,9 @@ export default function EventDetail({ event }: EventDetailProps) {
             ))}
           </ul>
 
-          {activeCommentsTab === 'comments' && <EventComments />}
-          {activeCommentsTab === 'holders' && <EventTopHolders />}
-          {activeCommentsTab === 'activity' && <EventActivity />}
+          {activeCommentsTab === "comments" && <EventComments />}
+          {activeCommentsTab === "holders" && <EventTopHolders />}
+          {activeCommentsTab === "activity" && <EventActivity />}
         </div>
 
         {/* Right column - Order panel (Sticky) - Hidden on mobile */}
@@ -743,37 +742,34 @@ export default function EventDetail({ event }: EventDetailProps) {
 
       {/* Floating buttons for mobile - only binary markets */}
       {event.active_markets_count === 1 && (
-        <div className="fixed right-0 bottom-0 left-0 border-t bg-background p-4 md:hidden">
+        <div className="border-border/50 fixed bottom-0 left-0 right-0 border-t bg-background p-4 md:hidden">
           <div className="flex gap-2">
             <Button
               onClick={() => {
-                tradingState.setYesNoSelection('yes')
-                setIsMobileModalOpen(true)
+                tradingState.setYesNoSelection("yes");
+                setIsMobileModalOpen(true);
               }}
               className="h-12 flex-1 bg-emerald-500 text-lg font-bold text-white hover:bg-emerald-600"
             >
-              Buy Yes
-              {' '}
-              {yesPrice}
-              ¢
+              Buy Yes {yesPrice}¢
             </Button>
             <Button
               onClick={() => {
-                tradingState.setYesNoSelection('no')
-                setIsMobileModalOpen(true)
+                tradingState.setYesNoSelection("no");
+                setIsMobileModalOpen(true);
               }}
               className="h-12 flex-1 bg-rose-500 text-lg font-bold text-white hover:bg-rose-600"
             >
-              Buy No
-              {' '}
-              {noPrice}
-              ¢
+              Buy No {noPrice}¢
             </Button>
           </div>
         </div>
       )}
 
-      <Drawer open={isMobileModalOpen} onClose={() => setIsMobileModalOpen(false)}>
+      <Drawer
+        open={isMobileModalOpen}
+        onClose={() => setIsMobileModalOpen(false)}
+      >
         <DrawerContent>
           <VisuallyHidden>
             <DialogTitle>{event.title}</DialogTitle>
@@ -783,5 +779,5 @@ export default function EventDetail({ event }: EventDetailProps) {
         </DrawerContent>
       </Drawer>
     </div>
-  )
+  );
 }
