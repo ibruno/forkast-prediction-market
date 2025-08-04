@@ -442,7 +442,7 @@ export default function EventCard({
                 <>
                   {/* Body - Show multi-outcome options only for non-binary markets */}
                   {!isBinaryMarket && (
-                    <div className="scrollbar-hide mt-auto mb-1 max-h-18 space-y-2 overflow-y-auto">
+                    <div className="mt-auto mb-1 scrollbar-hide max-h-18 space-y-2 overflow-y-auto">
                       {event.outcomes.map(outcome => (
                         <div
                           key={outcome.id}
