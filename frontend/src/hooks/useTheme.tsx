@@ -22,12 +22,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useLayoutEffect(() => {
     try {
       const savedTheme = localStorage.getItem('theme') as Theme
-      if (
-        savedTheme
-        && (savedTheme === 'dark'
-          || savedTheme === 'light'
-          || savedTheme === 'system')
-      ) {
+      if (savedTheme && (savedTheme === 'dark' || savedTheme === 'light' || savedTheme === 'system')) {
         setTheme(savedTheme)
       }
       else {
