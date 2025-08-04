@@ -411,7 +411,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       dark:hover:bg-white/5
                       ${
                   tradingState.selectedOutcomeForOrder === outcome.id
-                    ? 'bg-muted/30'
+                    ? 'bg-muted dark:bg-black/10'
                     : ''
                   } ${
                     index !== sortedOutcomes.length - 1
