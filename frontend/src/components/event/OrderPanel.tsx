@@ -225,8 +225,8 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
       = 'flex-1 h-12 rounded-sm font-bold transition-all duration-200 flex items-center justify-center gap-1'
     const selectedClasses
       = type === 'yes'
-        ? 'bg-emerald-500 hover:bg-emerald-600 text-white'
-        : 'bg-rose-500 hover:bg-rose-600 text-white'
+        ? 'bg-yes hover:bg-yes-foreground'
+        : 'bg-no hover:bg-no-foreground'
     const defaultClasses
       = 'bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200'
 

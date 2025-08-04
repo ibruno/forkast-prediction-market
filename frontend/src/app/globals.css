@@ -7,7 +7,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/*inline-flex items-center cursor-pointer transition justify-center gap-2 whitespace-nowrap rounded-sm !text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-green-500/15 dark:text-green-500 text-green-600 active:scale-100 py-2 relative w-full max-w-[calc(50%-.325rem)] overflow-hidden h-10 text-sm !rounded-[4px] px-2 group pl-3 dark:hover:bg-green-400 hover:bg-green-600 hover:!text-white*/
+
+/*inline-flex items-center cursor-pointer transition justify-center gap-2 whitespace-nowrap rounded-sm !text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-red-500/9 dark:bg-red-500/15 text-red-500 hover:bg-red-500/13 dark:hover:bg-red-500/25 active:scale-100 py-2 relative w-full max-w-[calc(50%-.325rem)] overflow-hidden h-10 text-sm !rounded-[4px] px-2 group pl-3 hover:!bg-red-500 hover:!text-white*/
+
 :root {
+  --yes: oklch(62.7% 0.194 149.214);
+  --yes-foreground: oklch(52.7% 0.154 150.069);
+  --no: oklch(63.7% 0.237 25.331);
+  --no-foreground: oklch(50.5% 0.213 27.518);
   --radius: 0.625rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.129 0.042 264.695);
@@ -46,6 +54,10 @@
 }
 
 .dark {
+  --yes: oklch(62.7% 0.194 149.214);
+  --yes-foreground: oklch(52.7% 0.154 150.069);
+  --no: oklch(63.7% 0.237 25.331);
+  --no-foreground: oklch(50.5% 0.213 27.518);
   --background: oklch(0.28 0.04 260);
   --foreground: oklch(0.984 0.003 247.858);
   --card: oklch(0.32 0.04 257);
@@ -86,6 +98,10 @@
   --font-sans:
           'Open Sauce One', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
           'Noto Color Emoji';
+  --color-yes: var(--yes);
+  --color-yes-foreground: var(--yes-foreground);
+  --color-no: var(--no);
+  --color-no-foreground: var(--no-foreground);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

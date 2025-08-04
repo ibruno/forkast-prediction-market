@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 
 interface EventCardProps {
@@ -409,11 +410,13 @@ export default function EventCard({
                       || !tradeAmount
                       || Number.parseFloat(tradeAmount) <= 0
                     }
-                    className={`w-full rounded px-3 py-1 text-sm font-semibold transition-colors ${
-                      selectedOutcome.type === 'yes'
-                        ? 'bg-emerald-500 text-white hover:bg-emerald-600 disabled:bg-emerald-300'
-                        : 'bg-rose-500 text-white hover:bg-rose-600 disabled:bg-rose-300'
-                    } disabled:cursor-not-allowed`}
+                    className={`
+                      w-full rounded px-3 py-1 text-sm font-semibold text-white transition-colors
+                      disabled:cursor-not-allowed
+                      ${selectedOutcome.type === 'yes'
+                  ? 'bg-yes hover:bg-yes-foreground'
+                  : 'bg-no hover:bg-no-foreground'}
+                  `}
                   >
                     {isLoading
                       ? (
@@ -463,7 +466,7 @@ export default function EventCard({
                               %
                             </span>
                             <div className="flex gap-1">
-                              <button
+                              <Button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -471,19 +474,17 @@ export default function EventCard({
                                   onToggle?.(true)
                                 }}
                                 title={`Yes: ${Math.round(outcome.probability)}%`}
-                                className={`
-                                  group flex w-[32px] items-center justify-center rounded bg-emerald-400/50 px-2 py-1
-                                  text-[11px] font-semibold text-white transition-colors
-                                  hover:bg-emerald-500
-                                `}
+                                variant="yes"
+                                size="sm"
+                                className="group h-auto w-[32px] rounded px-2 py-1 text-[11px]"
                               >
                                 <span className="group-hover:hidden">Yes</span>
                                 <span className="hidden font-mono group-hover:inline">
                                   {Math.round(outcome.probability)}
                                   %
                                 </span>
-                              </button>
-                              <button
+                              </Button>
+                              <Button
                                 type="button"
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -493,18 +494,16 @@ export default function EventCard({
                                 title={`No: ${
                                   100 - Math.round(outcome.probability)
                                 }%`}
-                                className={`
-                                  group flex w-[32px] items-center justify-center rounded bg-rose-400/50 px-2 py-1
-                                  text-[11px] font-semibold text-white transition-colors
-                                  hover:bg-rose-500
-                                `}
+                                variant="no"
+                                size="sm"
+                                className="group h-auto w-[32px] rounded px-2 py-1 text-[11px]"
                               >
                                 <span className="group-hover:hidden">No</span>
                                 <span className="hidden font-mono group-hover:inline">
                                   {100 - Math.round(outcome.probability)}
                                   %
                                 </span>
-                              </button>
+                              </Button>
                             </div>
                           </div>
                         </div>
@@ -515,7 +514,7 @@ export default function EventCard({
                   {/* Trading Actions - Only for binary markets */}
                   {isBinaryMarket && yesOutcome && noOutcome && (
                     <div className="mt-auto mb-2 grid grid-cols-2 gap-2">
-                      <button
+                      <Button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -523,18 +522,13 @@ export default function EventCard({
                           onToggle?.(true)
                         }}
                         disabled={isLoading}
-                        className={`
-                          flex w-full items-center justify-center gap-1 rounded bg-emerald-400/50 py-1.5 text-sm
-                          font-semibold text-white transition-colors
-                          hover:bg-emerald-500
-                          disabled:opacity-50
-                        `}
+                        variant="yes"
                       >
                         Buy Yes
                         {' '}
                         <ChevronsUp className="h-4 w-4" />
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
@@ -542,17 +536,12 @@ export default function EventCard({
                           onToggle?.(true)
                         }}
                         disabled={isLoading}
-                        className={`
-                          flex w-full items-center justify-center gap-1 rounded bg-rose-400/50 py-1.5 text-sm
-                          font-semibold text-white transition-colors
-                          hover:bg-rose-500
-                          disabled:opacity-50
-                        `}
+                        variant="no"
                       >
                         Buy No
                         {' '}
                         <ChevronsDown className="h-4 w-4" />
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </>

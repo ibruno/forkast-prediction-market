@@ -282,18 +282,14 @@ export default function EventDetail({ event }: EventDetailProps) {
                   ? (
                       <>
                         <span
-                          className={`inline-flex items-center gap-1 text-xl font-bold ${
-                            primaryProbability > 0.5
-                              ? 'text-emerald-600'
-                              : 'text-rose-600'
-                          }`}
+                          className="inline-flex items-center gap-1 text-xl font-bold text-primary"
                         >
                           {Math.round(primaryProbability)}
                           % chance
                         </span>
 
                         {/* Red arrow with percentage */}
-                        <div className="flex items-center gap-1 text-rose-600">
+                        <div className="flex items-center gap-1 text-no">
                           <TrendingDownIcon className="h-4 w-4" />
                           <span className="text-xs font-semibold">
                             {trendingData.changePercentage}
@@ -472,13 +468,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
-                          className={`h-10 flex-1 text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder
-                            === outcome.id
-                            && tradingState.yesNoSelection === 'yes'
-                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                              : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
-                          }`}
+                          variant="yes"
                           onClick={(e) => {
                             e.stopPropagation()
                             tradingState.setSelectedOutcomeForOrder(outcome.id)
@@ -494,12 +484,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                         </Button>
                         <Button
                           size="sm"
-                          className={`h-10 flex-1 text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder
-                            === outcome.id && tradingState.yesNoSelection === 'no'
-                              ? 'bg-rose-500 text-white hover:bg-rose-600'
-                              : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
-                          }`}
+                          variant="no"
                           onClick={(e) => {
                             e.stopPropagation()
                             tradingState.setSelectedOutcomeForOrder(outcome.id)
@@ -566,13 +551,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       <div className="w-[15%] pl-3">
                         <Button
                           size="lg"
-                          className={`h-12 w-full text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder
-                            === outcome.id
-                            && tradingState.yesNoSelection === 'yes'
-                              ? 'bg-emerald-500 text-white hover:bg-emerald-600'
-                              : 'bg-emerald-600/30 text-emerald-600 hover:bg-emerald-500/40'
-                          }`}
+                          variant="no"
                           onClick={(e) => {
                             e.stopPropagation()
                             tradingState.setSelectedOutcomeForOrder(outcome.id)
@@ -594,12 +573,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                       <div className="w-[15%] pl-2">
                         <Button
                           size="lg"
-                          className={`h-12 w-full text-sm font-bold transition-colors ${
-                            tradingState.selectedOutcomeForOrder
-                            === outcome.id && tradingState.yesNoSelection === 'no'
-                              ? 'bg-rose-500 text-white hover:bg-rose-600'
-                              : 'bg-rose-600/30 text-rose-600 hover:bg-rose-500/40'
-                          }`}
+                          variant="no"
                           onClick={(e) => {
                             e.stopPropagation()
                             tradingState.setSelectedOutcomeForOrder(outcome.id)
@@ -744,7 +718,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                 key={tab}
                 className={`cursor-pointer transition-colors duration-200 ${
                   activeCommentsTab === tab
-                    ? 'border-b-2 border-emerald-500 text-foreground'
+                    ? 'border-b-2 border-primary text-foreground'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
                 onClick={() => setActiveCommentsTab(tab)}
@@ -771,11 +745,13 @@ export default function EventDetail({ event }: EventDetailProps) {
         <div className="fixed right-0 bottom-0 left-0 border-t border-border/50 bg-background p-4 md:hidden">
           <div className="flex gap-2">
             <Button
+              variant="yes"
+              size="lg"
+              className="flex-1"
               onClick={() => {
                 tradingState.setYesNoSelection('yes')
                 setIsMobileModalOpen(true)
               }}
-              className="h-12 flex-1 bg-emerald-500 text-lg font-bold text-white hover:bg-emerald-600"
             >
               Buy Yes
               {' '}
@@ -783,11 +759,13 @@ export default function EventDetail({ event }: EventDetailProps) {
               ¢
             </Button>
             <Button
+              variant="no"
+              size="lg"
+              className="flex-1"
               onClick={() => {
                 tradingState.setYesNoSelection('no')
                 setIsMobileModalOpen(true)
               }}
-              className="h-12 flex-1 bg-rose-500 text-lg font-bold text-white hover:bg-rose-600"
             >
               Buy No
               {' '}

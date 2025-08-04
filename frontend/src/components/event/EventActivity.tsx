@@ -56,8 +56,8 @@ export default function EventActivity() {
               <span
                 className={`ml-1 text-sm font-semibold ${
                   activity.type === 'Yes'
-                    ? 'text-emerald-600'
-                    : 'text-rose-600'
+                    ? 'text-yes'
+                    : 'text-no'
                 }`}
               >
                 {activity.type}

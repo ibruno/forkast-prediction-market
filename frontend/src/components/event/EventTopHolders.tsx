@@ -9,7 +9,7 @@ export default function EventTopHolders() {
       <div className="grid grid-cols-2 gap-6">
         {/* Yes Holders */}
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-emerald-600">
+          <h3 className="mb-4 text-sm font-semibold text-yes">
             Yes Holders
           </h3>
           <div className="space-y-3">
@@ -26,7 +26,7 @@ export default function EventTopHolders() {
                   <div className="text-sm font-medium">
                     {holder.name}
                   </div>
-                  <div className="text-xs font-semibold text-emerald-600">
+                  <div className="text-xs font-semibold text-yes">
                     {holder.amount}
                   </div>
                 </div>
@@ -37,7 +37,7 @@ export default function EventTopHolders() {
 
         {/* No Holders */}
         <div>
-          <h3 className="mb-4 text-sm font-semibold text-rose-600">
+          <h3 className="mb-4 text-sm font-semibold text-no">
             No Holders
           </h3>
           <div className="space-y-3">
@@ -54,7 +54,7 @@ export default function EventTopHolders() {
                   <div className="text-sm font-medium">
                     {holder.name}
                   </div>
-                  <div className="text-xs font-semibold text-rose-600">
+                  <div className="text-xs font-semibold text-no">
                     {holder.amount}
                   </div>
                 </div>

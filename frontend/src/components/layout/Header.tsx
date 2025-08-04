@@ -84,7 +84,7 @@ export default function Header() {
               className="rounded-lg p-2 text-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
             >
               <div className="font-medium text-muted-foreground">Portfolio</div>
-              <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+              <div className="text-sm font-semibold text-primary">
                 $
                 {mockUser.portfolio.toLocaleString('en-US', {
                   minimumFractionDigits: 2,
@@ -96,7 +96,7 @@ export default function Header() {
               className="rounded-lg p-2 text-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
             >
               <div className="font-medium text-muted-foreground">Cash</div>
-              <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+              <div className="text-sm font-semibold text-primary">
                 $
                 {mockUser.cash.toLocaleString('en-US', {
                   minimumFractionDigits: 2,
