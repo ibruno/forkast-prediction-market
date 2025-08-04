@@ -2,8 +2,10 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
+import { Input } from '@/components/ui/input'
 import { useAuth } from '@/hooks/useAuth'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
 
@@ -141,14 +143,9 @@ function LoginForm({
   return (
     <div className="grid gap-6">
       {/* Google Login Button */}
-      <button
+      <Button
         onClick={handleGoogleLogin}
         type="button"
-        className={`
-          flex w-full items-center justify-center gap-3 rounded-lg bg-blue-600 px-4 py-3 font-medium text-white
-          transition-colors duration-200
-          hover:bg-blue-700
-        `}
       >
         <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -157,7 +154,7 @@ function LoginForm({
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
         </svg>
         Continue with Google
-      </button>
+      </Button>
 
       {/* Separator */}
       <div className="relative">
@@ -165,67 +162,55 @@ function LoginForm({
           <div className="w-full border-t border-gray-300" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-2 text-gray-500">OR</span>
+          <span className="bg-background px-2 text-gray-500">OR</span>
         </div>
       </div>
 
       {/* Email Input */}
       <div className="flex">
-        <input
+        <Input
           type="email"
           placeholder="Enter your email"
           value={email}
           onChange={e => setEmail(e.target.value)}
           disabled={isEmailLoading}
-          className={`
-            flex-1 rounded-l-lg border border-r-0 border-gray-300 p-3 text-gray-900 placeholder-gray-500
-            focus:border-blue-500 focus:ring-0 focus:outline-hidden
-            disabled:cursor-not-allowed disabled:bg-gray-100
-          `}
+          className="rounded-r-none bg-background"
         />
-        <button
+        <Button
           onClick={handleEmailContinue}
           disabled={!email.trim() || isEmailLoading}
           type="button"
-          className={`
-            rounded-r-lg bg-blue-600 p-3 font-medium text-white transition-colors duration-200
-            hover:bg-blue-700
-            disabled:cursor-not-allowed disabled:bg-gray-300
-          `}
+          className="rounded-l-none"
         >
           {isEmailLoading ? 'Sending...' : 'Continue'}
-        </button>
+        </Button>
       </div>
 
       {/* Wallet Buttons */}
       <div className="grid grid-cols-4 gap-2">
-        <button
+        <Button
           onClick={() => handleWalletConnect('metamask')}
           type="button"
-          className={`
-            flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
-            duration-200
-            hover:bg-gray-50
-          `}
+          size="icon"
+          variant="outline"
           title="MetaMask"
+          className="w-auto"
         >
           <Image
             src="/icons/metamask.svg"
             alt="MetaMask"
             width={24}
             height={24}
-            className="h-6 w-6"
+            className="size-6"
           />
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => handleWalletConnect('coinbase')}
           type="button"
-          className={`
-            flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
-            duration-200
-            hover:bg-gray-50
-          `}
+          size="icon"
+          variant="outline"
+          className="w-auto"
           title="Coinbase Wallet"
         >
           <Image
@@ -233,18 +218,16 @@ function LoginForm({
             alt="Coinbase Wallet"
             width={24}
             height={24}
-            className="h-6 w-6"
+            className="size-6"
           />
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => handleWalletConnect('phantom')}
           type="button"
-          className={`
-            flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
-            duration-200
-            hover:bg-gray-50
-          `}
+          size="icon"
+          variant="outline"
+          className="w-auto"
           title="Phantom"
         >
           <Image
@@ -252,18 +235,16 @@ function LoginForm({
             alt="Phantom"
             width={24}
             height={24}
-            className="h-6 w-6"
+            className="size-6"
           />
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => handleWalletConnect('walletconnect')}
           type="button"
-          className={`
-            flex h-12 flex-1 items-center justify-center rounded-lg border border-gray-300 transition-colors
-            duration-200
-            hover:bg-gray-50
-          `}
+          size="icon"
+          variant="outline"
+          className="w-auto"
           title="WalletConnect"
         >
           <Image
@@ -271,28 +252,25 @@ function LoginForm({
             alt="WalletConnect"
             width={24}
             height={24}
-            className="h-6 w-6"
+            className="size-6"
           />
-        </button>
+        </Button>
       </div>
 
-      {/* Footer Links */}
-      <div className="pt-4">
-        <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
-          <a
-            href="/terms"
-            className="transition-colors duration-200 hover:text-gray-700"
-          >
-            Terms
-          </a>
-          <span>•</span>
-          <a
-            href="/privacy"
-            className="transition-colors duration-200 hover:text-gray-700"
-          >
-            Privacy
-          </a>
-        </div>
+      <div className="flex items-center justify-center gap-4 text-sm text-gray-500">
+        <a
+          href="/terms"
+          className="transition-colors duration-200 hover:text-gray-700"
+        >
+          Terms
+        </a>
+        <span>•</span>
+        <a
+          href="/privacy"
+          className="transition-colors duration-200 hover:text-gray-700"
+        >
+          Privacy
+        </a>
       </div>
     </div>
   )

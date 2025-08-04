@@ -7,10 +7,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/*inline-flex items-center cursor-pointer transition justify-center gap-2 whitespace-nowrap rounded-sm !text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-green-500/15 dark:text-green-500 text-green-600 active:scale-100 py-2 relative w-full max-w-[calc(50%-.325rem)] overflow-hidden h-10 text-sm !rounded-[4px] px-2 group pl-3 dark:hover:bg-green-400 hover:bg-green-600 hover:!text-white*/
-
-/*inline-flex items-center cursor-pointer transition justify-center gap-2 whitespace-nowrap rounded-sm !text-sm font-medium focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-red-500/9 dark:bg-red-500/15 text-red-500 hover:bg-red-500/13 dark:hover:bg-red-500/25 active:scale-100 py-2 relative w-full max-w-[calc(50%-.325rem)] overflow-hidden h-10 text-sm !rounded-[4px] px-2 group pl-3 hover:!bg-red-500 hover:!text-white*/
-
 :root {
   --yes: oklch(62.7% 0.194 149.214);
   --yes-foreground: oklch(52.7% 0.154 150.069);
@@ -24,7 +20,7 @@
   --card-hover: oklch(0.98 0.002 247);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.68 0.15 237);
+  --primary: oklch(0.516 0.2434 263.6);
   --primary-foreground: oklch(0.984 0.003 247.858);
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
@@ -65,7 +61,7 @@
   --card-hover: oklch(0.96 0.01 247.858);
   --popover: oklch(0.208 0.042 265.755);
   --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.68 0.15 237);
+  --primary: oklch(0.6605 0.1342 239.11);
   --primary-foreground: oklch(0.98 0 248);
   --secondary: oklch(0.279 0.041 260.031);
   --secondary-foreground: oklch(0.984 0.003 247.858);
