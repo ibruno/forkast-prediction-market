@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { SpeedInsights } from '@vercel/speed-insights/next'
+import ProgressIndicator from '@/app/progress'
 import ThemeColor from '@/components/layout/ThemeColor'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/hooks/useTheme'
@@ -59,12 +60,14 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased">
-        <ThemeProvider>
-          <ThemeColor />
-          {children}
-          <Toaster />
-          {process.env.NODE_ENV === 'production' && <SpeedInsights />}
-        </ThemeProvider>
+        <ProgressIndicator>
+          <ThemeProvider>
+            <ThemeColor />
+            {children}
+            <Toaster />
+            {process.env.NODE_ENV === 'production' && <SpeedInsights />}
+          </ThemeProvider>
+        </ProgressIndicator>
       </body>
     </html>
   )
