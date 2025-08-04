@@ -63,7 +63,7 @@ export default function RootLayout({
           <ThemeColor />
           {children}
           <Toaster />
-          <SpeedInsights />
+          {process.env.NODE_ENV === 'production' && <SpeedInsights />}
         </ThemeProvider>
       </body>
     </html>
