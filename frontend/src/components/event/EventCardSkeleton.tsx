@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
 export default function EventCardSkeleton() {
   return (
-    <div className="min-h-[170px] animate-pulse rounded-lg border bg-card p-4">
+    <div className="h-[150px] animate-pulse rounded-lg border bg-card p-4">
       <div className="mb-3 flex items-start gap-2">
         <div className="h-8 w-8 rounded bg-muted"></div>
         <div className="flex-1 space-y-2">
@@ -22,5 +22,5 @@ export default function EventCardSkeleton() {
         <div className="h-3 w-6 rounded bg-muted"></div>
       </div>
     </div>
-  )
+  );
 }

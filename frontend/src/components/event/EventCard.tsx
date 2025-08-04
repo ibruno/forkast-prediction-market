@@ -199,13 +199,13 @@ export default function EventCard({
 
   return (
     <Card
-      className={`flex min-h-[160px] cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
+      className={`flex cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
         isInTradingMode ? "ring-primary/20 ring-2" : ""
       }`}
     >
       <CardContent className="flex h-full flex-col p-3">
         {/* Unified Header */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-3 flex items-center justify-between">
           <div className="flex flex-1 items-start gap-2 pr-2">
             {/* Creator Avatar */}
             <div
@@ -399,13 +399,16 @@ export default function EventCard({
             <>
               {/* Body - Show multi-outcome options only for non-binary markets */}
               {!isBinaryMarket && (
-                <div className="scrollbar-hide mb-4 max-h-16 flex-1 space-y-2 overflow-y-auto">
+                <div className="scrollbar-hide mb-2 max-h-16 flex-1 space-y-2 overflow-y-auto">
                   {event.outcomes.map((outcome) => (
                     <div
                       key={outcome.id}
                       className="flex items-center justify-between text-xs"
                     >
-                      <span className="text-slate-600 dark:text-slate-400">
+                      <span
+                        className="truncate text-slate-600 dark:text-slate-400"
+                        title={outcome.name}
+                      >
                         {outcome.name}
                       </span>
                       <div className="ml-2 flex items-center gap-2">
@@ -505,7 +508,7 @@ export default function EventCard({
 
         {/* Unified Footer - Always at bottom */}
         {!isInTradingMode && (
-          <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
               <span>{formatVolume(event.volume)} Vol.</span>
             </div>
@@ -519,9 +522,9 @@ export default function EventCard({
                 className="text-muted-foreground transition-colors hover:text-primary"
               >
                 {isFavorited ? (
-                  <Bookmark className="h-4 w-4 fill-current text-primary" />
+                  <Bookmark className="h-3.5 w-3.5 fill-current text-primary" />
                 ) : (
-                  <Bookmark className="h-4 w-4" />
+                  <Bookmark className="h-3.5 w-3.5" />
                 )}
               </button>
             </div>
