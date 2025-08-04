@@ -548,10 +548,10 @@ export default function EventDetail({ event }: EventDetailProps) {
                       </div>
 
                       {/* Third column: Yes button - 15% */}
-                      <div className="w-[15%] pl-3">
+                      <div className="ml-3 w-[15%]">
                         <Button
                           size="lg"
-                          variant="no"
+                          variant="yes"
                           onClick={(e) => {
                             e.stopPropagation()
                             tradingState.setSelectedOutcomeForOrder(outcome.id)
@@ -570,7 +570,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                           </div>
                         </Button>
                       </div>
-                      <div className="w-[15%] pl-2">
+                      <div className="ml-2 w-[15%]">
                         <Button
                           size="lg"
                           variant="no"
