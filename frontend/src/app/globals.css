@@ -128,11 +128,7 @@
 }
 
 @utility container {
-  @apply max-w-[1300px] mx-auto px-0;
-}
-
-@utility container-wide {
-  @apply max-w-[1800px] mx-auto px-0;
+  @apply max-w-7xl mx-auto px-4 2xl:px-0;
 }
 
 @utility scrollbar-hide {
