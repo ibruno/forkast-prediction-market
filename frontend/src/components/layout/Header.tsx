@@ -2,6 +2,7 @@
 
 import { BellIcon, ChevronDownIcon, MonitorIcon, MoonIcon, SearchIcon, SunIcon } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { LoginModal } from '@/components/auth/LoginModal'
 import { Button } from '@/components/ui/button'
@@ -48,20 +49,19 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-background pt-2">
       <div className="container flex h-14 items-center">
         {/* Logo */}
-        <button
-          type="button"
-          onClick={() => (window.location.href = '/')}
+        <Link
+          href="/"
           className={`
             flex shrink-0 items-center gap-2 font-semibold text-foreground transition-opacity
             hover:opacity-80
           `}
         >
           <div
-            className="h-6 w-6 text-primary"
+            className="size-6 text-primary"
             dangerouslySetInnerHTML={{ __html: sanitizedLogoSvg! }}
           />
           <span className="text-xl font-bold">{siteName!}</span>
-        </button>
+        </Link>
 
         {/* Search Bar */}
         <div className="relative mx-2 flex-1 sm:mx-4 sm:mr-6">
