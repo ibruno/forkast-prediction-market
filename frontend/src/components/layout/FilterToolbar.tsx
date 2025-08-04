@@ -1,18 +1,18 @@
-"use client";
+'use client'
 
-import type { EventCategory, FilterPill } from "@/types";
-import { Bookmark, Search } from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { getFilterPillsByCategory } from "@/lib/mockData";
+import type { EventCategory, FilterPill } from '@/types'
+import { Bookmark, Search } from 'lucide-react'
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { getFilterPillsByCategory } from '@/lib/mockData'
 
 interface FilterToolbarProps {
-  activeCategory: EventCategory;
-  searchQuery: string;
-  onSearchChange: (query: string) => void;
-  showFavoritesOnly: boolean;
-  onToggleFavorites: () => void;
+  activeCategory: EventCategory
+  searchQuery: string
+  onSearchChange: (query: string) => void
+  showFavoritesOnly: boolean
+  onToggleFavorites: () => void
 }
 
 export default function FilterToolbar({
@@ -22,9 +22,9 @@ export default function FilterToolbar({
   showFavoritesOnly,
   onToggleFavorites,
 }: FilterToolbarProps) {
-  const [activePill, setActivePill] = useState("all");
+  const [activePill, setActivePill] = useState('all')
 
-  const filterPills = getFilterPillsByCategory(activeCategory);
+  const filterPills = getFilterPillsByCategory(activeCategory)
 
   return (
     <div className="bg-background">
@@ -35,7 +35,7 @@ export default function FilterToolbar({
             type="text"
             placeholder="Search"
             value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={e => onSearchChange(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -45,13 +45,15 @@ export default function FilterToolbar({
           type="button"
           onClick={onToggleFavorites}
           className="text-muted-foreground transition-colors hover:text-primary"
-          title={showFavoritesOnly ? "Mostrar todos" : "Apenas favoritos"}
+          title={showFavoritesOnly ? 'Mostrar todos' : 'Apenas favoritos'}
         >
-          {showFavoritesOnly ? (
-            <Bookmark className="h-3.5 w-3.5 fill-current text-primary" />
-          ) : (
-            <Bookmark className="h-3.5 w-3.5" />
-          )}
+          {showFavoritesOnly
+            ? (
+                <Bookmark className="h-3.5 w-3.5 fill-current text-primary" />
+              )
+            : (
+                <Bookmark className="h-3.5 w-3.5" />
+              )}
         </button>
 
         {/* Separator */}
@@ -62,7 +64,7 @@ export default function FilterToolbar({
           {filterPills.map((pill: FilterPill) => (
             <Button
               key={pill.id}
-              variant={activePill === pill.id ? "default" : "ghost"}
+              variant={activePill === pill.id ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActivePill(pill.id)}
               className="h-8 shrink-0 text-xs whitespace-nowrap"
@@ -73,5 +75,5 @@ export default function FilterToolbar({
         </div>
       </div>
     </div>
-  );
+  )
 }
