@@ -28,7 +28,7 @@ export default function FilterToolbar({
 
   return (
     <div className="bg-background">
-      <div className="container mx-auto flex items-center gap-4 px-4 py-2 md:px-6">
+      <div className="container mx-auto flex items-center gap-4 py-2">
         <div className="relative w-48 shrink-0">
           <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
