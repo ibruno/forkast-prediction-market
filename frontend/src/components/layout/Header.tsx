@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, ChevronDown, Monitor, Moon, Search, Sun } from 'lucide-react'
+import { BellIcon, ChevronDownIcon, MonitorIcon, MoonIcon, SearchIcon, SunIcon } from 'lucide-react'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { LoginModal } from '@/components/auth/LoginModal'
@@ -65,7 +65,7 @@ export default function Header() {
 
         {/* Search Bar */}
         <div className="relative mx-2 flex-1 sm:mx-4 sm:mr-6">
-          <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search markets"
@@ -132,7 +132,7 @@ export default function Header() {
                 )}
           {/* Notifications */}
           <button type="button" className="p-1 text-muted-foreground hover:text-foreground">
-            <Bell className="h-5 w-5" />
+            <BellIcon className="h-5 w-5" />
           </button>
           {/* User Menu */}
           <div className="relative" ref={dropdownRef}>
@@ -148,7 +148,7 @@ export default function Header() {
                 height={24}
                 className="rounded-full"
               />
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDownIcon className="h-3 w-3" />
             </button>
 
             {/* Dropdown Menu */}
@@ -198,7 +198,7 @@ export default function Header() {
                                 }`}
                                 title="Light mode"
                               >
-                                <Sun className="h-3.5 w-3.5" />
+                                <SunIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 type="button"
@@ -213,7 +213,7 @@ export default function Header() {
                                 }`}
                                 title="System mode"
                               >
-                                <Monitor className="h-3.5 w-3.5" />
+                                <MonitorIcon className="h-3.5 w-3.5" />
                               </button>
                               <button
                                 type="button"
@@ -228,7 +228,7 @@ export default function Header() {
                                 }`}
                                 title="Dark mode"
                               >
-                                <Moon className="h-3.5 w-3.5" />
+                                <MoonIcon className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           </div>
@@ -303,7 +303,7 @@ export default function Header() {
                               }`}
                               title="Light mode"
                             >
-                              <Sun className="h-3.5 w-3.5" />
+                              <SunIcon className="h-3.5 w-3.5" />
                             </button>
                             <button
                               type="button"
@@ -318,7 +318,7 @@ export default function Header() {
                               }`}
                               title="System mode"
                             >
-                              <Monitor className="h-3.5 w-3.5" />
+                              <MonitorIcon className="h-3.5 w-3.5" />
                             </button>
                             <button
                               type="button"
@@ -333,7 +333,7 @@ export default function Header() {
                               }`}
                               title="Dark mode"
                             >
-                              <Moon className="h-3.5 w-3.5" />
+                              <MoonIcon className="h-3.5 w-3.5" />
                             </button>
                           </div>
                         </div>
