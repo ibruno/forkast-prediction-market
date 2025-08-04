@@ -10,8 +10,6 @@ export default antfu({
   },
   rules: {
     ...eslintPluginBetterTailwindcss.configs['recommended-error'].rules,
-    'better-tailwindcss/no-conflicting-classes': 'off',
-    'better-tailwindcss/no-unregistered-classes': 'off',
     'node/prefer-global/process': 'off',
     'no-console': 'off',
     'react-dom/no-dangerously-set-innerhtml': 'off',

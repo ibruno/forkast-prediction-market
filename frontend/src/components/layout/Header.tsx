@@ -81,11 +81,7 @@ export default function Header() {
           <div className="hidden items-center gap-6 text-xs lg:flex">
             <a
               href="#"
-              className={`
-                border-radius-lg rounded-lg p-2 text-center transition-colors
-                hover:bg-black/5
-                dark:hover:bg-white/5
-              `}
+              className="rounded-lg p-2 text-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
             >
               <div className="font-medium text-muted-foreground">Portfolio</div>
               <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
@@ -97,11 +93,7 @@ export default function Header() {
             </a>
             <a
               href="#"
-              className={`
-                border-radius-lg rounded-lg p-2 text-center transition-colors
-                hover:bg-black/5
-                dark:hover:bg-white/5
-              `}
+              className="rounded-lg p-2 text-center transition-colors hover:bg-black/5 dark:hover:bg-white/5"
             >
               <div className="font-medium text-muted-foreground">Cash</div>
               <div className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">

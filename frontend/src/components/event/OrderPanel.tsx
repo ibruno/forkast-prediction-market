@@ -242,7 +242,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
         }}
         className={`${baseClasses} ${
           isSelected ? selectedClasses : defaultClasses
-        } ${type === 'yes' ? 'text-md' : 'text-sm'}`}
+        } ${type === 'yes' ? '' : 'text-sm'}`}
       >
         <span className="opacity-70">
           {type === 'yes'
@@ -477,7 +477,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                 height={42}
                 className="shrink-0 rounded-sm"
               />
-              <span className="text-md font-bold">
+              <span className="text-sm font-bold">
                 {getSelectedOutcome()?.name}
               </span>
             </div>
