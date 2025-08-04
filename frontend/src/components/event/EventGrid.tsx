@@ -74,8 +74,8 @@ export default function EventGrid({
 
   if (isLoading) {
     return (
-      <main className="container mx-auto px-4 py-3 md:px-6">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <main className="container mx-auto py-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {skeletons.map(id => (
             <EventCardSkeleton key={id} />
           ))}
@@ -86,7 +86,7 @@ export default function EventGrid({
 
   if (filteredEvents.length === 0) {
     return (
-      <main className="container mx-auto px-4 py-3 md:px-6">
+      <main className="container mx-auto py-3">
         <div className="py-12 text-center">
           <div className="mb-2 flex justify-center text-muted-foreground">
             {searchQuery
@@ -135,9 +135,9 @@ export default function EventGrid({
   }
 
   return (
-    <main className="container mx-auto px-4 py-3 md:px-6">
+    <main className="container mx-auto py-3">
       {/* Events Grid */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filteredEvents.map((event: Event) => (
           <EventCard
             key={event.id}

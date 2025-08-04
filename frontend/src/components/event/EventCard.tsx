@@ -207,7 +207,7 @@ export default function EventCard({
 
   return (
     <Card
-      className={`flex h-[160px] cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
+      className={`flex h-[180px] cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
         isInTradingMode ? 'ring-2 ring-primary/20' : ''
       }`}
     >
@@ -218,7 +218,7 @@ export default function EventCard({
             {/* Creator Avatar */}
             <div
               className={`
-                flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded bg-muted
+                flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded bg-muted
                 text-muted-foreground
               `}
             >
@@ -230,8 +230,8 @@ export default function EventCard({
                   }.png`
                 }
                 alt={event.creator || 'Market creator'}
-                width={32}
-                height={32}
+                width={40}
+                height={40}
                 className="h-full w-full rounded object-cover"
               />
             </div>
@@ -442,20 +442,20 @@ export default function EventCard({
                 <>
                   {/* Body - Show multi-outcome options only for non-binary markets */}
                   {!isBinaryMarket && (
-                    <div className="mb-2 scrollbar-hide max-h-16 flex-1 space-y-2 overflow-y-auto">
+                    <div className="scrollbar-hide mt-auto mb-1 max-h-18 space-y-2 overflow-y-auto">
                       {event.outcomes.map(outcome => (
                         <div
                           key={outcome.id}
-                          className="flex items-center justify-between text-xs"
+                          className="flex items-center justify-between text-sm"
                         >
                           <span
-                            className="truncate text-slate-600 dark:text-slate-400"
+                            className="truncate text-slate-600 dark:text-white"
                             title={outcome.name}
                           >
                             {outcome.name}
                           </span>
                           <div className="ml-2 flex items-center gap-2">
-                            <span className="text-[11px] font-medium text-slate-900 dark:text-slate-100">
+                            <span className="text-[11px] font-bold text-slate-900 dark:text-white">
                               {Math.round(outcome.probability)}
                               %
                             </span>
@@ -469,8 +469,8 @@ export default function EventCard({
                                 }}
                                 title={`Yes: ${Math.round(outcome.probability)}%`}
                                 className={`
-                                  group flex w-[28px] items-center justify-center rounded bg-emerald-400/50 px-2 py-0.5
-                                  text-[10px] font-semibold text-white transition-colors
+                                  group flex w-[32px] items-center justify-center rounded bg-emerald-400/50 px-2 py-1
+                                  text-[11px] font-semibold text-white transition-colors
                                   hover:bg-emerald-500
                                 `}
                               >
@@ -491,8 +491,8 @@ export default function EventCard({
                                   100 - Math.round(outcome.probability)
                                 }%`}
                                 className={`
-                                  group flex w-[28px] items-center justify-center rounded bg-rose-400/50 px-2 py-0.5
-                                  text-[10px] font-semibold text-white transition-colors
+                                  group flex w-[32px] items-center justify-center rounded bg-rose-400/50 px-2 py-1
+                                  text-[11px] font-semibold text-white transition-colors
                                   hover:bg-rose-500
                                 `}
                               >
