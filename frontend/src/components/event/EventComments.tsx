@@ -15,10 +15,10 @@ export default function EventComments() {
         <div className="relative">
           <Input
             className={`
-              border-border/50 h-11 w-full rounded-lg border px-3 pr-16 text-sm transition-all duration-200 ease-in-out
-              dark:border-border/20
+              h-11 w-full rounded-lg border border-border/50 px-3 pr-16 text-sm transition-all duration-200 ease-in-out
               hover:border-border
               focus:border-primary
+              dark:border-border/20
             `}
             placeholder="Add a comment"
             value={newComment}
@@ -26,14 +26,14 @@ export default function EventComments() {
           />
           <Button
             size="sm"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium"
+            className="absolute top-1/2 right-3 -translate-y-1/2 text-xs font-medium"
             disabled={!newComment.trim()}
           >
             Post
           </Button>
         </div>
         <div className={`
-          border-border/50 flex items-center gap-1 rounded-lg border px-3 py-1.5 text-[11px] text-muted-foreground
+          flex items-center gap-1 rounded-lg border border-border/50 px-3 py-1.5 text-[11px] text-muted-foreground
           dark:border-border/20
         `}
         >
@@ -52,7 +52,7 @@ export default function EventComments() {
                 alt={`user${comment}`}
                 width={32}
                 height={32}
-                className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
+                className="h-8 w-8 shrink-0 rounded-full object-cover"
               />
               <div className="flex-1">
                 <div className="mb-1 flex items-center gap-2">
@@ -103,7 +103,7 @@ export default function EventComments() {
                   alt="replier1"
                   width={24}
                   height={24}
-                  className="h-6 w-6 flex-shrink-0 rounded-full object-cover"
+                  className="h-6 w-6 shrink-0 rounded-full object-cover"
                 />
                 <div className="flex-1">
                   <div className="mb-1 flex items-center gap-2">

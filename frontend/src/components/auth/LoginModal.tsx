@@ -114,7 +114,7 @@ export function LoginModal({
             disabled={isEmailLoading}
             className={`
               flex-1 rounded-l-lg border border-r-0 border-gray-300 px-3 py-3 text-gray-900 placeholder-gray-500
-              focus:border-blue-500 focus:outline-none focus:ring-0
+              focus:border-blue-500 focus:ring-0 focus:outline-hidden
               disabled:cursor-not-allowed disabled:bg-gray-100
             `}
           />

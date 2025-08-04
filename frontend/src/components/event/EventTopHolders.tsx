@@ -20,7 +20,7 @@ export default function EventTopHolders() {
                   alt={holder.name}
                   width={32}
                   height={32}
-                  className="flex-shrink-0 rounded-full"
+                  className="shrink-0 rounded-full"
                 />
                 <div className="flex-1">
                   <div className="text-sm font-medium">
@@ -48,7 +48,7 @@ export default function EventTopHolders() {
                   alt={holder.name}
                   width={32}
                   height={32}
-                  className="flex-shrink-0 rounded-full"
+                  className="shrink-0 rounded-full"
                 />
                 <div className="flex-1">
                   <div className="text-sm font-medium">

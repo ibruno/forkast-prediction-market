@@ -48,13 +48,13 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs"
       onClick={handleBackdropClick}
     >
       <div
         ref={modalRef}
         className={`
-          mx-4 w-full min-w-[448px] max-w-md rounded-lg border border-gray-200 bg-white p-6 shadow-xl
+          mx-4 w-full max-w-md min-w-[448px] rounded-lg border border-gray-200 bg-white p-6 shadow-xl
           transition-[height] duration-200 ease-out
           ${className}
         `}

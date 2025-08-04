@@ -12,7 +12,7 @@ export default function EventCardSkeleton() {
         <div className="h-5 w-8 rounded bg-muted"></div>
       </div>
 
-      <div className="mb-3 mt-4 grid grid-cols-2 gap-2">
+      <div className="mt-4 mb-3 grid grid-cols-2 gap-2">
         <div className="h-8 rounded bg-muted"></div>
         <div className="h-8 rounded bg-muted"></div>
       </div>

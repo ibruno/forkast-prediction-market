@@ -4,7 +4,6 @@ import { useState } from 'react'
 export default function EventShare() {
   const [shareSuccess, setShareSuccess] = useState(false)
 
-  // move this method and all of it dependencies to a new component called EventShare.tsx ai!
   async function handleShare() {
     try {
       const url = window.location.href

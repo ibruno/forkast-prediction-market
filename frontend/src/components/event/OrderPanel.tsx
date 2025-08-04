@@ -264,7 +264,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
   // Function to render action buttons (percentage and value)
   function renderActionButtons(isMobileVersion: boolean) {
     const baseButtonClasses
-      = 'h-7 px-3 rounded-lg border border-border/50 dark:border-border/20 text-[11px] transition-all duration-200 ease-in-out'
+      = 'h-7 px-3 rounded-lg border text-[11px] transition-all duration-200 ease-in-out'
 
     if (tradingState.activeTab === 'sell') {
       const userShares = getUserShares()
@@ -277,7 +277,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
           className={`${baseButtonClasses} ${
             isDisabled
               ? 'cursor-not-allowed opacity-50'
-              : 'hover:border-border hover:bg-white/10 dark:hover:bg-white/5'
+              : 'hover:bg-white/10 dark:hover:bg-white/5'
           }`}
           disabled={isDisabled}
           onClick={() => {
@@ -362,8 +362,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
     return (
       <div
         className={`
-          border-border/50 flex flex-col items-center justify-center rounded-lg border p-6
-          dark:border-border/20
+          flex flex-col items-center justify-center rounded-lg border p-6
           ${isMobileVersion ? 'w-full' : 'w-full lg:w-[320px]'}`}
       >
         <CircleCheckIcon size={56} className="mb-2 text-primary" />
@@ -372,7 +371,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
           {' '}
           {outcomeLabel}
         </div>
-        {!tradingState.claimed && <hr className="my-4 w-full border-border" />}
+        {!tradingState.claimed && <hr className="my-4 w-full border" />}
         {!tradingState.claimed && (
           <>
             <div className="mb-2 text-center text-lg font-bold text-foreground">
@@ -405,9 +404,9 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
             <button
               type="button"
               className={`
-                hover:bg-primary/90
                 mt-6 flex h-11 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-white
                 transition-colors
+                hover:bg-primary/90
               `}
               onClick={async (e) => {
                 tradingState.setClaiming(true)
@@ -457,7 +456,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
     } ${
       isMobileVersion
         ? ''
-        : 'rounded-lg border border-border/50 dark:border-border/20'
+        : 'rounded-lg border'
     } p-4`
 
     return (
@@ -466,7 +465,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
         {event.active_markets_count > 1
           && tradingState.selectedOutcomeForOrder
           && !isMobileVersion && (
-          <div className="bg-muted/20 mb-4 rounded-lg">
+          <div className="mb-4 rounded-lg bg-muted/20">
             <div className="flex items-center gap-3">
               <Image
                 src={
@@ -476,7 +475,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                 alt={getSelectedOutcome()?.name || 'Selected outcome'}
                 width={42}
                 height={42}
-                className="flex-shrink-0 rounded-sm"
+                className="shrink-0 rounded-sm"
               />
               <span className="text-md font-bold">
                 {getSelectedOutcome()?.name}
@@ -503,7 +502,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
               }
               width={32}
               height={32}
-              className="flex-shrink-0 rounded"
+              className="shrink-0 rounded"
             />
             <div className="flex-1">
               <div className="line-clamp-2 text-sm font-medium">
@@ -602,7 +601,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
 
         {/* Message when no outcome is selected in Sell mode */}
         {tradingState.activeTab === 'sell' && !tradingState.selectedOutcomeForOrder && (
-          <div className="bg-muted/30 border-border/50 mb-4 rounded-lg border p-3">
+          <div className="mb-4 rounded-lg border bg-muted/30 p-3">
             <p className="text-center text-sm text-muted-foreground">
               Select an outcome to sell shares
             </p>
@@ -627,9 +626,9 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                       tradingState.setAmount(tradingState.formatValue(newValue))
                     }}
                     className={`
-                      hover:bg-muted/80
                       flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-2xl font-bold
                       transition-colors
+                      hover:bg-muted/80
                     `}
                   >
                     −
@@ -639,9 +638,10 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                       ref={inputRef}
                       type="text"
                       className={`
-                        w-full border-0 bg-transparent text-center text-4xl font-bold text-foreground
-                        placeholder-muted-foreground outline-none
+                        w-full
                         [appearance:textfield]
+                        border-0 bg-transparent text-center text-4xl font-bold text-foreground
+                        placeholder-muted-foreground outline-hidden
                         [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
                       `}
                       placeholder={tradingState.activeTab === 'sell' ? '0' : '$1.00'}
@@ -707,9 +707,9 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                       }
                     }}
                     className={`
-                      hover:bg-muted/80
                       flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-2xl font-bold
                       transition-colors
+                      hover:bg-muted/80
                     `}
                   >
                     +
@@ -719,7 +719,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
             )
           : (
               <div className="mb-2 flex items-center gap-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="text-lg font-medium">
                     {tradingState.activeTab === 'sell' ? 'Shares' : 'Amount'}
                   </div>
@@ -734,9 +734,10 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                     ref={inputRef}
                     type="text"
                     className={`
-                      h-14 w-full border-0 bg-transparent text-right text-4xl font-bold text-slate-700
-                      placeholder-slate-400 outline-none
+                      h-14 w-full
                       [appearance:textfield]
+                      border-0 bg-transparent text-right text-4xl font-bold text-slate-700 placeholder-slate-400
+                      outline-hidden
                       dark:text-slate-300 dark:placeholder-slate-500
                       [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
                     `}
@@ -796,9 +797,8 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
           <button
             type="button"
             className={`
-              border-border/50 h-7 rounded-lg border px-3 text-[11px] font-semibold transition-all duration-200
+              h-7 rounded-lg border px-3 text-[11px] font-semibold transition-all duration-200
               ease-in-out
-              dark:border-border/20
               ${
       tradingState.activeTab === 'sell' && getUserShares() <= 0
         ? 'cursor-not-allowed opacity-50'
@@ -829,7 +829,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
         {tradingState.amount && Number.parseFloat(tradingState.amount) > 0 && tradingState.yesNoSelection && (
           <div className={`${isMobileVersion ? 'mb-4 text-center' : 'mb-4'}`}>
             {!isMobileVersion && (
-              <hr className="border-border/50 mb-3 dark:border-border/20" />
+              <hr className="mb-3 border" />
             )}
             <div
               className={`flex ${

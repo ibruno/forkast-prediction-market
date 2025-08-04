@@ -211,7 +211,7 @@ export default function EventCard({
   return (
     <Card
       className={`flex min-h-[160px] cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
-        isInTradingMode ? 'ring-primary/20 ring-2' : ''
+        isInTradingMode ? 'ring-2 ring-primary/20' : ''
       }`}
     >
       <CardContent className="flex h-full flex-col p-3">
@@ -220,8 +220,7 @@ export default function EventCard({
           <div className="flex flex-1 items-start gap-2 pr-2">
             {/* Creator Avatar */}
             <div className={`
-              flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded bg-muted
-              text-muted-foreground
+              flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded bg-muted text-muted-foreground
             `}
             >
               <Image
@@ -245,7 +244,7 @@ export default function EventCard({
               onClick={e => e.stopPropagation()}
             >
               <h3 className={`
-                line-clamp-3 text-sm font-semibold leading-tight text-foreground transition-all duration-200
+                line-clamp-3 text-sm leading-tight font-semibold text-foreground transition-all duration-200
                 hover:text-foreground
               `}
               >
@@ -312,7 +311,7 @@ export default function EventCard({
                 <div className="flex-1 space-y-3">
                   <div className="relative">
                     <DollarSign className={`
-                      absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-green-600
+                      absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-green-600
                       dark:text-green-400
                     `}
                     />
@@ -351,10 +350,11 @@ export default function EventCard({
                         }
                       }}
                       className={`
-                        w-full rounded border-0 bg-slate-100 py-2 pl-10 pr-3 text-sm text-slate-900 transition-colors
+                        w-full
                         [appearance:textfield]
+                        rounded border-0 bg-slate-100 py-2 pr-3 pl-10 text-sm text-slate-900 transition-colors
                         placeholder:text-slate-500
-                        focus:bg-slate-200 focus:outline-none
+                        focus:bg-slate-200 focus:outline-hidden
                         dark:bg-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-slate-600
                         [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
                       `}
@@ -483,7 +483,7 @@ export default function EventCard({
 
                   {/* Trading Actions - Only for binary markets */}
                   {isBinaryMarket && yesOutcome && noOutcome && (
-                    <div className="mb-2 mt-auto grid grid-cols-2 gap-2">
+                    <div className="mt-auto mb-2 grid grid-cols-2 gap-2">
                       <button
                         type="button"
                         onClick={(e) => {

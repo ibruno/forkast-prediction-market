@@ -28,9 +28,9 @@ export default function FilterToolbar({
 
   return (
     <div className="bg-background">
-      <div className="container mx-auto flex max-w-6xl items-center gap-4 px-4 py-2 md:px-6">
-        <div className="relative w-48 flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="container mx-auto flex items-center gap-4 px-4 py-2 md:px-6">
+        <div className="relative w-48 shrink-0">
+          <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search"
@@ -62,7 +62,7 @@ export default function FilterToolbar({
         </Button>
 
         {/* Separator */}
-        <div className="h-6 w-px flex-shrink-0 bg-border"></div>
+        <div className="h-6 w-px shrink-0 bg-border"></div>
 
         {/* Filter Pills */}
         <div className="scrollbar-hide flex items-center gap-2 overflow-x-auto">
@@ -72,7 +72,7 @@ export default function FilterToolbar({
               variant={activePill === pill.id ? 'default' : 'ghost'}
               size="sm"
               onClick={() => setActivePill(pill.id)}
-              className="h-8 flex-shrink-0 whitespace-nowrap text-xs"
+              className="h-8 shrink-0 text-xs whitespace-nowrap"
             >
               {pill.label}
             </Button>

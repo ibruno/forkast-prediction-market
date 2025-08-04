@@ -222,7 +222,7 @@ export default function EventDetail({ event }: EventDetailProps) {
         onCategoryChange={() => {}}
       />
 
-      <main className="container grid gap-8 pb-12 pt-8 md:pb-12 lg:grid-cols-[3fr_1fr] lg:gap-10">
+      <main className="container grid gap-8 pt-8 pb-12 md:pb-12 lg:grid-cols-[3fr_1fr] lg:gap-10">
         {/* Left column - Main content */}
         <div className="pb-20 md:pb-0">
           {/* Add padding bottom on mobile for the floating button */}
@@ -236,9 +236,9 @@ export default function EventDetail({ event }: EventDetailProps) {
               alt={event.creator || 'Market creator'}
               width={64}
               height={64}
-              className="flex-shrink-0 rounded-xl"
+              className="shrink-0 rounded-xl"
             />
-            <h1 className="line-clamp-3 flex-1 text-lg font-bold leading-tight md:text-xl lg:text-2xl">
+            <h1 className="line-clamp-3 flex-1 text-lg leading-tight font-bold md:text-xl lg:text-2xl">
               {event.title}
             </h1>
             <div className="flex gap-2 text-muted-foreground">
@@ -363,19 +363,14 @@ export default function EventDetail({ event }: EventDetailProps) {
           {event.active_markets_count > 1 && (
             <div className="mt-6 overflow-hidden bg-background">
               {/* Header */}
-              <div className={`
-                bg-muted/10 border-border/50 hidden items-center rounded-t-lg border-b py-3
-                dark:border-border/20
-                md:flex
-              `}
-              >
+              <div className="hidden items-center rounded-t-lg border-b bg-muted/10 py-3 md:flex">
                 <div className="w-1/2">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                     OUTCOMES
                   </span>
                 </div>
                 <div className="flex w-3/5 items-center justify-center gap-1">
-                  <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  <span className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
                     CHANCE
                   </span>
                   <a
@@ -399,15 +394,15 @@ export default function EventDetail({ event }: EventDetailProps) {
                       flex cursor-pointer flex-col items-start rounded-lg px-3 py-4 transition-all duration-200
                       ease-in-out
                       hover:bg-black/5
-                      dark:hover:bg-white/5
                       md:flex-row md:items-center md:px-2
+                      dark:hover:bg-white/5
                       ${
                   tradingState.selectedOutcomeForOrder === outcome.id
                     ? 'bg-muted/30'
                     : ''
                   } ${
                     index !== sortedOutcomes.length - 1
-                      ? 'border-border/50 border-b dark:border-border/20'
+                      ? 'border-b'
                       : 'rounded-b-lg'
                   }`}
                     onClick={() => {
@@ -430,7 +425,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                               alt={outcome.name}
                               width={42}
                               height={42}
-                              className="flex-shrink-0 rounded-full"
+                              className="shrink-0 rounded-full"
                             />
                           )}
                           <div>
@@ -520,7 +515,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             alt={outcome.name}
                             width={42}
                             height={42}
-                            className="flex-shrink-0 rounded-full"
+                            className="shrink-0 rounded-full"
                           />
                         )}
                         <div>
@@ -617,12 +612,8 @@ export default function EventDetail({ event }: EventDetailProps) {
           {/* Order Book - Commented for now */}
 
           {/* Market Context */}
-          <div className={`
-            border-border/50 mt-3 rounded-lg border transition-all duration-200 ease-in-out
-            dark:border-border/20
-          `}
-          >
-            <div className="hover:bg-muted/50 flex items-center justify-between p-4">
+          <div className="mt-3 rounded-lg border transition-all duration-200 ease-in-out">
+            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
               <span className="text-lg font-medium">Market Context</span>
               <Button
                 variant="outline"
@@ -641,7 +632,7 @@ export default function EventDetail({ event }: EventDetailProps) {
             </div>
 
             {contextExpanded && (
-              <div className="border-border/30 border-t px-3 pb-3">
+              <div className="border-t px-3 pb-3">
                 <div className="space-y-2 pt-3">
                   {generatedContext.map(line => (
                     <p
@@ -657,12 +648,8 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Rules */}
-          <div className={`
-            border-border/50 mt-3 rounded-lg border transition-all duration-200 ease-in-out
-            dark:border-border/20
-          `}
-          >
-            <div className="hover:bg-muted/50 flex items-center justify-between p-4">
+          <div className="mt-3 rounded-lg border transition-all duration-200 ease-in-out">
+            <div className="flex items-center justify-between p-4 hover:bg-muted/50">
               <span className="text-lg font-medium">Rules</span>
               <Button
                 variant="outline"
@@ -675,21 +662,21 @@ export default function EventDetail({ event }: EventDetailProps) {
             </div>
 
             {rulesExpanded && (
-              <div className="border-border/30 border-t px-3 pb-3">
+              <div className="border-t px-3 pb-3">
                 <div className="space-y-2 pt-3">
                   {event.rules && (
-                    <div className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                    <div className="text-sm leading-relaxed whitespace-pre-line text-muted-foreground">
                       {formatRules(event.rules)}
                     </div>
                   )}
 
                   {/* Oracle Info */}
-                  <div className="border-border/50 mt-3 rounded-lg border p-3 dark:border-border/20">
+                  <div className="mt-3 rounded-lg border p-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-start gap-3">
                         <div
-                          className={`h-10 w-10 bg-gradient-to-r ${mockMarketDetails.resolver.gradientColors}
-                            flex flex-shrink-0 items-center justify-center rounded-sm
+                          className={`h-10 w-10 bg-linear-to-r ${mockMarketDetails.resolver.gradientColors}
+                            flex shrink-0 items-center justify-center rounded-sm
                           `}
                         >
                         </div>
@@ -726,7 +713,7 @@ export default function EventDetail({ event }: EventDetailProps) {
           </div>
 
           {/* Comments tabs */}
-          <ul className="border-border/50 mt-8 flex h-12 gap-8 border-b text-sm font-semibold dark:border-border/20">
+          <ul className="mt-8 flex h-12 gap-8 border-b text-sm font-semibold">
             {eventTabs.map(tab => (
               <li
                 key={tab}
@@ -756,7 +743,7 @@ export default function EventDetail({ event }: EventDetailProps) {
 
       {/* Floating buttons for mobile - only binary markets */}
       {event.active_markets_count === 1 && (
-        <div className="border-border/50 fixed bottom-0 left-0 right-0 border-t bg-background p-4 md:hidden">
+        <div className="fixed right-0 bottom-0 left-0 border-t bg-background p-4 md:hidden">
           <div className="flex gap-2">
             <Button
               onClick={() => {

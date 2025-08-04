@@ -52,7 +52,7 @@ export default function Header() {
           type="button"
           onClick={() => (window.location.href = '/')}
           className={`
-            flex flex-shrink-0 items-center gap-2 font-semibold text-foreground transition-opacity
+            flex shrink-0 items-center gap-2 font-semibold text-foreground transition-opacity
             hover:opacity-80
           `}
         >
@@ -65,7 +65,7 @@ export default function Header() {
 
         {/* Search Bar */}
         <div className="relative mx-2 flex-1 sm:mx-4 sm:mr-6">
-          <Search className="absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             type="text"
             placeholder="Search markets"
@@ -76,7 +76,7 @@ export default function Header() {
         </div>
 
         {/* Right Section */}
-        <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2 lg:gap-4">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-4">
           {/* Portfolio & Cash - Hidden on mobile */}
           <div className="hidden items-center gap-6 text-xs lg:flex">
             <a
@@ -202,7 +202,7 @@ export default function Header() {
                                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                   actualTheme === 'light'
                                     ? 'bg-primary text-primary-foreground'
-                                    : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                                 }`}
                                 title="Light mode"
                               >
@@ -217,7 +217,7 @@ export default function Header() {
                                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                   theme === 'system'
                                     ? 'bg-primary text-primary-foreground'
-                                    : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                                 }`}
                                 title="System mode"
                               >
@@ -232,7 +232,7 @@ export default function Header() {
                                 className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                   theme === 'dark'
                                     ? 'bg-primary text-primary-foreground'
-                                    : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
+                                    : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                                 }`}
                                 title="Dark mode"
                               >
@@ -307,7 +307,7 @@ export default function Header() {
                               className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                 actualTheme === 'light'
                                   ? 'bg-primary text-primary-foreground'
-                                  : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                               }`}
                               title="Light mode"
                             >
@@ -322,7 +322,7 @@ export default function Header() {
                               className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                 theme === 'system'
                                   ? 'bg-primary text-primary-foreground'
-                                  : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                               }`}
                               title="System mode"
                             >
@@ -337,7 +337,7 @@ export default function Header() {
                               className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
                                 theme === 'dark'
                                   ? 'bg-primary text-primary-foreground'
-                                  : 'hover:bg-muted/80 hover:text-foreground bg-muted text-muted-foreground'
+                                  : 'bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground'
                               }`}
                               title="Dark mode"
                             >

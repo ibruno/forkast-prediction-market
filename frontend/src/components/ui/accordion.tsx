@@ -53,7 +53,7 @@ function AccordionContent({ ref, className, children, ...props }: React.Componen
       `}
       {...props}
     >
-      <div className={cn('pb-4 pt-0', className)}>{children}</div>
+      <div className={cn('pt-0 pb-4', className)}>{children}</div>
     </AccordionPrimitive.Content>
   )
 }

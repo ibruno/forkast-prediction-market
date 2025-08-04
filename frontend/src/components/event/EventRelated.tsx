@@ -49,7 +49,7 @@ export default function RelatedEvents({ event }: EventDetailProps) {
               alt={e.title}
               width={42}
               height={42}
-              className="flex-shrink-0 rounded-sm"
+              className="shrink-0 rounded-sm"
             />
             <strong>{e.title}</strong>
           </Link>

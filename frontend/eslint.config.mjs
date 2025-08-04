@@ -25,7 +25,7 @@ export default antfu({
   },
   settings: {
     'better-tailwindcss': {
-      tailwindConfig: './tailwind.config.js',
+      tailwindConfig: './src/app/globals.css',
     },
   },
 })

@@ -18,7 +18,7 @@ export default function EventActivity() {
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               activityFilter === filter
                 ? 'bg-muted text-foreground'
-                : 'border-border/50 border hover:bg-muted/50'
+                : 'border border-border/50 hover:bg-muted/50'
             }`}
             onClick={() => setActivityFilter(filter)}
           >
@@ -32,14 +32,14 @@ export default function EventActivity() {
         {mockMarketDetails.activities.map(activity => (
           <div
             key={activity.time}
-            className="border-border/30 flex items-center gap-3 border-b py-2 last:border-b-0"
+            className="flex items-center gap-3 border-b border-border/30 py-2 last:border-b-0"
           >
             <Image
               src={activity.avatar}
               alt={activity.user}
               width={32}
               height={32}
-              className="flex-shrink-0 rounded-full"
+              className="shrink-0 rounded-full"
             />
             <div className="flex-1">
               <span className="text-sm font-medium">
