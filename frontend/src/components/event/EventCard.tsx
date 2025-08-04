@@ -244,7 +244,7 @@ export default function EventCard({
             >
               <h3
                 className={`
-                  line-clamp-3 text-sm leading-tight font-semibold text-foreground transition-all duration-200
+                  line-clamp-3 text-sm leading-tight font-bold text-foreground transition-all duration-200
                   hover:text-foreground
                 `}
               >
@@ -446,7 +446,7 @@ export default function EventCard({
                       {event.outcomes.map(outcome => (
                         <div
                           key={outcome.id}
-                          className="flex items-center justify-between text-sm"
+                          className="flex items-center justify-between text-xs"
                         >
                           <span
                             className="truncate text-slate-600 dark:text-white"

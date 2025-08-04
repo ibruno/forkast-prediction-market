@@ -4,7 +4,6 @@ import ProgressIndicator from '@/app/progress'
 import ThemeColor from '@/components/layout/ThemeColor'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from '@/hooks/useTheme'
-import '@fontsource/inter'
 import './globals.css'
 
 export const metadata: Metadata = {

@@ -1,5 +1,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import '@fontsource/open-sauce-one/400.css';
+@import '@fontsource/open-sauce-one/500.css';
+@import '@fontsource/open-sauce-one/600.css';
+@import '@fontsource/open-sauce-one/700.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -79,6 +83,9 @@
 }
 
 @theme inline {
+  --font-sans:
+          'Open Sauce One', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+          'Noto Color Emoji';
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

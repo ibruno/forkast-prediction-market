@@ -6,7 +6,7 @@ function ProgressIndicator({ children }: { children: React.ReactNode }) {
   return (
     <ProgressProvider
       height="2px"
-      color="#2D9CDB"
+      color="#00a4e8"
       options={{ showSpinner: true }}
       shallowRouting
     >
