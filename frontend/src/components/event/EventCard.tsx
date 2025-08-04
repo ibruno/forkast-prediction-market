@@ -199,7 +199,7 @@ export default function EventCard({
 
   return (
     <Card
-      className={`flex cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
+      className={`flex h-[160px] cursor-pointer flex-col transition-all duration-150 hover:shadow-md ${
         isInTradingMode ? "ring-primary/20 ring-2" : ""
       }`}
     >
@@ -264,29 +264,55 @@ export default function EventCard({
           ) : (
             isBinaryMarket &&
             yesOutcome && (
-              <div className="ml-auto flex w-8 flex-col items-center">
-                {/* Text */}
-                <div
-                  className="mb-1 text-[11px] font-medium text-slate-900 dark:text-slate-100"
-                  title="chance"
-                >
-                  {Math.round(yesOutcome.probability)}%
-                </div>
-                {/* Progress bar */}
-                <div
-                  className="h-1 w-full cursor-pointer overflow-hidden rounded bg-slate-200 dark:bg-slate-500"
-                  title="chance"
-                >
-                  <div
-                    className={`h-full transition-all duration-300 ${
-                      Math.round(yesOutcome.probability) < 40
-                        ? "bg-rose-400"
-                        : Math.round(yesOutcome.probability) === 50
-                        ? "bg-slate-400"
-                        : "bg-emerald-400"
-                    }`}
-                    style={{ width: `${Math.round(yesOutcome.probability)}%` }}
-                  />
+              <div className="ml-auto flex flex-col items-center">
+                {/* Semicircular Arc Progress */}
+                <div className="relative flex flex-col items-center">
+                  <div className="relative">
+                    <svg
+                      width="56"
+                      height="36"
+                      viewBox="0 0 56 36"
+                      className="transform rotate-0"
+                    >
+                      {/* Background arc */}
+                      <path
+                        d="M 6 30 A 22 22 0 0 1 50 30"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        className="text-slate-200 dark:text-slate-600"
+                      />
+                      {/* Progress arc */}
+                      <path
+                        d="M 6 30 A 22 22 0 0 1 50 30"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        className={`transition-all duration-300 ${
+                          Math.round(yesOutcome.probability) < 40
+                            ? "text-rose-400"
+                            : Math.round(yesOutcome.probability) === 50
+                            ? "text-slate-400"
+                            : "text-emerald-400"
+                        }`}
+                        strokeDasharray={`${
+                          (Math.round(yesOutcome.probability) / 100) * 69.12
+                        } 69.12`}
+                        strokeDashoffset="0"
+                      />
+                    </svg>
+                    {/* Percentage number centered in arc */}
+                    <div className="absolute inset-0 flex items-center justify-center pt-2">
+                      <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                        {Math.round(yesOutcome.probability)}%
+                      </span>
+                    </div>
+                  </div>
+                  {/* "chance" text below arc - colado sem espaço */}
+                  <div className="-mt-1 text-[10px] text-slate-500 dark:text-slate-400">
+                    chance
+                  </div>
                 </div>
               </div>
             )
