@@ -17,10 +17,10 @@ export default function EventShare() {
   }
 
   return shareSuccess
-    ? <CheckIcon className="h-4 w-4 text-emerald-500" />
+    ? <CheckIcon className="size-4 text-primary" />
     : (
         <ShareIcon
-          className="h-4 w-4 cursor-pointer transition-colors hover:text-foreground"
+          className="size-4 cursor-pointer transition-colors hover:text-foreground"
           onClick={handleShare}
         />
       )

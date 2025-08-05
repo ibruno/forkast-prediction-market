@@ -221,17 +221,14 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
     forceTabChange = false,
   ) {
     const isSelected = tradingState.yesNoSelection === type
-    const baseClasses
-      = 'flex-1 h-12 rounded-sm font-bold transition-all duration-200 flex items-center justify-center gap-1'
+
     const selectedClasses
       = type === 'yes'
-        ? 'bg-yes hover:bg-yes-foreground'
-        : 'bg-no hover:bg-no-foreground'
-    const defaultClasses
-      = 'bg-slate-200 hover:bg-slate-300 text-slate-700 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200'
+        ? 'bg-yes hover:bg-yes-foreground !text-white'
+        : 'bg-no hover:bg-no-foreground !text-white'
 
     return (
-      <button
+      <Button
         type="button"
         onClick={() => {
           tradingState.setYesNoSelection(type)
@@ -240,9 +237,9 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
           }
           inputRef?.current?.focus()
         }}
-        className={`${baseClasses} ${
-          isSelected ? selectedClasses : defaultClasses
-        } ${type === 'yes' ? '' : 'text-sm'}`}
+        variant={isSelected ? type : 'outline'}
+        size="lg"
+        className={`flex-1 ${isSelected ? selectedClasses : ''}`}
       >
         <span className="opacity-70">
           {type === 'yes'
@@ -257,7 +254,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
           {price}
           ¢
         </span>
-      </button>
+      </Button>
     )
   }
 
@@ -401,13 +398,8 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                 </span>
               </div>
             </div>
-            <button
+            <Button
               type="button"
-              className={`
-                mt-6 flex h-11 w-full items-center justify-center rounded-lg bg-primary text-base font-bold text-white
-                transition-colors
-                hover:bg-primary/90
-              `}
               onClick={async (e) => {
                 tradingState.setClaiming(true)
                 triggerBlueConfetti(e)
@@ -436,7 +428,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                 : (
                     'Claim winnings'
                   )}
-            </button>
+            </Button>
           </>
         )}
         <p className="mt-3 text-center text-[10px] text-muted-foreground">
@@ -534,8 +526,8 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
             }}
             className={`flex-1 pb-2 transition-colors duration-200 ${
               tradingState.activeTab === 'buy'
-                ? 'border-b-2 border-emerald-500 text-foreground'
-                : 'border-b-2 border-muted-foreground text-muted-foreground hover:text-muted-foreground'
+                ? 'border-b-2 border-primary text-foreground'
+                : 'border-b-2'
             }`}
           >
             Buy
@@ -549,8 +541,8 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
             }}
             className={`flex-1 pb-2 transition-colors duration-200 ${
               tradingState.activeTab === 'sell'
-                ? 'border-b-2 border-emerald-500 text-foreground'
-                : 'border-b-2 border-muted-foreground text-muted-foreground hover:text-muted-foreground'
+                ? 'border-b-2 border-primary text-foreground'
+                : 'border-b-2'
             }`}
           >
             Sell
@@ -850,13 +842,13 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                 >
                   {tradingState.activeTab === 'sell' ? 'You\'ll receive' : 'To win'}
                   {!isMobileVersion && (
-                    <BanknoteIcon className="h-4 w-4 text-emerald-600" />
+                    <BanknoteIcon className="h-4 w-4 text-yes" />
                   )}
                   {isMobileVersion && (
-                    <span className="text-xl text-emerald-600">💰</span>
+                    <span className="text-xl text-yes">💰</span>
                   )}
                   {isMobileVersion && (
-                    <span className="text-2xl font-bold text-emerald-600">
+                    <span className="text-2xl font-bold text-yes">
                       {tradingState.activeTab === 'sell'
                         ? `$${tradingState.formatValue(
                           calculateSellAmount(Number.parseFloat(tradingState.amount)),
@@ -880,7 +872,7 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
                 </div>
               </div>
               {!isMobileVersion && (
-                <div className="text-4xl font-bold text-emerald-600">
+                <div className="text-4xl font-bold text-yes">
                   {tradingState.activeTab === 'sell'
                     ? `$${tradingState.formatValue(calculateSellAmount(Number.parseFloat(tradingState.amount)))}`
                     : `$${tradingState.formatValue(
@@ -894,7 +886,8 @@ export default function OrderPanel({ event, isMobileVersion = false }: Props) {
 
         {/* Main button */}
         <Button
-          className="h-11 w-full text-sm font-bold"
+          className="w-full"
+          size="lg"
           onClick={(e) => {
             // Trigger confetti based on selection
             if (tradingState.yesNoSelection === 'yes') {

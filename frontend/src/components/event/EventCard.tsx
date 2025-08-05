@@ -305,10 +305,10 @@ export default function EventCard({
                             strokeLinecap="round"
                             className={`transition-all duration-300 ${
                               Math.round(yesOutcome.probability) < 40
-                                ? 'text-rose-400'
+                                ? 'text-no'
                                 : Math.round(yesOutcome.probability) === 50
                                   ? 'text-slate-400'
-                                  : 'text-emerald-400'
+                                  : 'text-yes'
                             }`}
                             strokeDasharray={`${
                               (Math.round(yesOutcome.probability) / 100) * 69.12

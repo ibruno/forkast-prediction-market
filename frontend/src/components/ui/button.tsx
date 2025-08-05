@@ -40,15 +40,13 @@ const buttonVariants = cva(
           'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
         link: 'text-primary underline-offset-4 hover:underline',
         yes: `
-          flex items-center justify-center gap-1 rounded bg-yes/15 text-sm font-semibold text-yes-foreground
-          transition-colors
+          flex items-center justify-center gap-1 bg-yes/15 text-sm font-semibold text-yes-foreground transition-colors
           hover:bg-yes-foreground hover:text-white
           disabled:opacity-50
           dark:text-yes dark:hover:bg-yes dark:hover:text-white
         `,
         no: `
-          flex items-center justify-center gap-1 rounded bg-no/15 text-sm font-semibold text-no-foreground
-          transition-colors
+          flex items-center justify-center gap-1 bg-no/15 text-sm font-semibold text-no-foreground transition-colors
           hover:bg-no-foreground hover:text-white
           disabled:opacity-50
           dark:text-no dark:hover:bg-no dark:hover:text-white

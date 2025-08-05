@@ -457,7 +457,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             {Math.round(outcome.probability)}
                             %
                           </span>
-                          <div className="flex items-center gap-1 text-rose-600">
+                          <div className="flex items-center gap-1 text-no">
                             <TrendingDownIcon className="h-3 w-3" />
                             <span className="text-xs font-semibold">3%</span>
                           </div>
@@ -540,7 +540,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             {Math.round(outcome.probability)}
                             %
                           </span>
-                          <div className="flex items-center gap-1 text-rose-600">
+                          <div className="flex items-center gap-1 text-no">
                             <TrendingDownIcon className="h-3 w-3" />
                             <span className="text-xs font-semibold">3%</span>
                           </div>
@@ -691,7 +691,7 @@ export default function EventDetail({ event }: EventDetailProps) {
                             }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-500 transition-colors hover:text-blue-600"
+                            className="text-xs text-primary hover:opacity-80"
                           >
                             {event.oracle
                               ? formatOracleAddress(event.oracle)
