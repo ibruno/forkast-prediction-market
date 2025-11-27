@@ -92,7 +92,7 @@ export async function saveProxyWalletSignature({ signature }: SaveProxyWalletSig
 }
 
 async function triggerSafeProxyDeployment({ owner, signature }: { owner: string, signature: string }) {
-  const clobUrl = process.env.CLOB_URL!
+  const relayerUrl = process.env.RELAYER_URL!
   const method = 'POST'
   const path = '/wallet/safe'
 
@@ -114,7 +114,7 @@ async function triggerSafeProxyDeployment({ owner, signature }: { owner: string,
     body,
   )
 
-  const response = await fetch(`${clobUrl}${path}`, {
+  const response = await fetch(`${relayerUrl}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
