@@ -2,6 +2,7 @@ import type { OrderSide, OrderType } from '@/types'
 import { ChevronDownIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import EventMergeSharesDialog from '@/app/(platform)/event/[slug]/_components/EventMergeSharesDialog'
+import EventSplitSharesDialog from '@/app/(platform)/event/[slug]/_components/EventSplitSharesDialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +25,7 @@ interface EventOrderPanelBuySellTabsProps {
   side: OrderSide
   type: OrderType
   availableMergeShares: number
+  availableSplitBalance: number
   onSideChange: (side: OrderSide) => void
   onTypeChange: (type: OrderType) => void
   onAmountReset: () => void
@@ -34,6 +36,7 @@ export default function EventOrderPanelBuySellTabs({
   side,
   type,
   availableMergeShares,
+  availableSplitBalance,
   onSideChange,
   onTypeChange,
   onAmountReset,
@@ -41,6 +44,7 @@ export default function EventOrderPanelBuySellTabs({
 }: EventOrderPanelBuySellTabsProps) {
   const [typeMenuOpen, setTypeMenuOpen] = useState(false)
   const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false)
+  const [isSplitDialogOpen, setIsSplitDialogOpen] = useState(false)
   const hasHydratedType = useRef(false)
 
   useEffect(() => {
@@ -188,7 +192,14 @@ export default function EventOrderPanelBuySellTabs({
                   >
                     Merge
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={(event) => {
+                      event.preventDefault()
+                      setTypeMenuOpen(false)
+                      setIsSplitDialogOpen(true)
+                    }}
+                  >
                     Split
                   </DropdownMenuItem>
                 </DropdownMenuSubContent>
@@ -206,6 +217,11 @@ export default function EventOrderPanelBuySellTabs({
         open={isMergeDialogOpen}
         onOpenChange={setIsMergeDialogOpen}
         availableShares={availableMergeShares}
+      />
+      <EventSplitSharesDialog
+        open={isSplitDialogOpen}
+        onOpenChange={setIsSplitDialogOpen}
+        availableUsdc={availableSplitBalance}
       />
     </div>
   )
