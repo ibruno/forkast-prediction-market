@@ -318,7 +318,8 @@ EXECUTE FUNCTION update_tag_markets_count();
 -- 7. VIEWS
 -- ===========================================
 
-CREATE OR REPLACE VIEW v_visible_events AS
+CREATE OR REPLACE VIEW v_visible_events
+  WITH (security_invoker = true) AS
 SELECT events.*
 FROM events
 WHERE status = 'active'
@@ -328,7 +329,8 @@ WHERE status = 'active'
                   WHERE event_tags.event_id = events.id
                     AND tags.hide_events = TRUE);
 
-CREATE OR REPLACE VIEW v_main_tag_subcategories AS
+CREATE OR REPLACE VIEW v_main_tag_subcategories
+  WITH (security_invoker = true) AS
 SELECT main_tag.id                    AS main_tag_id,
        main_tag.slug                  AS main_tag_slug,
        main_tag.name                  AS main_tag_name,

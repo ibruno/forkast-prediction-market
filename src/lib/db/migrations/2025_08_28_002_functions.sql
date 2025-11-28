@@ -75,10 +75,13 @@ END
 $$ LANGUAGE plpgsql VOLATILE
                     SET search_path = 'extensions';
 
-CREATE OR REPLACE FUNCTION set_updated_at()
-  RETURNS TRIGGER AS $$
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+  RETURNS TRIGGER
+  LANGUAGE plpgsql
+  SET search_path = public
+AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;

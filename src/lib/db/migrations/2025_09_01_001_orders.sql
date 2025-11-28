@@ -63,7 +63,8 @@ CREATE POLICY service_role_all_orders ON orders AS PERMISSIVE FOR ALL TO service
 -- 5. VIEWS
 -- ===========================================
 
-CREATE OR REPLACE VIEW v_user_outcome_positions AS
+CREATE OR REPLACE VIEW v_user_outcome_positions
+  WITH (security_invoker = true) AS
 WITH normalized_orders AS (SELECT o.id,
                                   o.user_id,
                                   o.condition_id,
@@ -119,7 +120,8 @@ HAVING SUM(
            END
        ) <> 0;
 
-CREATE OR REPLACE VIEW v_condition_top_holders AS
+CREATE OR REPLACE VIEW v_condition_top_holders
+  WITH (security_invoker = true) AS
 WITH holder_positions AS (SELECT v.user_id,
                                  v.condition_id,
                                  v.outcome_index,
