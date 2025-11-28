@@ -1,8 +1,19 @@
 import type { OrderSide, OrderType } from '@/types'
-import * as SelectPrimitive from '@radix-ui/react-select'
 import { ChevronDownIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Select, SelectContent, SelectItem, SelectValue } from '@/components/ui/select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuPortal,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 
@@ -25,7 +36,7 @@ export default function EventOrderPanelBuySellTabs({
   onAmountReset,
   onFocusInput,
 }: EventOrderPanelBuySellTabsProps) {
-  const [open, setOpen] = useState(false)
+  const [typeMenuOpen, setTypeMenuOpen] = useState(false)
   const hasHydratedType = useRef(false)
 
   useEffect(() => {
@@ -60,6 +71,8 @@ export default function EventOrderPanelBuySellTabs({
     onAmountReset()
     onFocusInput()
   }
+
+  const orderTypeLabel = type === ORDER_TYPE.MARKET ? 'Market' : 'Limit'
 
   return (
     <div className="relative mb-4">
@@ -105,39 +118,73 @@ export default function EventOrderPanelBuySellTabs({
           </button>
         </div>
 
-        <Select
-          key={type}
-          value={type}
-          open={open}
-          onOpenChange={setOpen}
-          onValueChange={value => onTypeChange(value as OrderType)}
-        >
-          <SelectPrimitive.Trigger asChild>
+        <DropdownMenu open={typeMenuOpen} onOpenChange={setTypeMenuOpen}>
+          <DropdownMenuTrigger asChild>
             <button
               type="button"
-              onMouseEnter={() => setOpen(true)}
+              onMouseEnter={() => setTypeMenuOpen(true)}
               className={cn(`
-                group flex cursor-pointer items-center gap-1 bg-transparent pb-2 text-sm font-semibold
-                text-muted-foreground transition-colors duration-200
+                flex cursor-pointer items-center gap-1 bg-transparent pb-2 text-sm font-semibold text-muted-foreground
+                transition-colors duration-200
                 hover:text-foreground
                 focus:outline-none
                 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none
-                data-[state=open]:text-foreground
-              `)}
+              `, typeMenuOpen && 'text-foreground')}
+              aria-haspopup="menu"
+              aria-expanded={typeMenuOpen}
             >
-              <SelectValue />
-              <ChevronDownIcon className={`
-                size-4 text-muted-foreground transition-colors
-                group-data-[state=open]:text-foreground
-              `}
+              {orderTypeLabel}
+              <ChevronDownIcon
+                className={cn(
+                  'size-4 text-muted-foreground transition-colors',
+                  typeMenuOpen && 'text-foreground',
+                )}
               />
             </button>
-          </SelectPrimitive.Trigger>
-          <SelectContent align="end" className="min-w-[8rem]">
-            <SelectItem className="cursor-pointer" value={ORDER_TYPE.MARKET}>Market</SelectItem>
-            <SelectItem className="cursor-pointer" value={ORDER_TYPE.LIMIT}>Limit</SelectItem>
-          </SelectContent>
-        </Select>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[9rem]">
+            <DropdownMenuRadioGroup value={type} onValueChange={value => onTypeChange(value as OrderType)}>
+              <DropdownMenuRadioItem
+                value={ORDER_TYPE.MARKET}
+                className={`
+                  cursor-pointer pl-2
+                  data-[state=checked]:font-semibold data-[state=checked]:text-foreground
+                  [&>span:first-of-type]:hidden
+                `}
+              >
+                Market
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                value={ORDER_TYPE.LIMIT}
+                className={`
+                  cursor-pointer pl-2
+                  data-[state=checked]:font-semibold data-[state=checked]:text-foreground
+                  [&>span:first-of-type]:hidden
+                `}
+              >
+                Limit
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+
+            <DropdownMenuSeparator />
+
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="cursor-pointer">
+                More
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent className="min-w-[8rem]" alignOffset={-4}>
+                  <DropdownMenuItem className="cursor-pointer">
+                    Merge
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    Split
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div
         aria-hidden="true"
