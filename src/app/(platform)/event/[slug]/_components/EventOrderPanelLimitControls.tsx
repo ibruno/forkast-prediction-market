@@ -1,8 +1,17 @@
 import type { LimitExpirationOption } from '@/stores/useOrder'
 import type { OrderSide } from '@/types'
 import { BanknoteIcon, TriangleAlertIcon } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import EventLimitExpirationCalendar from '@/app/(platform)/event/[slug]/_components/EventLimitExpirationCalendar'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { NumberInput } from '@/components/ui/number-input'
 import {
@@ -29,6 +38,7 @@ interface EventOrderPanelLimitControlsProps {
   limitShares: string
   limitExpirationEnabled: boolean
   limitExpirationOption: LimitExpirationOption
+  limitExpirationTimestamp: number | null
   isLimitOrder: boolean
   availableShares: number
   showLimitMinimumWarning: boolean
@@ -36,6 +46,7 @@ interface EventOrderPanelLimitControlsProps {
   onLimitSharesChange: (value: string) => void
   onLimitExpirationEnabledChange: (value: boolean) => void
   onLimitExpirationOptionChange: (value: LimitExpirationOption) => void
+  onLimitExpirationTimestampChange: (value: number | null) => void
   onAmountUpdateFromLimit: (value: string) => void
 }
 
@@ -45,6 +56,7 @@ export default function EventOrderPanelLimitControls({
   limitShares,
   limitExpirationEnabled,
   limitExpirationOption,
+  limitExpirationTimestamp,
   isLimitOrder,
   availableShares,
   showLimitMinimumWarning,
@@ -52,6 +64,7 @@ export default function EventOrderPanelLimitControls({
   onLimitSharesChange,
   onLimitExpirationEnabledChange,
   onLimitExpirationOptionChange,
+  onLimitExpirationTimestampChange,
   onAmountUpdateFromLimit,
 }: EventOrderPanelLimitControlsProps) {
   const limitPriceNumber = useMemo(
@@ -91,6 +104,24 @@ export default function EventOrderPanelLimitControls({
   const totalValueLabel = formatCurrency(totalValue)
   const potentialWinLabel = formatCurrency(potentialWin)
   const showMinimumSharesWarning = showLimitMinimumWarning && isLimitOrder && limitSharesNumber < MIN_LIMIT_ORDER_SHARES
+  const [isExpirationModalOpen, setIsExpirationModalOpen] = useState(false)
+  const [draftExpiration, setDraftExpiration] = useState<Date>(() => {
+    const now = new Date()
+    now.setMinutes(now.getMinutes() + 30, 0, 0)
+    return now
+  })
+  const customExpirationLabel = useMemo(() => {
+    if (!limitExpirationTimestamp) {
+      return null
+    }
+    const date = new Date(limitExpirationTimestamp * 1000)
+    return date.toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }, [limitExpirationTimestamp])
 
   function syncAmount(priceValue: number, sharesValue: number) {
     if (!isLimitOrder) {
@@ -145,6 +176,40 @@ export default function EventOrderPanelLimitControls({
     medium: 'text-base',
     small: 'text-sm',
   })
+
+  useEffect(() => {
+    if (limitExpirationTimestamp) {
+      setDraftExpiration(new Date(limitExpirationTimestamp * 1000))
+      return
+    }
+
+    const now = new Date()
+    now.setMinutes(now.getMinutes() + 30, 0, 0)
+    setDraftExpiration(now)
+  }, [limitExpirationTimestamp])
+
+  function openExpirationModal() {
+    setIsExpirationModalOpen(true)
+  }
+
+  function handleExpirationModalChange(open: boolean) {
+    setIsExpirationModalOpen(open)
+  }
+
+  function handleApplyExpiration() {
+    if (!draftExpiration) {
+      return
+    }
+
+    if (draftExpiration.getTime() <= Date.now()) {
+      toast.error('Expiration must be in future. Try again')
+      return
+    }
+
+    const timestampSeconds = Math.floor(draftExpiration.getTime() / 1000)
+    onLimitExpirationTimestampChange(timestampSeconds)
+    setIsExpirationModalOpen(false)
+  }
 
   return (
     <div className="mt-4 space-y-5">
@@ -243,26 +308,57 @@ export default function EventOrderPanelLimitControls({
               onLimitExpirationEnabledChange(checked)
               if (!checked) {
                 onLimitExpirationOptionChange('end-of-day')
+                onLimitExpirationTimestampChange(null)
               }
             }}
           />
         </div>
 
         {limitExpirationEnabled && (
-          <Select
-            value={limitExpirationOption}
-            onValueChange={(value) => {
-              onLimitExpirationOptionChange(value as LimitExpirationOption)
-            }}
-          >
-            <SelectTrigger className="w-full justify-between bg-background text-sm font-medium">
-              <SelectValue placeholder="Select expiration" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="end-of-day">End of Day</SelectItem>
-              <SelectItem value="custom">Custom</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="space-y-3">
+            <Select
+              value={limitExpirationOption}
+              onValueChange={(value) => {
+                const nextValue = value as LimitExpirationOption
+                onLimitExpirationOptionChange(nextValue)
+
+                if (nextValue === 'custom') {
+                  openExpirationModal()
+                }
+                else {
+                  onLimitExpirationTimestampChange(null)
+                }
+              }}
+            >
+              <SelectTrigger className="w-full justify-between bg-background text-sm font-medium">
+                <SelectValue placeholder="Select expiration" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="end-of-day">End of Day</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {limitExpirationOption === 'custom' && (
+              <div className={`
+                flex items-center justify-between rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground
+              `}
+              >
+                <div className="flex flex-col">
+                  <span className="font-semibold text-foreground">Custom expiration</span>
+                  <span>{customExpirationLabel ?? 'Select a date and time to apply.'}</span>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  type="button"
+                  onClick={openExpirationModal}
+                >
+                  Edit
+                </Button>
+              </div>
+            )}
+          </div>
         )}
       </div>
 
@@ -286,9 +382,43 @@ export default function EventOrderPanelLimitControls({
       {showMinimumSharesWarning && (
         <div className="flex items-center justify-center gap-2 pt-2 text-sm font-semibold text-orange-500">
           <TriangleAlertIcon className="size-4" />
-          Minimum {MIN_LIMIT_ORDER_SHARES} shares for limit orders
+          Minimum
+          {' '}
+          {MIN_LIMIT_ORDER_SHARES}
+          {' '}
+          shares for limit orders
         </div>
       )}
+
+      <Dialog open={isExpirationModalOpen} onOpenChange={handleExpirationModalChange}>
+        <DialogContent className="w-fit max-w-md min-w-[320px] space-y-4">
+          <DialogHeader>
+            <DialogTitle>Select expiration</DialogTitle>
+          </DialogHeader>
+          <div className="flex justify-center">
+            <EventLimitExpirationCalendar
+              value={draftExpiration}
+              onChange={(nextDate) => {
+                if (nextDate) {
+                  setDraftExpiration(nextDate)
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => setIsExpirationModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleApplyExpiration}>
+              Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

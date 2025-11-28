@@ -19,7 +19,7 @@ import { useUserOutcomePositions } from '@/app/(platform)/event/[slug]/_hooks/us
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit } from '@/hooks/useAppKit'
 import { useBalance } from '@/hooks/useBalance'
-import { getExchangeEip712Domain, ORDER_SIDE, OUTCOME_INDEX } from '@/lib/constants'
+import { CLOB_ORDER_TYPE, getExchangeEip712Domain, ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { formatCentsLabel, formatCurrency } from '@/lib/formatters'
 import { buildOrderPayload, submitOrder } from '@/lib/orders'
 import { signOrderPayload } from '@/lib/orders/signing'
@@ -60,6 +60,11 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const signatureType = proxyWalletAddress ? 2 : 0
   const isNegRiskEnabled = Boolean(event.enable_neg_risk)
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
+  const endOfDayTimestamp = useMemo(() => {
+    const now = new Date()
+    now.setHours(23, 59, 59, 0)
+    return Math.floor(now.getTime() / 1000)
+  }, [])
   const [showLimitMinimumWarning, setShowLimitMinimumWarning] = useState(false)
 
   useEffect(() => {
@@ -128,6 +133,9 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       isLimitOrder,
       limitPrice: state.limitPrice,
       limitShares: state.limitShares,
+      limitExpirationEnabled: state.limitExpirationEnabled,
+      limitExpirationOption: state.limitExpirationOption,
+      limitExpirationTimestamp: state.limitExpirationTimestamp,
     })
 
     if (!validation.ok) {
@@ -146,6 +154,10 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       return
     }
 
+    const customExpirationTimestamp = state.limitExpirationOption === 'custom'
+      ? state.limitExpirationTimestamp
+      : null
+
     const payload = buildOrderPayload({
       userAddress,
       makerAddress,
@@ -156,6 +168,9 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       amount: state.amount,
       limitPrice: state.limitPrice,
       limitShares: state.limitShares,
+      expirationTimestamp: state.limitExpirationEnabled
+        ? (customExpirationTimestamp ?? endOfDayTimestamp)
+        : undefined,
       referrerAddress: affiliateMetadata.referrerAddress,
       affiliateAddress: affiliateMetadata.affiliateAddress,
       affiliateSharePercent: affiliateMetadata.affiliateSharePercent,
@@ -190,6 +205,9 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         order: payload,
         signature,
         orderType: state.type,
+        clobOrderType: state.type === ORDER_TYPE.LIMIT && state.limitExpirationEnabled
+          ? CLOB_ORDER_TYPE.GTD
+          : undefined,
         conditionId: state.market.condition_id,
         slug: event.slug,
       })
@@ -294,6 +312,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 limitShares={state.limitShares}
                 limitExpirationEnabled={state.limitExpirationEnabled}
                 limitExpirationOption={state.limitExpirationOption}
+                limitExpirationTimestamp={state.limitExpirationTimestamp}
                 isLimitOrder={isLimitOrder}
                 availableShares={selectedShares}
                 showLimitMinimumWarning={showLimitMinimumWarning}
@@ -301,6 +320,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 onLimitSharesChange={state.setLimitShares}
                 onLimitExpirationEnabledChange={state.setLimitExpirationEnabled}
                 onLimitExpirationOptionChange={state.setLimitExpirationOption}
+                onLimitExpirationTimestampChange={state.setLimitExpirationTimestamp}
                 onAmountUpdateFromLimit={state.setAmount}
               />
             </div>
