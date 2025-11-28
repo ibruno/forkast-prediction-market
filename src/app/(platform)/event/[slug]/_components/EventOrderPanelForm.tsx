@@ -79,6 +79,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const conditionShares = state.market ? state.userShares[state.market.condition_id] : undefined
   const yesShares = conditionShares?.[OUTCOME_INDEX.YES] ?? 0
   const noShares = conditionShares?.[OUTCOME_INDEX.NO] ?? 0
+  const availableMergeShares = Math.max(0, Math.min(yesShares, noShares))
   const outcomeIndex = state.outcome?.outcome_index as typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO | undefined
   const selectedShares = outcomeIndex === undefined ? 0 : conditionShares?.[outcomeIndex] ?? 0
 
@@ -268,6 +269,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       <EventOrderPanelBuySellTabs
         side={state.side}
         type={state.type}
+        availableMergeShares={availableMergeShares}
         onSideChange={state.setSide}
         onTypeChange={state.setType}
         onAmountReset={() => state.setAmount('')}

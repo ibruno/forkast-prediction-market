@@ -1,6 +1,7 @@
 import type { OrderSide, OrderType } from '@/types'
 import { ChevronDownIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import EventMergeSharesDialog from '@/app/(platform)/event/[slug]/_components/EventMergeSharesDialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ const ORDER_TYPE_STORAGE_KEY = 'forkast:order-panel-type'
 interface EventOrderPanelBuySellTabsProps {
   side: OrderSide
   type: OrderType
+  availableMergeShares: number
   onSideChange: (side: OrderSide) => void
   onTypeChange: (type: OrderType) => void
   onAmountReset: () => void
@@ -31,12 +33,14 @@ interface EventOrderPanelBuySellTabsProps {
 export default function EventOrderPanelBuySellTabs({
   side,
   type,
+  availableMergeShares,
   onSideChange,
   onTypeChange,
   onAmountReset,
   onFocusInput,
 }: EventOrderPanelBuySellTabsProps) {
   const [typeMenuOpen, setTypeMenuOpen] = useState(false)
+  const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false)
   const hasHydratedType = useRef(false)
 
   useEffect(() => {
@@ -174,7 +178,14 @@ export default function EventOrderPanelBuySellTabs({
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent className="min-w-[8rem]" alignOffset={-4}>
-                  <DropdownMenuItem className="cursor-pointer">
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onSelect={(event) => {
+                      event.preventDefault()
+                      setTypeMenuOpen(false)
+                      setIsMergeDialogOpen(true)
+                    }}
+                  >
                     Merge
                   </DropdownMenuItem>
                   <DropdownMenuItem className="cursor-pointer">
@@ -189,6 +200,12 @@ export default function EventOrderPanelBuySellTabs({
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-border"
+      />
+
+      <EventMergeSharesDialog
+        open={isMergeDialogOpen}
+        onOpenChange={setIsMergeDialogOpen}
+        availableShares={availableMergeShares}
       />
     </div>
   )
