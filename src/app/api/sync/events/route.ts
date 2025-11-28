@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/lib/supabase'
 
 export const maxDuration = 300
 
-const PNL_SUBGRAPH_URL = process.env.PNL_SUBGRAPH_URL!
+const MARKETS_SUBGRAPH_URL = 'https://api.studio.thegraph.com/query/113376/forkast-markets/version/latest'
 const MARKET_CREATORS_ADDRESS = process.env.MARKET_CREATORS_ADDRESS
 const IRYS_GATEWAY = process.env.IRYS_GATEWAY || 'https://gateway.irys.xyz'
 const SYNC_TIME_LIMIT_MS = 250_000
@@ -325,7 +325,7 @@ async function fetchPnLConditionsPage(afterCursor: SyncCursor | null): Promise<{
     }
   `
 
-  const response = await fetch(PNL_SUBGRAPH_URL, {
+  const response = await fetch(MARKETS_SUBGRAPH_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     keepalive: true,
