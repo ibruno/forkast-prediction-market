@@ -26,6 +26,8 @@ interface EventOrderPanelBuySellTabsProps {
   type: OrderType
   availableMergeShares: number
   availableSplitBalance: number
+  conditionId?: string
+  marketTitle?: string | null
   onSideChange: (side: OrderSide) => void
   onTypeChange: (type: OrderType) => void
   onAmountReset: () => void
@@ -37,6 +39,8 @@ export default function EventOrderPanelBuySellTabs({
   type,
   availableMergeShares,
   availableSplitBalance,
+  conditionId,
+  marketTitle,
   onSideChange,
   onTypeChange,
   onAmountReset,
@@ -217,11 +221,15 @@ export default function EventOrderPanelBuySellTabs({
         open={isMergeDialogOpen}
         onOpenChange={setIsMergeDialogOpen}
         availableShares={availableMergeShares}
+        conditionId={conditionId}
+        marketTitle={marketTitle ?? undefined}
       />
       <EventSplitSharesDialog
         open={isSplitDialogOpen}
         onOpenChange={setIsSplitDialogOpen}
         availableUsdc={availableSplitBalance}
+        conditionId={conditionId}
+        marketTitle={marketTitle ?? undefined}
       />
     </div>
   )

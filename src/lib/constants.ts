@@ -4,6 +4,23 @@ export const DEFAULT_ERROR_MESSAGE = 'Internal server error. Try again in a few 
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
 
+const conditionalTokensAddress = (
+  process.env.CONDITIONAL_TOKENS_CONTRACT
+  ?? process.env.NEXT_PUBLIC_CONDITIONAL_TOKENS_ADDRESS
+  ?? '0x4F047bD628145de7F902Af7f8B5988e1A8767148'
+) as `0x${string}`
+
+const collateralTokenAddress = (
+  process.env.COLLATERAL_TOKEN_ADDRESS
+  ?? process.env.NEXT_PUBLIC_COLLATERAL_TOKEN_ADDRESS
+  ?? '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582'
+) as `0x${string}`
+
+export const CONDITIONAL_TOKENS_CONTRACT = conditionalTokensAddress
+export const COLLATERAL_TOKEN_ADDRESS = collateralTokenAddress
+export const ZERO_COLLECTION_ID = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
+export const DEFAULT_CONDITION_PARTITION = ['1', '2'] as const
+
 export const ORDER_SIDE = {
   BUY: 0,
   SELL: 1,

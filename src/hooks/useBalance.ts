@@ -2,6 +2,7 @@ import { useAppKitAccount } from '@reown/appkit/react'
 import { useEffect, useMemo, useState } from 'react'
 import { createPublicClient, getContract, http } from 'viem'
 import { defaultNetwork } from '@/lib/appkit'
+import { COLLATERAL_TOKEN_ADDRESS } from '@/lib/constants'
 import { useUser } from '@/stores/useUser'
 
 interface Balance {
@@ -10,7 +11,6 @@ interface Balance {
   symbol: string
 }
 
-const USDC_ADDRESS = '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582'
 const USDC_DECIMALS = 6
 const ERC20_ABI = [
   { type: 'function', name: 'balanceOf', stateMutability: 'view', inputs: [{ name: 'account', type: 'address' }], outputs: [{ type: 'uint256' }] },
@@ -48,7 +48,7 @@ export function useBalance() {
   const contract = useMemo(
     () =>
       getContract({
-        address: USDC_ADDRESS,
+        address: COLLATERAL_TOKEN_ADDRESS,
         abi: ERC20_ABI,
         client,
       }),

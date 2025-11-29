@@ -1,4 +1,7 @@
+import { CheckIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { toast } from 'sonner'
+import { mergePositionAction } from '@/app/(platform)/event/[slug]/_actions/position-operations'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -13,19 +16,27 @@ import { cn } from '@/lib/utils'
 interface EventMergeSharesDialogProps {
   open: boolean
   availableShares: number
+  conditionId?: string
+  marketTitle?: string
   onOpenChange: (open: boolean) => void
 }
 
 export default function EventMergeSharesDialog({
   open,
   availableShares,
+  conditionId,
+  marketTitle,
   onOpenChange,
 }: EventMergeSharesDialogProps) {
   const [amount, setAmount] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     if (!open) {
       setAmount('')
+      setError(null)
+      setIsSubmitting(false)
     }
   }, [open])
 
@@ -40,12 +51,73 @@ export default function EventMergeSharesDialog({
     })
   }, [availableShares])
 
+  const numericAvailableShares = Number.isFinite(availableShares) ? availableShares : 0
+
+  function handleAmountChange(value: string) {
+    const sanitized = value.replace(/,/g, '.')
+    if (sanitized === '' || /^\d*(?:\.\d*)?$/.test(sanitized)) {
+      setAmount(sanitized)
+      setError(null)
+    }
+  }
+
   function handleMaxClick() {
-    if (!Number.isFinite(availableShares)) {
+    if (numericAvailableShares <= 0) {
       return
     }
 
-    setAmount(formattedAvailableShares.replace(/,/g, ''))
+    const formatted = numericAvailableShares
+      .toFixed(4)
+      .replace(/\.?0+$/, '')
+    setAmount(formatted)
+    setError(null)
+  }
+
+  async function handleSubmit() {
+    if (!conditionId) {
+      toast.error('Select a market before merging shares.')
+      return
+    }
+
+    const numericAmount = Number.parseFloat(amount)
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      setError('Enter a valid amount.')
+      return
+    }
+
+    if (numericAmount > numericAvailableShares) {
+      setError('Amount exceeds available shares.')
+      return
+    }
+
+    setError(null)
+    setIsSubmitting(true)
+
+    try {
+      const response = await mergePositionAction({
+        conditionId,
+        amount: numericAmount.toString(),
+      })
+
+      if (response?.error) {
+        toast.error(response.error)
+        return
+      }
+
+      toast.success('Merge shares', {
+        description: marketTitle ?? 'Request submitted.',
+        icon: <SuccessIcon />,
+      })
+      setAmount('')
+      onOpenChange(false)
+    }
+    catch (error) {
+      console.error('Failed to submit merge operation.', error)
+      toast.error('We could not submit your merge request. Please try again.')
+    }
+    finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -54,7 +126,7 @@ export default function EventMergeSharesDialog({
         <div className="space-y-6">
           <DialogHeader className="space-y-3">
             <DialogTitle className="text-center text-2xl font-bold">Merge shares</DialogTitle>
-            <DialogDescription className="text-sm text-foreground">
+            <DialogDescription className="text-center text-sm text-foreground">
               Merge a share of Yes and No to get 1 USDC. You can do this to save cost when trying to get rid of a position.
             </DialogDescription>
           </DialogHeader>
@@ -66,7 +138,7 @@ export default function EventMergeSharesDialog({
             <Input
               id="merge-shares-amount"
               value={amount}
-              onChange={event => setAmount(event.target.value)}
+              onChange={event => handleAmountChange(event.target.value)}
               placeholder="0.0"
               inputMode="decimal"
               className="h-12 text-base"
@@ -79,22 +151,37 @@ export default function EventMergeSharesDialog({
                   type="button"
                   className={cn(
                     'text-primary transition-colors',
-                    Number(availableShares) > 0 ? 'hover:opacity-80' : 'cursor-not-allowed opacity-40',
+                    numericAvailableShares > 0 ? 'hover:opacity-80' : 'cursor-not-allowed opacity-40',
                   )}
                   onClick={handleMaxClick}
-                  disabled={!Number.isFinite(availableShares) || availableShares <= 0}
+                  disabled={numericAvailableShares <= 0}
                 >
                   Max
                 </button>
               </span>
+              {error && <p className="text-xs text-destructive">{error}</p>}
             </div>
           </div>
 
-          <Button type="button" size="outcome" className="w-full text-base font-bold">
-            Merge Shares
+          <Button
+            type="button"
+            size="outcome"
+            className="w-full text-base font-bold"
+            disabled={isSubmitting || !conditionId}
+            onClick={handleSubmit}
+          >
+            {isSubmitting ? 'Merging...' : 'Merge Shares'}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function SuccessIcon() {
+  return (
+    <span className="flex size-6 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-500">
+      <CheckIcon className="size-4" />
+    </span>
   )
 }

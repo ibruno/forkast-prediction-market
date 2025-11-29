@@ -272,6 +272,8 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         type={state.type}
         availableMergeShares={availableMergeShares}
         availableSplitBalance={availableSplitBalance}
+        conditionId={state.market?.condition_id}
+        marketTitle={state.market?.title || state.market?.short_title}
         onSideChange={state.setSide}
         onTypeChange={state.setType}
         onAmountReset={() => state.setAmount('')}
