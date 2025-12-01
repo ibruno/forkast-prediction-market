@@ -1,4 +1,5 @@
-import type { Market, Outcome, User } from '@/types'
+import type { Market, OrderSide, Outcome, User } from '@/types'
+import { ORDER_SIDE } from '@/lib/constants'
 
 export type OrderValidationError
   = | 'IS_LOADING'
@@ -11,6 +12,7 @@ export type OrderValidationError
     | 'INVALID_LIMIT_SHARES'
     | 'LIMIT_SHARES_TOO_LOW'
     | 'INVALID_LIMIT_EXPIRATION'
+    | 'INSUFFICIENT_BALANCE'
 
 export const MIN_LIMIT_ORDER_SHARES = 5
 
@@ -23,9 +25,11 @@ interface ValidateOrderArgs {
   market: Market | null
   outcome: Outcome | null
   amountNumber: number
+  side: OrderSide
   isLimitOrder: boolean
   limitPrice: string
   limitShares: string
+  availableBalance: number
   limitExpirationEnabled?: boolean
   limitExpirationOption?: LimitExpirationOption
   limitExpirationTimestamp?: number | null
@@ -42,9 +46,11 @@ export function validateOrder({
   market,
   outcome,
   amountNumber,
+  side,
   isLimitOrder,
   limitPrice,
   limitShares,
+  availableBalance,
   limitExpirationEnabled = false,
   limitExpirationOption = 'end-of-day',
   limitExpirationTimestamp = null,
@@ -84,14 +90,22 @@ export function validateOrder({
       return { ok: false, reason: 'LIMIT_SHARES_TOO_LOW' }
     }
 
-    if (limitExpirationEnabled && limitExpirationOption === 'custom') {
-      if (!limitExpirationTimestamp || !Number.isFinite(limitExpirationTimestamp)) {
-        return { ok: false, reason: 'INVALID_LIMIT_EXPIRATION' }
-      }
+    const hasCustomExpiration = limitExpirationEnabled && limitExpirationOption === 'custom'
+    const customExpirationIsValid = typeof limitExpirationTimestamp === 'number'
+      && Number.isFinite(limitExpirationTimestamp)
+      && limitExpirationTimestamp > 0
 
+    if (hasCustomExpiration && customExpirationIsValid) {
       const nowSeconds = Math.floor(Date.now() / 1000)
       if (limitExpirationTimestamp <= nowSeconds) {
         return { ok: false, reason: 'INVALID_LIMIT_EXPIRATION' }
+      }
+    }
+
+    if (side === ORDER_SIDE.BUY) {
+      const estimatedCost = (limitPriceValue / 100) * limitSharesValue
+      if (!Number.isFinite(estimatedCost) || estimatedCost > availableBalance) {
+        return { ok: false, reason: 'INSUFFICIENT_BALANCE' }
       }
     }
 
@@ -100,6 +114,10 @@ export function validateOrder({
 
   if (amountNumber <= 0) {
     return { ok: false, reason: 'INVALID_AMOUNT' }
+  }
+
+  if (amountNumber > availableBalance) {
+    return { ok: false, reason: 'INSUFFICIENT_BALANCE' }
   }
 
   return { ok: true }

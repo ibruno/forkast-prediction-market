@@ -50,6 +50,25 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const isLimitOrder = useIsLimitOrder()
   const limitSharesNumber = Number.parseFloat(state.limitShares) || 0
   const { balance } = useBalance()
+  const validCustomExpirationTimestamp = useMemo(() => {
+    const nowSeconds = Math.floor(Date.now() / 1000)
+
+    if (state.limitExpirationOption !== 'custom') {
+      return null
+    }
+
+    if (
+      !state.limitExpirationTimestamp
+      || !Number.isFinite(state.limitExpirationTimestamp)
+      || state.limitExpirationTimestamp <= 0
+    ) {
+      return null
+    }
+
+    return state.limitExpirationTimestamp > nowSeconds
+      ? state.limitExpirationTimestamp
+      : null
+  }, [state.limitExpirationOption, state.limitExpirationTimestamp])
   const affiliateMetadata = useAffiliateOrderMetadata()
   const { sharesByCondition } = useUserOutcomePositions({ eventSlug: event.slug, userId: user?.id })
   const { ensureTradingReady } = useTradingOnboarding()
@@ -132,12 +151,14 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       market: state.market,
       outcome: state.outcome,
       amountNumber,
+      side: state.side,
       isLimitOrder,
       limitPrice: state.limitPrice,
       limitShares: state.limitShares,
+      availableBalance: balance.raw,
       limitExpirationEnabled: state.limitExpirationEnabled,
       limitExpirationOption: state.limitExpirationOption,
-      limitExpirationTimestamp: state.limitExpirationTimestamp,
+      limitExpirationTimestamp: validCustomExpirationTimestamp,
     })
 
     if (!validation.ok) {
@@ -157,7 +178,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     }
 
     const customExpirationTimestamp = state.limitExpirationOption === 'custom'
-      ? state.limitExpirationTimestamp
+      ? validCustomExpirationTimestamp
       : null
 
     const payload = buildOrderPayload({

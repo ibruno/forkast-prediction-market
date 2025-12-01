@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { NewBadge } from '@/components/ui/new-badge'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit } from '@/hooks/useAppKit'
+import { useBalance } from '@/hooks/useBalance'
 import { formatDisplayAmount, MAX_AMOUNT_INPUT, sanitizeNumericInput } from '@/lib/amount-input'
 import { getExchangeEip712Domain, ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
 import { formatVolume } from '@/lib/formatters'
@@ -52,6 +53,7 @@ export default function EventCard({ event }: EventCardProps) {
   const { signTypedDataAsync } = useSignTypedData()
   const user = useUser()
   const affiliateMetadata = useAffiliateOrderMetadata()
+  const { balance } = useBalance()
   const { ensureTradingReady } = useTradingOnboarding()
   const queryClient = useQueryClient()
   const hasDeployedProxyWallet = Boolean(user?.proxy_wallet_address && user?.proxy_wallet_status === 'deployed')
@@ -159,9 +161,11 @@ export default function EventCard({ event }: EventCardProps) {
       market: selectedOutcome.market,
       outcome: selectedOutcome.outcome,
       amountNumber,
+      side: ORDER_SIDE.BUY,
       isLimitOrder: false,
       limitPrice: '0',
       limitShares: '0',
+      availableBalance: balance.raw,
     })
 
     if (!validation.ok) {
