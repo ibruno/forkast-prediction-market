@@ -28,8 +28,6 @@ interface OpenRouterModelsResponse {
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 
-const OPENROUTER_MODEL_DEFAULT = 'perplexity/llama-3.1-sonar-small-online'
-
 interface RequestCompletionOptions {
   temperature?: number
   maxTokens?: number
@@ -43,7 +41,7 @@ export async function requestOpenRouterCompletion(messages: OpenRouterMessage[],
     throw new Error('OpenRouter API key is not configured.')
   }
 
-  const model = options?.model || OPENROUTER_MODEL_DEFAULT
+  const model = options?.model
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -96,7 +94,7 @@ export interface OpenRouterModelSummary {
 }
 
 export async function fetchOpenRouterModels(apiKey: string): Promise<OpenRouterModelSummary[]> {
-  if (!apiKey || typeof window === 'undefined') {
+  if (!apiKey) {
     return []
   }
 
