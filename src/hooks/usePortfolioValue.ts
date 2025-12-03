@@ -35,11 +35,8 @@ export function usePortfolioValue(): PortfolioValueResult {
       }
 
       const body = await response.json()
-      const parsed = typeof body.value === 'string'
-        ? Number.parseFloat(body.value)
-        : Number(body.value)
 
-      return Number.isFinite(parsed) ? parsed : 0
+      return body[0]?.value || 0
     },
   })
 
