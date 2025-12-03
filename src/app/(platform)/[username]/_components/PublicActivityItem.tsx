@@ -35,7 +35,7 @@ export default function PublicActivityItem({ item }: { item: PublicActivity }) {
           className="size-10 flex-shrink-0 overflow-hidden rounded bg-muted sm:size-12"
         >
           <Image
-            src={item.icon || '/favicon.ico'}
+            src={`https://gateway.irys.xyz/${item.icon}`}
             alt={item.title}
             width={48}
             height={48}
