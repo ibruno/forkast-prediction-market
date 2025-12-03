@@ -6,7 +6,7 @@ interface PositionItemSkeletonProps {
   isInfiniteScroll?: boolean
 }
 
-export default function PositionItemSkeleton({ isInfiniteScroll = false }: PositionItemSkeletonProps) {
+export default function PublicPositionItemSkeleton({ isInfiniteScroll = false }: PositionItemSkeletonProps) {
   return (
     <div className={`
       flex items-center gap-3 border-b border-border px-3 py-4 transition-colors

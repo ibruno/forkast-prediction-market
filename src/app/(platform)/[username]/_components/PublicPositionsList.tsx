@@ -1,6 +1,6 @@
 'use client'
 
-import type { PublicPosition } from './PositionItem'
+import type { PublicPosition } from './PublicPositionItem'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { SearchIcon, XIcon } from 'lucide-react'
@@ -10,12 +10,12 @@ import { ButtonGroup } from '@/components/ui/button-group'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useDebounce } from '@/hooks/useDebounce'
-import PositionItem from './PositionItem'
-import PositionsInfiniteScrollSkeleton from './PositionsInfiniteScrollSkeleton'
-import PositionsLoadingState from './PositionsLoadingState'
+import PublicPositionItem from './PublicPositionItem'
 import PublicPositionsEmpty from './PublicPositionsEmpty'
 import PublicPositionsError from './PublicPositionsError'
 import PublicPositionsInfiniteScrollError from './PublicPositionsInfiniteScrollError'
+import PublicPositionsInfiniteScrollSkeleton from './PublicPositionsInfiniteScrollSkeleton'
+import PublicPositionsLoadingState from './PublicPositionsLoadingState'
 
 interface PositionsFilterControlsProps {
   marketStatusFilter: 'active' | 'closed'
@@ -464,7 +464,7 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
       </div>
 
       {loading && (
-        <PositionsLoadingState
+        <PublicPositionsLoadingState
           skeletonCount={8}
           isSearchActive={isSearchActive}
           searchQuery={debouncedSearchQuery}
@@ -513,14 +513,14 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
                     }px)`,
                   }}
                 >
-                  <PositionItem item={position} />
+                  <PublicPositionItem item={position} />
                 </div>
               )
             })}
           </div>
 
           {(isFetchingNextPage || isLoadingMore) && (
-            <PositionsInfiniteScrollSkeleton skeletonCount={3} />
+            <PublicPositionsInfiniteScrollSkeleton skeletonCount={3} />
           )}
 
           {!hasNextPage && positions.length > 0 && !isFetchingNextPage && !isLoadingMore && (

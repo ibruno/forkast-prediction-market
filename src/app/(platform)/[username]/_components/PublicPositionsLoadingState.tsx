@@ -1,7 +1,7 @@
 'use client'
 
 import { SearchIcon } from 'lucide-react'
-import PositionItemSkeleton from './PositionItemSkeleton'
+import PublicPositionItemSkeleton from './PublicPositionItemSkeleton'
 
 interface PositionsLoadingStateProps {
   skeletonCount?: number
@@ -11,7 +11,7 @@ interface PositionsLoadingStateProps {
   retryCount?: number
 }
 
-export default function PositionsLoadingState({
+export default function PublicPositionsLoadingState({
   skeletonCount,
   isSearchActive = false,
   searchQuery = '',
@@ -24,7 +24,7 @@ export default function PositionsLoadingState({
     <div className="overflow-hidden rounded-lg border border-border">
       <div className="space-y-0">
         {Array.from({ length: finalSkeletonCount }).map((_, index) => (
-          <PositionItemSkeleton key={index} />
+          <PublicPositionItemSkeleton key={index} />
         ))}
       </div>
 

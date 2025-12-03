@@ -22,7 +22,7 @@ interface PositionItemProps {
   item: PublicPosition
 }
 
-export default function PositionItem({ item }: PositionItemProps) {
+export default function PublicPositionItem({ item }: PositionItemProps) {
   const eventSlug = item.eventSlug || item.slug
 
   return (

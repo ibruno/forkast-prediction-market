@@ -1,5 +1,3 @@
-'use client'
-
 import type { PublicActivity } from '@/types'
 import { SquareArrowOutUpRightIcon } from 'lucide-react'
 import Image from 'next/image'
@@ -7,13 +5,12 @@ import Link from 'next/link'
 import { formatCurrency, formatSharePriceLabel, formatTimeAgo } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 
-export default function PublicActivityItem({ item }: { item: PublicActivity }) {
+export function PublicActivityItem({ item }: { item: PublicActivity }) {
   const outcomeText = item.outcomeText || 'Outcome'
   const outcomeChipColor = outcomeText.toLowerCase() === 'yes'
     ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
   const totalValueUsd = item.usdcValue
-  const timestampLabel = formatTimeAgo(new Date(item.timestamp).toISOString())
 
   return (
     <div className={`
@@ -76,7 +73,7 @@ export default function PublicActivityItem({ item }: { item: PublicActivity }) {
         </div>
         <div className="flex items-center justify-end gap-1 sm:gap-2">
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            {timestampLabel}
+            {formatTimeAgo(new Date(item.timestamp).toISOString())}
           </span>
           <a
             href={`https://polygonscan.com/tx/${item.txHash ?? item.id}`}
@@ -91,7 +88,7 @@ export default function PublicActivityItem({ item }: { item: PublicActivity }) {
         </div>
         {/* Show timestamp on mobile below the amount */}
         <div className="text-xs text-muted-foreground sm:hidden">
-          {timestampLabel}
+          {formatTimeAgo(item.timestamp.toString())}
         </div>
       </div>
     </div>
