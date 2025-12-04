@@ -1,7 +1,7 @@
 'use client'
 
 import type { Event, User } from '@/types'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import EventChart from '@/app/(platform)/event/[slug]/_components/EventChart'
 import EventHeader from '@/app/(platform)/event/[slug]/_components/EventHeader'
 import EventMarketContext from '@/app/(platform)/event/[slug]/_components/EventMarketContext'
@@ -35,13 +35,21 @@ export default function EventContent({ event, user, marketContextEnabled }: Even
   const currentEventId = useOrder(state => state.event?.id)
   const isMobile = useIsMobile()
   const clientUser = useUser()
+  const prevUserId = useRef<string | null>(null)
   const currentUser = clientUser ?? user
 
   useEffect(() => {
-    if (user && !clientUser) {
+    if (user?.id) {
+      prevUserId.current = user.id
       useUser.setState(user)
+      return
     }
-  }, [clientUser, user])
+
+    if (!user && prevUserId.current) {
+      prevUserId.current = null
+      useUser.setState(null)
+    }
+  }, [user])
 
   useEffect(() => {
     setEvent(event)
