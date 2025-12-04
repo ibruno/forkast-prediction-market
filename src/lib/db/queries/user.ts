@@ -12,6 +12,7 @@ import { orders, v_user_outcome_positions } from '@/lib/db/schema/orders/tables'
 import { runQuery } from '@/lib/db/utils/run-query'
 import { db } from '@/lib/drizzle'
 import { getSupabaseImageUrl } from '@/lib/supabase'
+import { sanitizeTradingAuthSettings } from '@/lib/trading-auth/utils'
 
 export const UserRepository = {
   async getProfileByUsername(username: string) {
@@ -198,6 +199,10 @@ export const UserRepository = {
       }
 
       await ensureUserProxyWallet(user)
+
+      if (user.settings) {
+        user.settings = sanitizeTradingAuthSettings(user.settings)
+      }
 
       if (!user.username) {
         const generatedUsername = generateUsername()
@@ -685,29 +690,31 @@ async function ensureUserProxyWallet(user: any): Promise<string | null> {
   }
 
   const hasProxyAddress = typeof user?.proxy_wallet_address === 'string' && user.proxy_wallet_address.startsWith('0x')
-  const isAlreadyDeployed = hasProxyAddress && user.proxy_wallet_status === 'deployed'
-
-  if (isAlreadyDeployed) {
-    return user.proxy_wallet_address
-  }
 
   try {
-    const proxyAddress = hasProxyAddress
-      ? user.proxy_wallet_address as `0x${string}`
-      : await getSafeProxyWalletAddress(owner as `0x${string}`)
+    const expectedProxyAddress = await getSafeProxyWalletAddress(owner as `0x${string}`)
 
-    if (!proxyAddress) {
+    if (!expectedProxyAddress) {
       return null
     }
+
+    const normalizedExpected = expectedProxyAddress.toLowerCase()
+    const normalizedCurrent = hasProxyAddress ? user.proxy_wallet_address.toLowerCase() : null
+    const addressChanged = !normalizedCurrent || normalizedCurrent !== normalizedExpected
+    const proxyAddress = addressChanged
+      ? expectedProxyAddress
+      : (user.proxy_wallet_address as `0x${string}`)
 
     let nextStatus: ProxyWalletStatus = (user.proxy_wallet_status as ProxyWalletStatus | null) ?? 'not_started'
     const updates: Record<string, any> = {}
 
-    if (!hasProxyAddress) {
+    if (addressChanged) {
       updates.proxy_wallet_address = proxyAddress
     }
 
-    const shouldCheckDeployment = !hasProxyAddress || user.proxy_wallet_status === 'signed'
+    const shouldCheckDeployment = addressChanged
+      || !hasProxyAddress
+      || user.proxy_wallet_status !== 'deployed'
     if (shouldCheckDeployment) {
       const deployed = await isProxyWalletDeployed(proxyAddress as `0x${string}`)
       if (deployed) {

@@ -9,6 +9,7 @@ import { isAdminWallet } from '@/lib/admin'
 import { projectId } from '@/lib/appkit'
 import { db } from '@/lib/drizzle'
 import { getSupabaseImageUrl } from '@/lib/supabase'
+import { sanitizeTradingAuthSettings } from '@/lib/trading-auth/utils'
 import * as schema from './db/schema'
 
 export const auth = betterAuth({
@@ -25,9 +26,15 @@ export const auth = betterAuth({
   },
   plugins: [
     customSession(async ({ user, session }) => {
+      const rawSettings = (user as any).settings as Record<string, any> | undefined
+      const settings = rawSettings
+        ? sanitizeTradingAuthSettings(rawSettings)
+        : rawSettings
+
       return {
         user: {
           ...user,
+          settings,
           image: user.image ? getSupabaseImageUrl(user.image) : `https://avatar.vercel.sh/${user.name}.png`,
           is_admin: isAdminWallet(user.name),
         },
