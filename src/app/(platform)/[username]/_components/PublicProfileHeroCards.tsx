@@ -54,13 +54,6 @@ function ProfileOverviewCard({ profile, snapshot }: { profile: ProfileForCards, 
 
   return (
     <Card className="relative h-full overflow-hidden border border-border/60 bg-card/70">
-      <div
-        aria-hidden
-        className={`
-          pointer-events-none absolute inset-0
-          bg-[radial-gradient(circle_at_25%_25%,rgba(124,58,237,0.12),transparent_30%),radial-gradient(circle_at_80%_0%,rgba(59,130,246,0.10),transparent_28%)]
-        `}
-      />
       <CardContent className="relative flex h-full flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 flex-1 items-start gap-3">
@@ -206,13 +199,6 @@ function ProfitLossCard({
 
   return (
     <Card className="relative h-full overflow-hidden border border-border/60 bg-card/70">
-      <div
-        aria-hidden
-        className={`
-          pointer-events-none absolute inset-0
-          bg-[radial-gradient(circle_at_15%_30%,rgba(52,211,153,0.10),transparent_30%),radial-gradient(circle_at_85%_20%,rgba(59,130,246,0.12),transparent_35%)]
-        `}
-      />
       <CardContent className="relative flex h-full flex-col gap-3 p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -276,11 +262,7 @@ function ProfitLossCard({
           </div>
         </div>
 
-        <div className={`
-          relative mt-auto h-24 w-full overflow-hidden rounded-xl bg-gradient-to-b from-primary/5 via-transparent
-          to-transparent
-        `}
-        >
+        <div className="relative mt-auto w-full overflow-hidden">
           <svg viewBox="0 0 100 36" className="size-full">
             <defs>
               <linearGradient id={gradientId} x1="0%" y1="0%" x2="0%" y2="100%">
