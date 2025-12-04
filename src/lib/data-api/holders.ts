@@ -3,7 +3,8 @@ const DATA_API_URL = process.env.DATA_URL!
 interface DataApiHolder {
   proxyWallet: string
   amount: number
-  outcomeIndex: number
+  outcomeIndex?: number
+  asset?: string
   pseudonym?: string | null
   name?: string | null
   profileImage?: string | null
@@ -48,9 +49,11 @@ export interface TopHoldersResult {
   }[]
 }
 
-function mapHolder(holder: DataApiHolder) {
+function mapHolder(holder: DataApiHolder, outcomeHint: 'yes' | 'no' | null) {
   const address = holder.proxyWallet
-  const outcomeIndex = holder.outcomeIndex
+  const outcomeIndex = outcomeHint
+    ? (outcomeHint === 'yes' ? 0 : 1)
+    : (typeof holder.outcomeIndex === 'number' ? holder.outcomeIndex : 0)
   const amount = Number.isFinite(holder.amount) ? Number(holder.amount) : 0
 
   return {
@@ -67,7 +70,11 @@ function mapHolder(holder: DataApiHolder) {
   }
 }
 
-export async function fetchTopHolders(conditionId: string, limit = 50): Promise<TopHoldersResult> {
+export async function fetchTopHolders(
+  conditionId: string,
+  limit = 50,
+  options?: { yesToken?: string, noToken?: string },
+): Promise<TopHoldersResult> {
   if (!conditionId) {
     throw new Error('conditionId is required')
   }
@@ -94,9 +101,38 @@ export async function fetchTopHolders(conditionId: string, limit = 50): Promise<
   const yesHolders: TopHoldersResult['yesHolders'] = []
   const noHolders: TopHoldersResult['noHolders'] = []
 
-  result.forEach((entry) => {
+  result.forEach((entry, entryIndex) => {
+    const entryOutcomeHint = (() => {
+      if (options?.yesToken && (entry.token === options.yesToken)) {
+        return 'yes' as const
+      }
+      if (options?.noToken && (entry.token === options.noToken)) {
+        return 'no' as const
+      }
+      if (entryIndex === 0) {
+        return 'yes' as const
+      }
+      if (entryIndex === 1) {
+        return 'no' as const
+      }
+      return null
+    })()
+
     entry.holders.forEach((holder) => {
-      const mapped = mapHolder(holder)
+      const outcomeHint = (() => {
+        if (entryOutcomeHint) {
+          return entryOutcomeHint
+        }
+        if (options?.yesToken && holder.asset === options.yesToken) {
+          return 'yes' as const
+        }
+        if (options?.noToken && holder.asset === options.noToken) {
+          return 'no' as const
+        }
+        return null
+      })()
+
+      const mapped = mapHolder(holder, outcomeHint)
       if (mapped.outcome_index === 0) {
         yesHolders.push(mapped)
       }

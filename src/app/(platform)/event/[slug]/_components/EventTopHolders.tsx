@@ -16,10 +16,10 @@ interface EventTopHoldersProps {
   event: Event
 }
 
-function useEventHolders(eventSlug: string, conditionId?: string) {
+function useEventHolders(conditionId?: string, yesToken?: string, noToken?: string) {
   return useQuery({
-    queryKey: ['event-holders', eventSlug, conditionId],
-    queryFn: () => fetchTopHolders(conditionId!),
+    queryKey: ['event-holders', conditionId, yesToken, noToken],
+    queryFn: () => fetchTopHolders(conditionId!, 50, { yesToken, noToken }),
     enabled: Boolean(conditionId),
     staleTime: 30_000,
     gcTime: 300_000,
@@ -53,7 +53,11 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
   }, [isSingleMarket, orderState.market, selectedMarket])
 
   const conditionId = selectedMarket || fallbackConditionId
-  const { data, isLoading, error } = useEventHolders(event.slug, conditionId)
+  const marketForTokens = event.markets.find(m => m.condition_id === conditionId)
+  const yesToken = marketForTokens?.outcomes?.find(o => o.outcome_index === 0)?.token_id
+  const noToken = marketForTokens?.outcomes?.find(o => o.outcome_index === 1)?.token_id
+
+  const { data, isLoading, error } = useEventHolders(conditionId, yesToken, noToken)
 
   function handleMarketChange(conditionId: string) {
     setSelectedMarket(conditionId)
