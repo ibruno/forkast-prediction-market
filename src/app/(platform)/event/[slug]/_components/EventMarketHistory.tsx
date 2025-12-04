@@ -77,7 +77,9 @@ export default function EventMarketHistory({ market, collapsible = true }: Event
     gcTime: 1000 * 60 * 10,
   })
 
-  const activities = data?.pages.flat() ?? []
+  const activities = (data?.pages.flat() ?? []).filter(
+    activity => activity.market.condition_id === market.condition_id,
+  )
   const isExpanded = historyExpanded || !isCollapsible
   const loading = isExpanded && status === 'pending'
   const hasInitialError = isExpanded && status === 'error'

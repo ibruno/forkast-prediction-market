@@ -247,6 +247,7 @@ export interface ActivityOrder {
     text: string
   }
   market: {
+    condition_id?: string
     title: string
     slug: string
     icon_url: string
@@ -362,16 +363,6 @@ export interface UserMarketOutcomePosition {
   shares_micro: string
   order_count: number
   last_activity_at: string | null
-}
-
-export interface PositionsQueryParams {
-  address: string
-  limit: number
-  offset: number
-  status?: 'active' | 'closed'
-  minAmount?: number
-  search?: string
-  conditionId?: string
 }
 
 export interface PublicActivity {

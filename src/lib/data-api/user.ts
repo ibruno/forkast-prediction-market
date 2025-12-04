@@ -127,6 +127,7 @@ export function mapDataApiActivityToActivityOrder(activity: DataApiActivity): Ac
       text: outcomeText,
     },
     market: {
+      condition_id: activity.conditionId,
       title: activity.title || 'Untitled market',
       slug,
       icon_url: activity.icon || '',
@@ -247,6 +248,7 @@ export async function fetchUserPositionsForMarket({
     params.set('sizeThreshold', '0')
   }
   if (conditionId) {
+    params.set('market', conditionId)
     params.set('marketId', conditionId)
     params.set('conditionId', conditionId)
   }
