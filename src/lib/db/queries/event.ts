@@ -1,4 +1,4 @@
-import type { ActivityOrder, ClobOrderType, Event, QueryResult, TopHolder, UserOpenOrder } from '@/types'
+import type { ActivityOrder, ClobOrderType, Event, QueryResult, UserOpenOrder } from '@/types'
 import { and, desc, eq, exists, ilike, inArray, sql } from 'drizzle-orm'
 import { cacheTag } from 'next/cache'
 import { filterActivitiesByMinAmount } from '@/lib/activity/filter'
@@ -8,7 +8,7 @@ import { users } from '@/lib/db/schema/auth/tables'
 import { bookmarks } from '@/lib/db/schema/bookmarks/tables'
 import { comments } from '@/lib/db/schema/comments/tables'
 import { conditions, event_tags, events, markets, outcomes, tags } from '@/lib/db/schema/events/tables'
-import { orders, v_condition_top_holders } from '@/lib/db/schema/orders/tables'
+import { orders } from '@/lib/db/schema/orders/tables'
 import { runQuery } from '@/lib/db/utils/run-query'
 import { db } from '@/lib/drizzle'
 import { getSupabaseImageUrl } from '@/lib/supabase'
@@ -104,11 +104,6 @@ type EventWithTags = typeof events.$inferSelect & {
 
 type EventWithTagsAndMarkets = EventWithTags & {
   markets: (typeof markets.$inferSelect)[]
-}
-
-interface HoldersResult {
-  yesHolders: TopHolder[]
-  noHolders: TopHolder[]
 }
 
 type DrizzleEventResult = typeof events.$inferSelect & {
@@ -819,66 +814,6 @@ export const EventRepository = {
       const filteredActivities = filterActivitiesByMinAmount(activities, args.minAmount)
 
       return { data: filteredActivities, error: null }
-    })
-  },
-
-  async getEventTopHolders(conditionId: string): Promise<QueryResult<HoldersResult>> {
-    'use cache'
-    cacheTag(cacheTags.holders(conditionId))
-
-    return runQuery(async () => {
-      const holdersData = await db
-        .select({
-          user_id: v_condition_top_holders.user_id,
-          username: v_condition_top_holders.username,
-          address: v_condition_top_holders.address,
-          proxy_wallet_address: users.proxy_wallet_address,
-          image: v_condition_top_holders.image,
-          outcome_index: v_condition_top_holders.outcome_index,
-          outcome_text: v_condition_top_holders.outcome_text,
-          net_position: v_condition_top_holders.net_position,
-        })
-        .from(v_condition_top_holders)
-        .innerJoin(users, eq(users.id, v_condition_top_holders.user_id))
-        .where(eq(v_condition_top_holders.condition_id, conditionId))
-        .orderBy(
-          v_condition_top_holders.outcome_index,
-          desc(v_condition_top_holders.net_position),
-        )
-
-      if (!holdersData?.length) {
-        return { data: { yesHolders: [], noHolders: [] }, error: null }
-      }
-
-      const yesHolders: TopHolder[] = []
-      const noHolders: TopHolder[] = []
-
-      for (const holder of holdersData) {
-        const holderData = holder as any
-        const topHolder: TopHolder = {
-          user: {
-            id: String(holderData.user_id),
-            username: holderData.username as string,
-            address: String(holderData.address),
-            proxy_wallet_address: holderData.proxy_wallet_address || null,
-            image: holderData.image
-              ? getSupabaseImageUrl(String(holderData.image))
-              : `https://avatar.vercel.sh/${String(holderData.proxy_wallet_address ?? holderData.address)}.png`,
-          },
-          net_position: String(holderData.net_position),
-          outcome_index: Number(holderData.outcome_index),
-          outcome_text: String(holderData.outcome_text),
-        }
-
-        if (topHolder.outcome_index === OUTCOME_INDEX.YES) {
-          yesHolders.push(topHolder)
-        }
-        else {
-          noHolders.push(topHolder)
-        }
-      }
-
-      return { data: { yesHolders, noHolders }, error: null }
     })
   },
 }
