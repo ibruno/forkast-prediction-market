@@ -46,6 +46,7 @@ export default function UserInfoSection() {
         >
           {displayUsername}
         </Link>
+
         <div className="flex items-center gap-1.5">
           <Button
             variant="ghost"

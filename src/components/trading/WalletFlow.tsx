@@ -27,7 +27,7 @@ interface WalletFlowProps {
 export function WalletFlow({ open, onOpenChange, user, meldUrl }: WalletFlowProps) {
   const isMobile = useIsMobile()
   const { signMessageAsync } = useSignMessage()
-  const [walletModalView, setWalletModalView] = useState<'menu' | 'fund' | 'buy' | 'send' | 'receive'>('menu')
+  const [walletModalView, setWalletModalView] = useState<'menu' | 'fund' | 'send' | 'receive'>('menu')
   const [walletSendTo, setWalletSendTo] = useState('')
   const [walletSendAmount, setWalletSendAmount] = useState('')
   const [walletSendError, setWalletSendError] = useState<string | null>(null)
@@ -127,6 +127,26 @@ export function WalletFlow({ open, onOpenChange, user, meldUrl }: WalletFlowProp
     }
   }, [signMessageAsync, user?.address, user?.proxy_wallet_address, walletSendAmount, walletSendTo])
 
+  const handleBuy = useCallback((url?: string | null) => {
+    const targetUrl = url ?? meldUrl
+    if (!targetUrl) {
+      return
+    }
+
+    const width = 480
+    const height = 780
+    const popup = window.open(
+      targetUrl,
+      'meld_onramp',
+      `width=${width},height=${height},scrollbars=yes,resizable=yes`,
+    )
+
+    if (popup) {
+      popup.focus()
+      handleWalletModalChange(false)
+    }
+  }, [handleWalletModalChange, meldUrl])
+
   return (
     <WalletModal
       open={open}
@@ -138,6 +158,7 @@ export function WalletFlow({ open, onOpenChange, user, meldUrl }: WalletFlowProp
       hasDeployedProxyWallet={hasDeployedProxyWallet}
       view={walletModalView}
       onViewChange={setWalletModalView}
+      onBuy={handleBuy}
       sendTo={walletSendTo}
       onChangeSendTo={event => setWalletSendTo(event.target.value)}
       sendAmount={walletSendAmount}

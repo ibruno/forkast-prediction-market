@@ -24,9 +24,8 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
 
-type WalletView = 'menu' | 'fund' | 'buy' | 'receive' | 'send'
+type WalletView = 'menu' | 'fund' | 'receive' | 'send'
 
 interface WalletModalProps {
   open: boolean
@@ -38,6 +37,7 @@ interface WalletModalProps {
   hasDeployedProxyWallet: boolean
   view: WalletView
   onViewChange: (view: WalletView) => void
+  onBuy: (url: string) => void
   sendTo: string
   onChangeSendTo: ChangeEventHandler<HTMLInputElement>
   sendAmount: string
@@ -219,44 +219,6 @@ function WalletSendForm({
   )
 }
 
-function WalletFundView({
-  meldUrl,
-  onBack,
-}: {
-  meldUrl: string | null
-  onBack: () => void
-}) {
-  return (
-    <div className="relative h-full w-full">
-      <button
-        type="button"
-        className={`
-          absolute top-4 left-4 z-10 flex items-center gap-2 rounded-full bg-background/90 p-2 text-sm
-          text-muted-foreground shadow
-          hover:text-foreground
-        `}
-        onClick={onBack}
-      >
-        <ArrowLeft className="size-4" />
-      </button>
-      {meldUrl
-        ? (
-            <iframe
-              src={meldUrl}
-              title="Meld Onramp"
-              className="size-full"
-              allow="payment *"
-            />
-          )
-        : (
-            <div className="flex h-full items-center justify-center p-6 text-sm text-destructive">
-              Proxy wallet not ready yet.
-            </div>
-          )}
-    </div>
-  )
-}
-
 export function WalletModal(props: WalletModalProps) {
   const {
     open,
@@ -268,6 +230,7 @@ export function WalletModal(props: WalletModalProps) {
     hasDeployedProxyWallet,
     view,
     onViewChange,
+    onBuy,
     sendTo,
     onChangeSendTo,
     sendAmount,
@@ -307,11 +270,14 @@ export function WalletModal(props: WalletModalProps) {
   function renderFundMenu() {
     return (
       <WalletFundMenu
-        onBuy={() => onViewChange('buy')}
+        onBuy={(url) => {
+          onBuy(url)
+        }}
         onReceive={() => onViewChange('receive')}
         onBack={() => onViewChange('menu')}
         disabledBuy={!meldUrl}
         disabledReceive={!hasDeployedProxyWallet}
+        meldUrl={meldUrl}
       />
     )
   }
@@ -350,27 +316,16 @@ export function WalletModal(props: WalletModalProps) {
           onOpenChange(next)
         }}
       >
-        <DrawerContent
-          className={cn(
-            'w-full border-border/70 bg-background',
-            view === 'buy'
-              ? 'h-[90vh] w-full max-w-screen overflow-hidden border-none bg-[#0D111C] p-0'
-              : 'max-h-[90vh] overflow-y-auto px-0',
-          )}
-        >
-          {view !== 'buy' && (
-            <DrawerHeader className="px-4 pt-4 pb-2">
-              <DrawerTitle>
-                Your Wallet on
-                {' '}
-                {siteName}
-              </DrawerTitle>
-            </DrawerHeader>
-          )}
-          <div className={cn('w-full', view === 'buy' ? 'h-full' : 'px-4 pb-4')}>
-            {view === 'buy'
-              ? <WalletFundView meldUrl={meldUrl} onBack={() => onViewChange('fund')} />
-              : sharedNonFund}
+        <DrawerContent className="max-h-[90vh] w-full border-border/70 bg-background px-0">
+          <DrawerHeader className="px-4 pt-4 pb-2">
+            <DrawerTitle>
+              Your Wallet on
+              {' '}
+              {siteName}
+            </DrawerTitle>
+          </DrawerHeader>
+          <div className="w-full px-4 pb-4">
+            {sharedNonFund}
           </div>
         </DrawerContent>
       </Drawer>
@@ -385,27 +340,16 @@ export function WalletModal(props: WalletModalProps) {
         onOpenChange(next)
       }}
     >
-      <DialogContent
-        className={cn(
-          'border border-border/70 bg-background',
-          view === 'buy'
-            ? 'h-[90vh] w-full max-w-screen overflow-hidden border-none bg-transparent p-0'
-            : 'w-full max-w-2xl p-6',
-        )}
-      >
-        {view !== 'buy' && (
-          <DialogHeader className="pb-3">
-            <DialogTitle>
-              Your Wallet on
-              {' '}
-              {siteName}
-            </DialogTitle>
-          </DialogHeader>
-        )}
+      <DialogContent className="w-full max-w-2xl border border-border/70 bg-background p-6">
+        <DialogHeader className="pb-3">
+          <DialogTitle>
+            Your Wallet on
+            {' '}
+            {siteName}
+          </DialogTitle>
+        </DialogHeader>
 
-        {view === 'buy'
-          ? <WalletFundView meldUrl={meldUrl} onBack={() => onViewChange('fund')} />
-          : sharedNonFund}
+        {sharedNonFund}
       </DialogContent>
     </Dialog>
   )
@@ -416,12 +360,14 @@ function WalletFundMenu({
   onBack,
   disabledBuy,
   disabledReceive,
+  meldUrl,
 }: {
-  onBuy: () => void
+  onBuy: (url: string) => void
   onReceive: () => void
   onBack: () => void
   disabledBuy: boolean
   disabledReceive: boolean
+  meldUrl: string | null
 }) {
   return (
     <div className="space-y-3">
@@ -441,7 +387,12 @@ function WalletFundMenu({
           transition
           hover:border-primary hover:text-primary
         `}
-        onClick={onBuy}
+        onClick={() => {
+          if (!meldUrl) {
+            return
+          }
+          onBuy(meldUrl)
+        }}
         disabled={disabledBuy}
       >
         <div>
