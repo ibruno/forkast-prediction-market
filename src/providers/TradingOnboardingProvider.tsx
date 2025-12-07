@@ -564,9 +564,8 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
     }
     const params = new URLSearchParams({
       publicKey: 'WXETMuFUQmqqybHuRkSgxv:25B8LJHSfpG6LVjR2ytU5Cwh7Z4Sch2ocoU',
-      destinationCurrencyCode: 'USDC',
+      destinationCurrencyCodeLocked: 'USDC',
       walletAddressLocked: user.proxy_wallet_address,
-      externalCustomerId: user.id,
     })
     return `https://meldcrypto.com/?${params.toString()}`
   }, [hasDeployedProxyWallet, user])

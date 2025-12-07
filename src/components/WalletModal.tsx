@@ -101,7 +101,14 @@ function WalletMenu({
       >
         <div>
           <p className="text-sm font-semibold">Fund wallet</p>
-          <p className="text-xs text-muted-foreground">Buy with card/PIX to your proxy wallet.</p>
+          <p className="text-xs text-muted-foreground">
+            Buy with card/PIX or send USDC to your
+            {' '}
+            {process.env.NEXT_PUBLIC_SITE_NAME!}
+            {' '}
+            {' '}
+            wallet.
+          </p>
         </div>
         <ArrowRight className="size-4" />
       </button>
@@ -118,7 +125,13 @@ function WalletMenu({
       >
         <div>
           <p className="text-sm font-semibold">Send</p>
-          <p className="text-xs text-muted-foreground">Withdraw from your proxy wallet.</p>
+          <p className="text-xs text-muted-foreground">
+            Withdraw from your
+            {' '}
+            {process.env.NEXT_PUBLIC_SITE_NAME!}
+            {' '}
+            wallet.
+          </p>
         </div>
         <ArrowRight className="size-4" />
       </button>
@@ -143,7 +156,7 @@ function WalletReceiveView({
         <ArrowLeft className="size-4" />
         Back
       </button>
-      <div className="flex justify-center rounded-lg border border-border/60 bg-white p-4">
+      <div className="flex justify-center rounded-lg border border-border/60 p-4">
         {walletAddress
           ? <QRCode value={walletAddress} size={200} />
           : <p className="text-sm text-destructive">Proxy wallet not ready yet.</p>}
