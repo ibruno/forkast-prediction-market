@@ -98,7 +98,7 @@ function MarketPositionRow({
         <span
           className={cn(
             `
-              inline-flex min-w-[48px] justify-center rounded-sm px-3 py-1 text-[12px] leading-none font-semibold
+              inline-flex min-h-[28px] items-center justify-center rounded-sm px-3 text-[12px] font-semibold
               tracking-wide
             `,
             isYesOutcome ? 'bg-yes/15 text-yes-foreground' : 'bg-no/15 text-no-foreground',
