@@ -1,8 +1,8 @@
 import type { LucideIcon } from 'lucide-react'
 import { loader } from 'fumadocs-core/source'
+import { docs } from 'fumadocs-mdx:collections/server'
 import * as lucideIcons from 'lucide-react'
 import { createElement } from 'react'
-import { docs } from '../../.source'
 
 function isLucideIcon(value: unknown): value is LucideIcon {
   return typeof value === 'function'

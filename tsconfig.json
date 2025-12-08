@@ -13,7 +13,8 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "fumadocs-mdx:collections/*": [".source/*"]
     },
     "resolveJsonModule": true,
     "allowJs": true,
