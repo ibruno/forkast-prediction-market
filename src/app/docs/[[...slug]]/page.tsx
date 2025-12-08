@@ -1,7 +1,7 @@
 import type { MDXComponents } from 'mdx/types'
 import type { Metadata } from 'next'
+import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page'
 import defaultMdxComponents from 'fumadocs-ui/mdx'
-import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/page'
 import { notFound, redirect } from 'next/navigation'
 import { source } from '@/lib/source'
 import { AffiliateShareDisplay } from '../_components/AffiliateShareDisplay'
@@ -33,13 +33,15 @@ export default async function Page(props: PageProps<'/docs/[[...slug]]'>) {
     redirect('/docs/users')
   }
 
+  // @ts-expect-error - revisit fumadocs types.
   const MDX = page.data.body
 
   return (
     <DocsPage
+      // @ts-expect-error - revisit fumadocs types.
       toc={page.data.toc}
+      // @ts-expect-error - revisit fumadocs types.
       full={page.data.full}
-      lastUpdate={page.data.lastModified}
       tableOfContent={{
         style: 'clerk',
       }}

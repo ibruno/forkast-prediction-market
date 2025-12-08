@@ -8,10 +8,11 @@ const pages = JSON.parse(process.env.NEXT_PUBLIC_FORK_OWNER_GUIDE || 'false')
 export const { GET } = createSearchAPI('advanced', {
   language: 'english',
   indexes: pages.map(page => ({
-    title: page.data.title,
+    title: page.data.title!,
     description: page.data.description,
     url: page.url,
     id: page.url,
+    // @ts-expect-error - revisit fumadocs types.
     structuredData: page.data.structuredData,
   })),
 })
