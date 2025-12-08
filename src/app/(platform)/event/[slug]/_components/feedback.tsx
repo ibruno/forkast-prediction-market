@@ -9,6 +9,7 @@ import { triggerConfetti } from '@/lib/utils'
 
 interface HandleValidationErrorArgs {
   openWalletModal: () => Promise<void> | void
+  shareLabel?: string
 }
 
 interface OrderSuccessFeedbackArgs {
@@ -20,13 +21,11 @@ interface OrderSuccessFeedbackArgs {
   avgSellPrice: string
   buyPrice?: number
   queryClient: QueryClient
-  eventSlug: string
-  userId?: string
   outcomeIndex: number
   lastMouseEvent: any
 }
 
-export function handleValidationError(reason: OrderValidationError, { openWalletModal }: HandleValidationErrorArgs) {
+export function handleValidationError(reason: OrderValidationError, { openWalletModal, shareLabel }: HandleValidationErrorArgs) {
   switch (reason) {
     case 'IS_LOADING':
       toast.info('Order already processing')
@@ -70,6 +69,13 @@ export function handleValidationError(reason: OrderValidationError, { openWallet
         description: 'Reduce the order size or deposit more into your Safe.',
       })
       break
+    case 'INSUFFICIENT_SHARES': {
+      const title = shareLabel ? `Insufficient ${shareLabel} shares` : 'Insufficient shares'
+      toast.error(title, {
+        description: 'Reduce the order size or split more shares before selling.',
+      })
+      break
+    }
     case 'LIMIT_SHARES_TOO_LOW':
       toast.error('Minimum shares not met', {
         description: 'Minimum 5 shares for limit orders.',
@@ -89,8 +95,6 @@ export function handleOrderSuccessFeedback({
   avgSellPrice,
   buyPrice,
   queryClient,
-  eventSlug,
-  userId,
   outcomeIndex,
   lastMouseEvent,
 }: OrderSuccessFeedbackArgs) {
@@ -135,11 +139,9 @@ export function handleOrderSuccessFeedback({
 
   triggerConfetti(outcomeIndex === OUTCOME_INDEX.YES ? 'yes' : 'no', lastMouseEvent)
 
-  if (userId) {
-    queryClient.invalidateQueries({
-      queryKey: ['user-event-positions', eventSlug, userId],
-    })
-  }
+  queryClient.invalidateQueries({
+    queryKey: ['user-conditional-shares'],
+  })
 }
 
 export function handleOrderErrorFeedback(message: string, description?: string) {
