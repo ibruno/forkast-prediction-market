@@ -4,6 +4,4 @@ export const docs = defineDocs({
   dir: 'docs',
 })
 
-export default defineConfig({
-  lastModifiedTime: 'git',
-})
+export default defineConfig()
