@@ -22,6 +22,9 @@ export async function cancelOrderAction(rawOrderId: string) {
   if (!auth?.clob) {
     return { error: 'Please enable trading first.' }
   }
+  if (!user.proxy_wallet_address) {
+    return { error: 'Deploy your proxy wallet before trading.' }
+  }
 
   const parsed = CancelOrderSchema.safeParse({ orderId: rawOrderId })
   if (!parsed.success) {
@@ -55,7 +58,7 @@ export async function cancelOrderAction(rawOrderId: string) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'FORKAST_ADDRESS': user.proxy_wallet_address ?? user.address,
+        'FORKAST_ADDRESS': user.address,
         'FORKAST_API_KEY': auth.clob.key,
         'FORKAST_PASSPHRASE': auth.clob.passphrase,
         'FORKAST_TIMESTAMP': timestamp.toString(),

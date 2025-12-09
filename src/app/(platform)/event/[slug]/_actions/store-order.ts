@@ -95,6 +95,9 @@ export async function storeOrderAction(payload: StoreOrderInput) {
   if (!auth?.clob) {
     return { error: 'Please enable trading to continue.' }
   }
+  if (!user.proxy_wallet_address) {
+    return { error: 'Deploy your proxy wallet before trading.' }
+  }
 
   const validated = StoreOrderSchema.safeParse(payload)
 
@@ -123,6 +126,11 @@ export async function storeOrderAction(payload: StoreOrderInput) {
       }
     }
 
+    const expectedMaker = user.proxy_wallet_address.toLowerCase()
+    if (validated.data.maker.toLowerCase() !== expectedMaker) {
+      return { error: 'Invalid maker address for this order.' }
+    }
+
     const clobPayload = {
       order: {
         salt: validated.data.salt,
@@ -144,7 +152,7 @@ export async function storeOrderAction(payload: StoreOrderInput) {
         signature: validated.data.signature,
       },
       orderType: clobOrderType,
-      owner: user.proxy_wallet_address ?? user.address,
+      owner: user.address,
     }
 
     const method = 'POST'
@@ -164,7 +172,7 @@ export async function storeOrderAction(payload: StoreOrderInput) {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'FORKAST_ADDRESS': clobPayload.owner,
+        'FORKAST_ADDRESS': user.address,
         'FORKAST_API_KEY': auth.clob.key,
         'FORKAST_PASSPHRASE': auth.clob.passphrase,
         'FORKAST_TIMESTAMP': timestamp.toString(),

@@ -24,6 +24,9 @@ export async function getSafeNonceAction(): Promise<SafeNonceResult> {
   if (!user) {
     return { error: 'Please sign in to continue.' }
   }
+  if (!user.proxy_wallet_address) {
+    return { error: 'Deploy your proxy wallet before approving tokens.' }
+  }
 
   const auth = await getUserTradingAuthSecrets(user.id)
   if (!auth?.relayer) {
@@ -35,7 +38,7 @@ export async function getSafeNonceAction(): Promise<SafeNonceResult> {
     return { error: DEFAULT_ERROR_MESSAGE }
   }
 
-  const query = `address=${encodeURIComponent(user.address)}&type=SAFE`
+  const query = `address=${encodeURIComponent(user.proxy_wallet_address)}&type=SAFE`
   const path = `/nonce?${query}`
   const timestamp = Math.floor(Date.now() / 1000)
   const signature = buildClobHmacSignature(auth.relayer.secret, timestamp, 'GET', path)
@@ -45,7 +48,7 @@ export async function getSafeNonceAction(): Promise<SafeNonceResult> {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        FORKAST_ADDRESS: user.address,
+        FORKAST_ADDRESS: user.proxy_wallet_address,
         FORKAST_API_KEY: auth.relayer.key,
         FORKAST_PASSPHRASE: auth.relayer.passphrase,
         FORKAST_TIMESTAMP: timestamp.toString(),
@@ -114,7 +117,7 @@ export async function submitSafeTransactionAction(request: SafeTransactionReques
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'FORKAST_ADDRESS': user.address,
+        'FORKAST_ADDRESS': user.proxy_wallet_address,
         'FORKAST_API_KEY': auth.relayer.key,
         'FORKAST_PASSPHRASE': auth.relayer.passphrase,
         'FORKAST_TIMESTAMP': timestamp.toString(),

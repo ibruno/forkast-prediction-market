@@ -6,7 +6,7 @@ import { ZERO_ADDRESS } from '@/lib/constants'
 export const SAFE_PROXY_DOMAIN_NAME = 'Forkast Contract Proxy Factory'
 export const SAFE_PROXY_PRIMARY_TYPE = 'CreateProxy'
 
-export const SAFE_PROXY_FACTORY_ADDRESS = '0xeAaBa3185fA1B8C2eC1E2124E010b47260e03bE5' as Address
+export const SAFE_PROXY_FACTORY_ADDRESS = '0x99Bac26dC6172696c57f7C3fdDBd4117F4E4607B' as Address
 
 export const SAFE_PROXY_TYPES = {
   CreateProxy: [

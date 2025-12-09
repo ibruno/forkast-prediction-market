@@ -46,11 +46,11 @@ export const OUTCOME_INDEX = {
 export const CAP_MICRO = 990_000n
 export const FLOOR_MICRO = 10_000n
 
-export const CTF_EXCHANGE_ADDRESS = '0x8e7C334F111e45DF9C160DE56958E37c473081CB' as `0x${string}`
+export const CTF_EXCHANGE_ADDRESS = '0x606aB3037e170cC00484d9BF413ce0f088Eef6B5' as `0x${string}`
 const negRiskExchangeAddress = (
   process.env.NEGRISK_CTFEXCHANGE_ADDRESS
   ?? process.env.NEXT_PUBLIC_NEGRISK_CTFEXCHANGE_ADDRESS
-  ?? '0x0B31dD379DF27A0ede14336F696412DF7b702e50'
+  ?? '0x7BF55f022475aA95032ab9c2905Ac38d8b204FcA'
 ) as `0x${string}`
 export const NEG_RISK_CTF_EXCHANGE_ADDRESS = negRiskExchangeAddress
 
