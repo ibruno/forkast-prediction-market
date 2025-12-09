@@ -407,7 +407,11 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
       }
 
       const transactions = buildApproveTokenTransactions({
-        spender: CONDITIONAL_TOKENS_CONTRACT as `0x${string}`,
+        spenders: [
+          CONDITIONAL_TOKENS_CONTRACT as `0x${string}`,
+          CTF_EXCHANGE_ADDRESS as `0x${string}`,
+          NEG_RISK_CTF_EXCHANGE_ADDRESS as `0x${string}`,
+        ],
         operators: [
           CTF_EXCHANGE_ADDRESS as `0x${string}`,
           NEG_RISK_CTF_EXCHANGE_ADDRESS as `0x${string}`,

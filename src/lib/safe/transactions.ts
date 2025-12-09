@@ -120,7 +120,7 @@ export interface SafeTransactionRequestPayload {
 }
 
 interface ApproveOptions {
-  spender?: `0x${string}`
+  spenders?: `0x${string}`[]
   operators?: `0x${string}`[]
 }
 
@@ -140,23 +140,25 @@ function parseAmountToBaseUnits(amount: string | number | bigint, decimals: numb
 }
 
 export function buildApproveTokenTransactions(options?: ApproveOptions): SafeTransaction[] {
-  const spender = (options?.spender ?? CONDITIONAL_TOKENS_CONTRACT) as `0x${string}`
+  const spenderList = options?.spenders?.length
+    ? options.spenders
+    : [CONDITIONAL_TOKENS_CONTRACT]
+
+  const uniqueSpenders = Array.from(new Set(spenderList)) as `0x${string}`[]
   const operators = options?.operators?.length
     ? options.operators
     : [CTF_EXCHANGE_ADDRESS, NEG_RISK_CTF_EXCHANGE_ADDRESS]
 
-  const transactions: SafeTransaction[] = [
-    {
-      to: COLLATERAL_TOKEN_ADDRESS as `0x${string}`,
-      value: '0',
-      data: encodeFunctionData({
-        abi: erc20Abi,
-        functionName: 'approve',
-        args: [spender, MAX_ALLOWANCE],
-      }),
-      operation: SafeOperationType.Call,
-    },
-  ]
+  const transactions: SafeTransaction[] = uniqueSpenders.map(spender => ({
+    to: COLLATERAL_TOKEN_ADDRESS as `0x${string}`,
+    value: '0',
+    data: encodeFunctionData({
+      abi: erc20Abi,
+      functionName: 'approve',
+      args: [spender, MAX_ALLOWANCE],
+    }),
+    operation: SafeOperationType.Call,
+  }))
 
   for (const operator of operators) {
     transactions.push({
