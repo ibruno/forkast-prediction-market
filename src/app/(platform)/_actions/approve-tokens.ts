@@ -48,7 +48,7 @@ export async function getSafeNonceAction(): Promise<SafeNonceResult> {
       method: 'GET',
       headers: {
         Accept: 'application/json',
-        FORKAST_ADDRESS: user.proxy_wallet_address,
+        FORKAST_ADDRESS: user.address,
         FORKAST_API_KEY: auth.relayer.key,
         FORKAST_PASSPHRASE: auth.relayer.passphrase,
         FORKAST_TIMESTAMP: timestamp.toString(),
@@ -117,7 +117,7 @@ export async function submitSafeTransactionAction(request: SafeTransactionReques
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'FORKAST_ADDRESS': user.proxy_wallet_address,
+        'FORKAST_ADDRESS': user.address,
         'FORKAST_API_KEY': auth.relayer.key,
         'FORKAST_PASSPHRASE': auth.relayer.passphrase,
         'FORKAST_TIMESTAMP': timestamp.toString(),
