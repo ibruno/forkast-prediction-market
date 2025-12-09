@@ -128,6 +128,13 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
   }, [])
 
   useEffect(() => {
+    if (!enableModalOpen && !tradeModalOpen) {
+      return
+    }
+    void refreshSessionUserState()
+  }, [enableModalOpen, refreshSessionUserState, tradeModalOpen])
+
+  useEffect(() => {
     if (!user?.id) {
       return
     }
@@ -240,7 +247,13 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
     if (proxyStep !== 'completed') {
       setProxyStep('idle')
     }
-  }, [proxyStep])
+    if (!hasTradingAuth) {
+      setTradingAuthStep('idle')
+    }
+    if (!hasTokenApprovals) {
+      setApprovalsStep('idle')
+    }
+  }, [hasTokenApprovals, hasTradingAuth, proxyStep])
 
   const handleProxyWalletSignature = useCallback(async () => {
     setProxyWalletError(null)
