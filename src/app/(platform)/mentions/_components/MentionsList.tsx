@@ -91,9 +91,9 @@ function MentionsListItem({ event }: MentionsListItemProps) {
         'md:flex-row md:items-center md:gap-8 md:p-5',
       )}
     >
-      <div className="flex items-start gap-3 md:w-[240px] md:flex-shrink-0 md:items-center md:gap-4">
+      <div className="flex items-start gap-3 md:w-60 md:shrink-0 md:items-center md:gap-4">
         <div className="flex w-16 flex-col items-center justify-center leading-none md:w-[68px]">
-          <span className="text-3xl font-bold tracking-tight text-foreground md:text-[34px]">
+          <span className="text-3xl font-bold tracking-tight text-foreground md:text-3xl">
             {dayLabel}
           </span>
           {monthLabel && (

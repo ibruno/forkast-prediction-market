@@ -215,16 +215,17 @@ function WalletSendForm({
               value={sendTo}
               onChange={onChangeSendTo}
               placeholder="0x..."
-              className={`${showConnectedWalletButton ? 'pr-28' : ''} h-14 text-[14px] placeholder:text-[14px]`}
+              className={`${showConnectedWalletButton ? 'pr-28' : ''} h-14 text-sm placeholder:text-sm`}
               required
             />
             {showConnectedWalletButton && (
               <Button
                 type="button"
                 variant="default"
+                size="sm"
                 onClick={onUseConnectedWallet}
                 disabled={!connectedWalletAddress}
-                className="absolute inset-y-3 right-2 h-8 gap-1 px-3 text-[11px]"
+                className="absolute inset-y-3 right-2 text-xs"
               >
                 <Wallet className="size-3.5 shrink-0" />
                 <span>use connected</span>
@@ -254,7 +255,8 @@ function WalletSendForm({
             <Button
               type="button"
               variant="default"
-              className="absolute inset-y-3 right-2 h-8 px-3 text-[11px]"
+              size="sm"
+              className="absolute inset-y-3 right-2 text-xs"
               onClick={onMax}
               disabled={!onMax}
             >

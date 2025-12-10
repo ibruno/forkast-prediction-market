@@ -254,7 +254,7 @@ function ProfitLossCard({
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <p className="text-[32px] leading-none font-bold tracking-tight">
+              <p className="text-3xl leading-none font-bold tracking-tight">
                 {isPositive ? '+' : ''}
                 {formatCurrency(Math.abs(profitLoss))}
               </p>
