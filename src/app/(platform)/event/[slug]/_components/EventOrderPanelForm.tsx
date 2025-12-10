@@ -140,84 +140,33 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     }
 
     if (!Object.keys(sharesByCondition).length) {
+      setUserShares({}, { replace: true })
       return
     }
 
-    const currentShares = useOrder.getState().userShares
-    const mergedShares: typeof currentShares = {}
-
-    Object.entries(currentShares).forEach(([conditionId, outcomes]) => {
-      mergedShares[conditionId] = { ...outcomes }
-    })
-
-    Object.entries(sharesByCondition).forEach(([conditionId, outcomes]) => {
-      const existing = mergedShares[conditionId] ?? {
-        [OUTCOME_INDEX.YES]: 0,
-        [OUTCOME_INDEX.NO]: 0,
-      }
-
-      mergedShares[conditionId] = {
-        [OUTCOME_INDEX.YES]: Math.max(existing[OUTCOME_INDEX.YES] ?? 0, outcomes[OUTCOME_INDEX.YES] ?? 0),
-        [OUTCOME_INDEX.NO]: Math.max(existing[OUTCOME_INDEX.NO] ?? 0, outcomes[OUTCOME_INDEX.NO] ?? 0),
-      }
-    })
-
-    setUserShares(mergedShares, { replace: true })
+    setUserShares(sharesByCondition, { replace: true })
   }, [makerAddress, setUserShares, sharesByCondition])
 
-  useEffect(() => {
-    if (!aggregatedPositionShares) {
-      return
-    }
-
-    const currentShares = useOrder.getState().userShares
-    const mergedShares: typeof currentShares = {}
-
-    Object.entries(currentShares).forEach(([conditionId, outcomes]) => {
-      mergedShares[conditionId] = { ...outcomes }
-    })
-
-    Object.entries(aggregatedPositionShares).forEach(([conditionId, outcomes]) => {
-      const existing = mergedShares[conditionId] ?? {
-        [OUTCOME_INDEX.YES]: 0,
-        [OUTCOME_INDEX.NO]: 0,
-      }
-
-      mergedShares[conditionId] = {
-        [OUTCOME_INDEX.YES]: Math.max(existing[OUTCOME_INDEX.YES] ?? 0, outcomes[OUTCOME_INDEX.YES] ?? 0),
-        [OUTCOME_INDEX.NO]: Math.max(existing[OUTCOME_INDEX.NO] ?? 0, outcomes[OUTCOME_INDEX.NO] ?? 0),
-      }
-    })
-
-    setUserShares(mergedShares, { replace: true })
-  }, [aggregatedPositionShares, setUserShares])
-
-  const conditionShares = state.market ? state.userShares[state.market.condition_id] : undefined
-  const yesShares = conditionShares?.[OUTCOME_INDEX.YES] ?? 0
-  const noShares = conditionShares?.[OUTCOME_INDEX.NO] ?? 0
-  const availableMergeShares = Math.max(0, Math.min(yesShares, noShares))
+  const conditionTokenShares = state.market ? state.userShares[state.market.condition_id] : undefined
+  const conditionPositionShares = state.market ? aggregatedPositionShares?.[state.market.condition_id] : undefined
+  const yesTokenShares = conditionTokenShares?.[OUTCOME_INDEX.YES] ?? 0
+  const noTokenShares = conditionTokenShares?.[OUTCOME_INDEX.NO] ?? 0
+  const yesPositionShares = conditionPositionShares?.[OUTCOME_INDEX.YES] ?? 0
+  const noPositionShares = conditionPositionShares?.[OUTCOME_INDEX.NO] ?? 0
+  const availableMergeShares = Math.max(0, Math.min(yesTokenShares, noTokenShares))
   const availableSplitBalance = Math.max(0, balance.raw)
   const outcomeIndex = state.outcome?.outcome_index as typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO | undefined
-  const selectedShares = outcomeIndex === undefined ? 0 : conditionShares?.[outcomeIndex] ?? 0
+  const selectedTokenShares = outcomeIndex === undefined ? 0 : conditionTokenShares?.[outcomeIndex] ?? 0
+  const selectedPositionShares = outcomeIndex === undefined ? 0 : conditionPositionShares?.[outcomeIndex] ?? 0
+  const selectedShares = state.side === ORDER_SIDE.SELL
+    ? (isLimitOrder ? selectedTokenShares : selectedPositionShares)
+    : selectedTokenShares
   const selectedShareLabel = state.outcome?.outcome_text
     ?? (outcomeIndex === OUTCOME_INDEX.NO
       ? 'No'
       : outcomeIndex === OUTCOME_INDEX.YES
         ? 'Yes'
         : undefined)
-
-  const sellAmountValue = useMemo(() => {
-    if (!state.market || !state.outcome) {
-      return 0
-    }
-
-    const probability = state.market.probability
-    const sellPrice = state.outcome.outcome_index === OUTCOME_INDEX.YES
-      ? (probability / 100) * 0.95
-      : ((100 - probability) / 100) * 0.95
-
-    return Number.parseFloat(state.amount || '0') * sellPrice
-  }, [state.amount, state.market, state.outcome])
 
   const avgSellPriceValue = useMemo(() => {
     if (!state.market || !state.outcome) {
@@ -228,6 +177,20 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       ? Math.round(state.market.probability * 0.95)
       : Math.round((100 - state.market.probability) * 0.95)
   }, [state.market, state.outcome])
+
+  const sellAmountValue = useMemo(() => {
+    if (!state.market || !state.outcome) {
+      return 0
+    }
+
+    const shares = Number.parseFloat(state.amount || '0')
+    if (!Number.isFinite(shares) || shares <= 0) {
+      return 0
+    }
+
+    const averagePrice = avgSellPriceValue / 100
+    return Number.isFinite(averagePrice) ? shares * averagePrice : 0
+  }, [avgSellPriceValue, state.amount, state.market, state.outcome])
 
   const avgSellPriceLabel = formatCentsLabel(avgSellPriceValue, { fallback: '—' })
   const avgBuyPriceLabel = formatCentsLabel(state.outcome?.buy_price, { fallback: '—' })
@@ -441,6 +404,13 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       {isLimitOrder
         ? (
             <div className="mb-4">
+              {state.side === ORDER_SIDE.SELL && (
+                <EventOrderPanelUserShares
+                  yesShares={yesTokenShares}
+                  noShares={noTokenShares}
+                  activeOutcome={outcomeIndex}
+                />
+              )}
               <EventOrderPanelLimitControls
                 side={state.side}
                 limitPrice={state.limitPrice}
@@ -465,8 +435,9 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
               {state.side === ORDER_SIDE.SELL
                 ? (
                     <EventOrderPanelUserShares
-                      yesShares={yesShares}
-                      noShares={noShares}
+                      yesShares={yesPositionShares}
+                      noShares={noPositionShares}
+                      activeOutcome={outcomeIndex}
                     />
                   )
                 : <div className="mb-4"></div>}

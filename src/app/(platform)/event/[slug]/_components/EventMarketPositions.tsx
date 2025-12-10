@@ -53,12 +53,8 @@ function MarketPositionRow({
   const baseCostValue = typeof position.total_position_cost === 'number'
     ? Number(fromMicro(String(position.total_position_cost), 2))
     : null
-  const shouldSplitCost = Boolean(position.opposite_outcome_text)
-  const adjustedCostValue = baseCostValue != null
-    ? Number((shouldSplitCost ? baseCostValue / 2 : baseCostValue).toFixed(2))
-    : null
-  const costLabel = adjustedCostValue != null
-    ? formatCurrency(adjustedCostValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  const costLabel = baseCostValue != null
+    ? formatCurrency(baseCostValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : null
   const profitLossValue = typeof position.profit_loss_value === 'number'
     ? Number(fromMicro(String(position.profit_loss_value), 2))
@@ -97,7 +93,10 @@ function MarketPositionRow({
       <div className="flex items-center">
         <span
           className={cn(
-            `inline-flex min-h-7 items-center justify-center rounded-sm px-3 text-xs font-semibold tracking-wide`,
+            `
+              inline-flex min-h-7 min-w-14 items-center justify-center rounded-sm px-4 text-xs font-semibold
+              tracking-wide
+            `,
             isYesOutcome ? 'bg-yes/15 text-yes-foreground' : 'bg-no/15 text-no-foreground',
           )}
         >
@@ -218,6 +217,8 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
     enabled: Boolean(userAddress && market.condition_id),
     initialPageParam: 0,
     staleTime: 1000 * 60 * 5,
+    refetchInterval: userAddress ? 10_000 : false,
+    refetchIntervalInBackground: true,
     gcTime: 1000 * 60 * 10,
   })
 

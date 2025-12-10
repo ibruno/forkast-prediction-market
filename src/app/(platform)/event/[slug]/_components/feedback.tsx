@@ -76,11 +76,6 @@ export function handleValidationError(reason: OrderValidationError, { openWallet
       })
       break
     }
-    case 'LIMIT_SHARES_TOO_LOW':
-      toast.error('Minimum shares not met', {
-        description: 'Minimum 5 shares for limit orders.',
-      })
-      break
     default:
       toast.error('Unable to submit order. Please review your inputs.')
   }

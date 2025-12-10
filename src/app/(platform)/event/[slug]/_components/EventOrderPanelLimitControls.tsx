@@ -1,6 +1,7 @@
 import type { LimitExpirationOption } from '@/stores/useOrder'
 import type { OrderSide } from '@/types'
-import { BanknoteIcon, TriangleAlertIcon } from 'lucide-react'
+import { TriangleAlertIcon } from 'lucide-react'
+import Image from 'next/image'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import EventLimitExpirationCalendar from '@/app/(platform)/event/[slug]/_components/EventLimitExpirationCalendar'
@@ -362,22 +363,48 @@ export default function EventOrderPanelLimitControls({
         )}
       </div>
 
-      <div className="mt-6 space-y-1">
-        <div className="flex items-center justify-between text-lg font-bold text-foreground">
-          <span>Total</span>
-          <span className="font-semibold text-primary">
-            {totalValueLabel}
-          </span>
-        </div>
-        <div className="flex items-center justify-between text-lg font-bold">
-          <span className="flex items-center gap-2 text-foreground">
-            To Win
-            <BanknoteIcon className="size-4 text-yes" />
-          </span>
-          <span className="text-xl font-bold text-yes">
-            {potentialWinLabel}
-          </span>
-        </div>
+      <div className="mt-4 space-y-1">
+        {side === ORDER_SIDE.SELL
+          ? (
+              <div className="flex items-center justify-between text-lg font-bold text-foreground">
+                <span>You'll receive</span>
+                <span className="inline-flex items-center gap-2 text-xl font-bold text-yes">
+                  <Image
+                    src="/images/trade/money.svg"
+                    alt=""
+                    width={20}
+                    height={14}
+                    className="h-4 w-6"
+                  />
+                  {potentialWinLabel}
+                </span>
+              </div>
+            )
+          : (
+              <>
+                <div className="flex items-center justify-between text-lg font-bold text-foreground">
+                  <span>Total</span>
+                  <span className="font-semibold text-primary">
+                    {totalValueLabel}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-lg font-bold">
+                  <span className="flex items-center gap-2 text-foreground">
+                    To Win
+                    <Image
+                      src="/images/trade/money.svg"
+                      alt=""
+                      width={20}
+                      height={14}
+                      className="h-4 w-6"
+                    />
+                  </span>
+                  <span className="text-xl font-bold text-yes">
+                    {potentialWinLabel}
+                  </span>
+                </div>
+              </>
+            )}
       </div>
       {showMinimumSharesWarning && (
         <div className="flex items-center justify-center gap-2 pt-2 text-sm font-semibold text-orange-500">
