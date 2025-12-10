@@ -1,6 +1,6 @@
 'use client'
 
-import { Copy, Share, Twitter } from 'lucide-react'
+import { CopyIcon, ShareIcon, TwitterIcon } from 'lucide-react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -167,7 +167,7 @@ export default function EventPositionsHistory() {
                       `}
                       aria-label="Share position"
                     >
-                      <Share className="size-4" />
+                      <ShareIcon className="size-4" />
                     </button>
                   </DialogTrigger>
 
@@ -261,11 +261,11 @@ export default function EventPositionsHistory() {
 
                     <div className="flex flex-col gap-3 sm:flex-row">
                       <Button variant="outline" className="flex-1">
-                        <Copy className="size-4" />
+                        <CopyIcon className="size-4" />
                         Copy Image
                       </Button>
                       <Button className="flex-1">
-                        <Twitter className="size-4" />
+                        <TwitterIcon className="size-4" />
                         Share
                       </Button>
                     </div>

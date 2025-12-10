@@ -1,7 +1,7 @@
 'use client'
 
 import type { Table } from '@tanstack/react-table'
-import { X } from 'lucide-react'
+import { XIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTableViewOptions } from './DataTableViewOptions'
@@ -46,7 +46,7 @@ export function DataTableToolbar<TData>({
             disabled={isLoading}
           >
             Reset
-            <X className="ml-2 size-4" />
+            <XIcon className="ml-2 size-4" />
           </Button>
         )}
       </div>

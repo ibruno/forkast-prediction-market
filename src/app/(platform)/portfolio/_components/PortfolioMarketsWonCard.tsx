@@ -2,7 +2,7 @@
 
 import { DialogTitle } from '@radix-ui/react-dialog'
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden'
-import { BanknoteArrowDown, CircleCheck } from 'lucide-react'
+import { BanknoteArrowDownIcon, CircleCheckIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Fragment, useState } from 'react'
@@ -75,7 +75,7 @@ export default function PortfolioMarketsWonCard() {
 
           <DialogTrigger asChild>
             <Button className="h-11 shrink-0 px-6">
-              <BanknoteArrowDown className="size-4" />
+              <BanknoteArrowDownIcon className="size-4" />
               Claim
             </Button>
           </DialogTrigger>
@@ -89,7 +89,7 @@ export default function PortfolioMarketsWonCard() {
 
         <div className="flex justify-center">
           <div className="flex size-16 items-center justify-center rounded-full bg-green-500/15">
-            <CircleCheck className="size-14 text-green-500" />
+            <CircleCheckIcon className="size-14 text-green-500" />
           </div>
         </div>
 

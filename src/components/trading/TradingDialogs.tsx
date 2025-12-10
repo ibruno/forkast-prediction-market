@@ -1,7 +1,7 @@
 'use client'
 
 import type { ComponentProps } from 'react'
-import { Check, CircleDollarSign, Loader2, Wallet, X } from 'lucide-react'
+import { CheckIcon, CircleDollarSignIcon, Loader2Icon, WalletIcon, XIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -58,7 +58,7 @@ export function EnableTradingDialog({
       <DialogContent className="max-w-md border border-border/70 bg-background p-8 text-center">
         <DialogHeader className="space-y-3 text-center">
           <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <Wallet className="size-8" />
+            <WalletIcon className="size-8" />
           </div>
           <DialogTitle className="text-center text-2xl font-bold">Enable Trading</DialogTitle>
           <DialogDescription className="text-center text-base text-muted-foreground">
@@ -83,7 +83,7 @@ export function FundAccountDialog({
       <DialogContent className="max-w-md border border-border/70 bg-background p-8 text-center">
         <DialogHeader className="space-y-3 text-center">
           <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-            <CircleDollarSign className="size-8" />
+            <CircleDollarSignIcon className="size-8" />
           </div>
           <DialogTitle className="text-center text-2xl font-bold">Fund Your Account</DialogTitle>
         </DialogHeader>
@@ -130,7 +130,7 @@ export function TradeRequirementsDialog({
             `}
             aria-label="Close"
           >
-            <X className="size-4" />
+            <XIcon className="size-4" />
           </button>
         </DialogClose>
 
@@ -233,7 +233,7 @@ function TradingRequirementStep({
         {isComplete
           ? (
               <div className="flex min-w-[110px] items-center justify-center gap-1 text-sm font-semibold text-primary">
-                <Check className="size-4" />
+                <CheckIcon className="size-4" />
                 Complete
               </div>
             )
@@ -244,7 +244,7 @@ function TradingRequirementStep({
                 disabled={Boolean(disabled) || isLoading}
                 onClick={onAction}
               >
-                {isLoading ? <Loader2 className="size-4 animate-spin" /> : actionLabel}
+                {isLoading ? <Loader2Icon className="size-4 animate-spin" /> : actionLabel}
               </Button>
             )}
       </div>
