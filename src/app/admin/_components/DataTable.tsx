@@ -90,7 +90,6 @@ export function DataTable<TData, TValue>({
     }
   }, [sorting, onSortChange])
 
-  // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
