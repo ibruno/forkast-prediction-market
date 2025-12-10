@@ -38,7 +38,7 @@ export async function getSafeNonceAction(): Promise<SafeNonceResult> {
     return { error: DEFAULT_ERROR_MESSAGE }
   }
 
-  const query = `address=${encodeURIComponent(user.proxy_wallet_address)}&type=SAFE`
+  const query = `address=${encodeURIComponent(user.address)}&type=SAFE`
   const path = `/nonce?${query}`
   const timestamp = Math.floor(Date.now() / 1000)
   const signature = buildClobHmacSignature(auth.relayer.secret, timestamp, 'GET', path)
