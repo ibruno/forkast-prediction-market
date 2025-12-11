@@ -38,6 +38,18 @@ interface OrderBookSummaryResponse {
   last_trade_side?: 'BUY' | 'SELL'
 }
 
+interface ClobOrderbookSummary {
+  asset_id: string
+  bids?: OrderbookLevelSummary[]
+  asks?: OrderbookLevelSummary[]
+}
+
+interface LastTradePriceEntry {
+  token_id: string
+  price: string
+  side: 'BUY' | 'SELL'
+}
+
 export type OrderBookSummariesResponse = Record<string, OrderBookSummaryResponse>
 
 interface OrderBookSnapshot {
@@ -50,20 +62,87 @@ interface OrderBookSnapshot {
 }
 
 const DEFAULT_MAX_LEVELS = 12
+const CLOB_BASE_URL = process.env.CLOB_URL
+
+async function fetchClobJson<T>(path: string, body: unknown): Promise<T> {
+  if (!CLOB_BASE_URL) {
+    throw new Error('CLOB URL is not configured.')
+  }
+
+  const endpoint = `${CLOB_BASE_URL}${path}`
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+  })
+
+  const text = await response.text()
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${path}: ${response.status} ${text}`)
+  }
+
+  try {
+    return JSON.parse(text) as T
+  }
+  catch (error) {
+    console.error(`Failed to parse response from ${path}`, error)
+    throw new Error(`Failed to parse response from ${path}`)
+  }
+}
 
 async function fetchOrderBookSummaries(tokenIds: string[]): Promise<OrderBookSummariesResponse> {
   if (!tokenIds.length) {
     return {}
   }
 
-  const params = new URLSearchParams({ token_ids: tokenIds.join(',') })
-  const response = await fetch(`/api/orderbook?${params.toString()}`, { cache: 'no-store' })
+  const payload = tokenIds.map(tokenId => ({ token_id: tokenId }))
 
-  if (!response.ok) {
-    throw new Error('Failed to load order book')
+  const [orderBooks, lastTrades] = await Promise.all([
+    fetchClobJson<ClobOrderbookSummary[]>('/books', payload),
+    fetchClobJson<LastTradePriceEntry[]>('/last-trades-prices', payload).catch((error) => {
+      console.error('Failed to fetch last trades prices', error)
+      return null
+    }),
+  ])
+
+  if (!Array.isArray(orderBooks)) {
+    throw new TypeError('Unexpected response format from /books')
   }
 
-  return response.json()
+  const orderBookByToken = new Map<string, ClobOrderbookSummary>()
+  orderBooks.forEach((entry) => {
+    if (entry?.asset_id) {
+      orderBookByToken.set(entry.asset_id, entry)
+    }
+  })
+
+  const lastTradesByToken = new Map<string, LastTradePriceEntry>()
+  lastTrades?.forEach((entry) => {
+    if (entry?.token_id) {
+      lastTradesByToken.set(entry.token_id, entry)
+    }
+  })
+
+  const combined: Record<string, OrderBookSummaryResponse> = {}
+
+  tokenIds.forEach((tokenId) => {
+    const orderbookEntry = orderBookByToken.get(tokenId)
+    const lastTradeEntry = lastTradesByToken.get(tokenId)
+
+    combined[tokenId] = {
+      bids: orderbookEntry?.bids ?? [],
+      asks: orderbookEntry?.asks ?? [],
+      last_trade_price: lastTradeEntry?.price,
+      last_trade_side: lastTradeEntry?.side,
+    }
+  })
+
+  return combined
 }
 
 export function useOrderBookSummaries(tokenIds: string[], options?: { enabled?: boolean }) {
