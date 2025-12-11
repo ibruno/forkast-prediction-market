@@ -9,10 +9,7 @@ export default function TestModeBanner({
 }: TestModeBannerProps) {
   return (
     <div
-      className={`
-        sticky inset-x-0 top-0 z-60 border-b border-orange-200/70 bg-white text-orange-900
-        shadow-[0_10px_30px_rgba(249,115,22,0.08)]
-      `}
+      className="sticky inset-x-0 top-0 z-60 border-b border-orange-200/70 bg-white text-orange-900"
       role="region"
       aria-label="Test mode banner"
     >
