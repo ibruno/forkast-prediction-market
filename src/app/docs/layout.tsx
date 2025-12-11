@@ -48,7 +48,7 @@ export default async function Layout({ children }: LayoutProps<'/docs'>) {
               ? [
                   {
                     title: 'Fork Owner Guide',
-                    description: 'How to create your platform',
+                    description: 'Create your own platform',
                     url: '/docs/owners',
                     icon: <GitForkIcon className="size-4" />,
                   },
