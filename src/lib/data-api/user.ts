@@ -266,8 +266,9 @@ export async function fetchUserPositionsForMarket({
 }): Promise<UserPosition[]> {
   assertDataApiUrl()
   const endpoint = status === 'closed' ? '/closed-positions' : '/positions'
+  const normalizedUserAddress = userAddress.toLowerCase()
   const params = new URLSearchParams({
-    user: userAddress,
+    user: normalizedUserAddress,
     limit: '50',
     offset: pageParam.toString(),
     sortDirection: 'DESC',
@@ -281,8 +282,6 @@ export async function fetchUserPositionsForMarket({
   }
   if (conditionId) {
     params.set('market', conditionId)
-    params.set('marketId', conditionId)
-    params.set('conditionId', conditionId)
   }
 
   const response = await fetch(`${DATA_API_URL}${endpoint}?${params.toString()}`, { signal })
