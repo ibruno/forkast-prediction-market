@@ -17,6 +17,8 @@ interface OrderSuccessFeedbackArgs {
   amountInput: string
   outcomeText: string
   eventTitle: string
+  marketImage?: string
+  marketTitle?: string
   sellAmountValue: number
   avgSellPrice: string
   buyPrice?: number
@@ -86,6 +88,8 @@ export function handleOrderSuccessFeedback({
   amountInput,
   outcomeText,
   eventTitle,
+  marketImage,
+  marketTitle,
   sellAmountValue,
   avgSellPrice,
   buyPrice,
@@ -98,7 +102,7 @@ export function handleOrderSuccessFeedback({
       `Sell ${amountInput} shares on ${outcomeText}`,
       {
         description: (
-          <EventTradeToast title={eventTitle}>
+          <EventTradeToast title={eventTitle} marketImage={marketImage} marketTitle={marketTitle}>
             Received
             {' '}
             {formatCurrency(sellAmountValue)}
@@ -120,10 +124,8 @@ export function handleOrderSuccessFeedback({
       `Buy ${buyAmountLabel} on ${outcomeText}`,
       {
         description: (
-          <EventTradeToast title={eventTitle}>
-            {buyAmountLabel}
-            {' '}
-            @
+          <EventTradeToast title={eventTitle} marketImage={marketImage} marketTitle={marketTitle}>
+            at
             {' '}
             {priceLabel}
           </EventTradeToast>
@@ -134,7 +136,7 @@ export function handleOrderSuccessFeedback({
 
   triggerConfetti(outcomeIndex === OUTCOME_INDEX.YES ? 'yes' : 'no', lastMouseEvent)
 
-  queryClient.invalidateQueries({
+  void queryClient.invalidateQueries({
     queryKey: ['user-conditional-shares'],
   })
 }
