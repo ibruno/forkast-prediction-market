@@ -24,7 +24,7 @@ export default function TestModeBanner({
               text-orange-800 uppercase shadow-sm ring-1 ring-orange-200
             `}
             >
-              <span className="size-2 rounded-full bg-orange-500 shadow-[0_0_0_2px_rgba(255,255,255,0.85)]" />
+              <span className="size-2 shrink-0 rounded-full bg-orange-500 shadow-[0_0_0_2px_rgba(255,255,255,0.85)]" />
               {label}
             </span>
             <p className="text-sm leading-relaxed text-orange-900">
