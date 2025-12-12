@@ -1,16 +1,19 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import type { Event, UserOpenOrder } from '@/types'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, ChevronDown, ChevronUp, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
+import { cancelMultipleOrdersAction } from '@/app/(platform)/event/[slug]/_actions/cancel-open-orders'
 import { cancelOrderAction } from '@/app/(platform)/event/[slug]/_actions/cancel-order'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
-import { formatSharePriceLabel, formatTimeAgo, fromMicro } from '@/lib/formatters'
+import { OUTCOME_INDEX } from '@/lib/constants'
+import { formatCurrency, formatSharePriceLabel, sharesFormatter } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/stores/useUser'
 
@@ -30,6 +33,152 @@ interface OpenOrderRowProps {
   order: UserOpenOrder
   onCancel: (order: UserOpenOrder) => void
   isCancelling: boolean
+}
+
+type SortDirection = 'asc' | 'desc'
+type SortColumn = 'side' | 'outcome' | 'price' | 'filled' | 'total' | 'expiration'
+
+const OPEN_ORDERS_GRID_TEMPLATE = 'minmax(60px,0.6fr) minmax(140px,1.1fr) minmax(70px,0.7fr) minmax(110px,0.8fr) minmax(120px,1fr) minmax(180px,1.2fr) minmax(72px,0.4fr)'
+
+const CANCEL_ICON_BUTTON_CLASS = 'inline-flex h-8 w-8 items-center justify-center rounded-sm bg-muted text-white transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+
+function getOrderSortValue(order: UserOpenOrder, column: SortColumn) {
+  switch (column) {
+    case 'side':
+      return order.side === 'buy' ? 0 : 1
+    case 'outcome':
+      return (order.outcome.text || '').toLowerCase()
+    case 'price':
+      return Number(order.price) || 0
+    case 'filled': {
+      const totalShares = microToUnit(order.side === 'buy' ? order.taker_amount : order.maker_amount)
+      if (totalShares <= 0) {
+        return 0
+      }
+      const filledShares = microToUnit(order.size_matched)
+      return Math.min(filledShares / totalShares, 1)
+    }
+    case 'total': {
+      const totalValueMicro = order.side === 'buy' ? order.maker_amount : order.taker_amount
+      return microToUnit(totalValueMicro)
+    }
+    case 'expiration': {
+      if (order.type === 'GTC') {
+        return Number.POSITIVE_INFINITY
+      }
+      const rawExpiration = typeof order.expiration === 'number'
+        ? order.expiration
+        : Number(order.expiration)
+      return Number.isFinite(rawExpiration) ? rawExpiration : Number.POSITIVE_INFINITY
+    }
+    default:
+      return 0
+  }
+}
+
+function sortOrders(orders: UserOpenOrder[], sortState: { column: SortColumn, direction: SortDirection } | null) {
+  if (!sortState) {
+    return orders
+  }
+
+  const sorted = [...orders]
+  sorted.sort((a, b) => {
+    const aValue = getOrderSortValue(a, sortState.column)
+    const bValue = getOrderSortValue(b, sortState.column)
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      const comparison = aValue.localeCompare(bValue)
+      return sortState.direction === 'asc' ? comparison : -comparison
+    }
+
+    const numericComparison = Number(aValue) - Number(bValue)
+    if (numericComparison === 0) {
+      return 0
+    }
+
+    return sortState.direction === 'asc' ? numericComparison : -numericComparison
+  })
+
+  return sorted
+}
+
+function SortHeaderButton({
+  column,
+  label,
+  alignment = 'left',
+  sortState,
+  onSort,
+}: {
+  column: SortColumn
+  label: string
+  alignment?: 'left' | 'center' | 'right'
+  sortState: { column: SortColumn, direction: SortDirection } | null
+  onSort: (column: SortColumn) => void
+}) {
+  const isActive = sortState?.column === column
+  const direction = isActive ? sortState?.direction : null
+  const Icon = direction === 'asc' ? ChevronUp : ChevronDown
+
+  return (
+    <button
+      type="button"
+      className={cn(
+        `
+          group flex items-center gap-1 text-2xs font-semibold tracking-wide text-muted-foreground uppercase
+          transition-colors
+        `,
+        alignment === 'center' && 'justify-center',
+        alignment === 'right' && 'justify-end',
+      )}
+      onClick={() => onSort(column)}
+    >
+      <span>{label}</span>
+      <Icon
+        className={cn(
+          'size-3.5 transition-colors',
+          isActive ? 'text-foreground' : 'text-muted-foreground/60',
+        )}
+      />
+    </button>
+  )
+}
+
+function microToUnit(value?: number) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0
+  }
+  return value / 1_000_000
+}
+
+function formatExpirationLabel(order: UserOpenOrder) {
+  if (order.type === 'GTC') {
+    return 'Until Cancelled'
+  }
+
+  const rawExpiration = typeof order.expiration === 'number'
+    ? order.expiration
+    : Number(order.expiration)
+
+  if (!Number.isFinite(rawExpiration) || rawExpiration <= 0) {
+    return '—'
+  }
+
+  const date = new Date(rawExpiration * 1000)
+  return date.toLocaleString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function formatFilledLabel(filledShares: number, totalShares: number) {
+  if (!Number.isFinite(totalShares) || totalShares <= 0) {
+    return '—'
+  }
+
+  const normalizedFilled = Math.min(Math.max(filledShares, 0), totalShares)
+  return `${sharesFormatter.format(normalizedFilled)}/${sharesFormatter.format(totalShares)}`
 }
 
 async function fetchOpenOrders({
@@ -60,76 +209,62 @@ async function fetchOpenOrders({
 }
 
 function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
-  const amountMicro = order.side === 'buy' ? order.taker_amount : order.maker_amount
-  const sideLabel = order.side === 'buy' ? 'Buy' : 'Sell'
-  const placedLabel = order.created_at ? formatTimeAgo(order.created_at) : '—'
+  const isBuy = order.side === 'buy'
+  const sideLabel = isBuy ? 'Buy' : 'Sell'
   const priceLabel = formatSharePriceLabel(order.price, { fallback: '—' })
-  const sizeLabel = fromMicro(String(amountMicro ?? 0), 2)
+  const totalShares = microToUnit(isBuy ? order.taker_amount : order.maker_amount)
+  const filledShares = microToUnit(order.size_matched)
+  const filledLabel = formatFilledLabel(filledShares, totalShares)
+  const totalValueMicro = isBuy ? order.maker_amount : order.taker_amount
+  const totalValueLabel = formatCurrency(microToUnit(totalValueMicro), {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+  const expirationLabel = formatExpirationLabel(order)
+  const isNoOutcome = order.outcome.index === OUTCOME_INDEX.NO
+  const outcomeLabel = order.outcome.text || (isNoOutcome ? 'No' : 'Yes')
 
   return (
-    <div className={`
-      flex flex-col gap-3 border-b border-border px-3 py-3
-      last:border-b-0
-      sm:flex-row sm:items-center sm:gap-4 sm:px-4
-    `}
+    <div
+      className="grid items-center gap-3 px-3 py-1 text-2xs leading-tight text-foreground sm:px-4 sm:text-xs"
+      style={{ gridTemplateColumns: OPEN_ORDERS_GRID_TEMPLATE }}
     >
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 text-xs font-medium sm:text-sm">
-          <span className={cn(
-            'inline-flex min-w-[56px] justify-center rounded-md px-2 py-0.5 text-2xs font-semibold uppercase',
-            order.side === 'buy'
-              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200'
-              : 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200',
-          )}
-          >
-            {sideLabel}
-          </span>
-          <span className="line-clamp-2 text-foreground">{order.outcome.text || 'Outcome'}</span>
-          <span className={`
-            inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-2xs font-semibold text-muted-foreground
-            uppercase
-          `}
-          >
-            {order.type}
-          </span>
-        </div>
-
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-          <span>
-            Placed
-            {' '}
-            {placedLabel}
-          </span>
-          <span aria-hidden="true">•</span>
-          <span className="capitalize">
-            Status:
-            {' '}
-            {order.status || 'live'}
-          </span>
-        </div>
+      <div className="text-xs font-semibold text-muted-foreground sm:text-sm">
+        {sideLabel}
       </div>
 
-      <div className="flex flex-1 items-center justify-end gap-4 sm:flex-none">
-        <div className="text-right">
-          <div className="text-2xs tracking-wide text-muted-foreground uppercase">Price</div>
-          <div className="text-sm font-semibold">{priceLabel}</div>
-        </div>
-        <div className="text-right">
-          <div className="text-2xs tracking-wide text-muted-foreground uppercase">Size</div>
-          <div className="text-sm font-semibold">
-            $
-            {sizeLabel}
-          </div>
-        </div>
-        <Button
+      <div className="flex items-center">
+        <span
+          className={cn(
+            `
+              inline-flex min-h-7 min-w-14 items-center justify-center rounded-sm px-4 text-xs font-semibold
+              tracking-wide
+            `,
+            isNoOutcome ? 'bg-no/15 text-no-foreground' : 'bg-yes/15 text-yes-foreground',
+          )}
+        >
+          {outcomeLabel}
+        </span>
+      </div>
+
+      <div className="text-center text-xs font-semibold sm:text-sm">{priceLabel}</div>
+
+      <div className="text-center text-xs font-semibold sm:text-sm">{filledLabel}</div>
+
+      <div className="text-center text-xs font-semibold sm:text-sm">{totalValueLabel}</div>
+
+      <div className="text-2xs font-medium text-muted-foreground sm:text-xs">{expirationLabel}</div>
+
+      <div className="flex justify-end">
+        <button
           type="button"
-          size="sm"
-          variant="outline"
+          aria-label={`Cancel ${sideLabel} order for ${outcomeLabel}`}
+          className={cn(CANCEL_ICON_BUTTON_CLASS, isCancelling && 'cursor-not-allowed opacity-60')}
           disabled={isCancelling}
           onClick={() => onCancel(order)}
         >
-          {isCancelling ? 'Cancelling...' : 'Cancel'}
-        </Button>
+          <XIcon className="size-4 text-white" />
+        </button>
       </div>
     </div>
   )
@@ -137,13 +272,15 @@ function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
 
 export default function EventMarketOpenOrders({ market, eventSlug }: EventMarketOpenOrdersProps) {
   const emptyHeightClass = 'min-h-16'
-  const parentRef = useRef<HTMLDivElement | null>(null)
+  const parentRef = useRef<HTMLElement | null>(null)
   const user = useUser()
   const queryClient = useQueryClient()
   const [scrollMargin, setScrollMargin] = useState(0)
   const [hasInitialized, setHasInitialized] = useState(false)
   const [infiniteScrollError, setInfiniteScrollError] = useState<string | null>(null)
   const [pendingCancelIds, setPendingCancelIds] = useState<Set<string>>(() => new Set())
+  const [isCancellingAll, setIsCancellingAll] = useState(false)
+  const [sortState, setSortState] = useState<{ column: SortColumn, direction: SortDirection } | null>(null)
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -187,6 +324,8 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
   })
 
   const orders = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
+  const sortedOrders = useMemo(() => sortOrders(orders, sortState), [orders, sortState])
+  const hasOrders = sortedOrders.length > 0
   const loading = status === 'pending'
   const hasInitialError = status === 'error'
 
@@ -232,13 +371,73 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
     }
   }, [eventSlug, market.condition_id, pendingCancelIds, queryClient, user?.id])
 
+  const handleSort = useCallback((column: SortColumn) => {
+    setSortState((current) => {
+      if (current?.column === column) {
+        return {
+          column,
+          direction: current.direction === 'asc' ? 'desc' : 'asc',
+        }
+      }
+      return { column, direction: 'desc' }
+    })
+  }, [])
+
+  const handleCancelAll = useCallback(async () => {
+    if (!sortedOrders.length || isCancellingAll) {
+      return
+    }
+
+    const orderIds = sortedOrders.map(order => order.id)
+    setIsCancellingAll(true)
+    setPendingCancelIds((current) => {
+      const next = new Set(current)
+      orderIds.forEach(id => next.add(id))
+      return next
+    })
+
+    try {
+      const result = await cancelMultipleOrdersAction(orderIds)
+      const failedCount = result.failed.length
+
+      if (failedCount === 0) {
+        toast.success('All open orders cancelled')
+      }
+      else {
+        toast.error(`Could not cancel ${failedCount} order${failedCount > 1 ? 's' : ''}.`)
+      }
+
+      await queryClient.invalidateQueries({
+        queryKey: ['user-open-orders', user?.id, eventSlug, market.condition_id],
+      })
+      void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
+      setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
+      }, 3000)
+    }
+    catch (error: any) {
+      const message = typeof error?.message === 'string'
+        ? error.message
+        : 'Failed to cancel open orders.'
+      toast.error(message)
+    }
+    finally {
+      setPendingCancelIds((current) => {
+        const next = new Set(current)
+        orderIds.forEach(id => next.delete(id))
+        return next
+      })
+      setIsCancellingAll(false)
+    }
+  }, [eventSlug, isCancellingAll, market.condition_id, queryClient, sortedOrders, user?.id])
+
   const virtualizer = useWindowVirtualizer({
-    count: orders.length,
+    count: sortedOrders.length,
     estimateSize: () => {
       if (typeof window !== 'undefined') {
-        return window.innerWidth < 768 ? 120 : 80
+        return window.innerWidth < 768 ? 80 : 60
       }
-      return 80
+      return 60
     },
     scrollMargin,
     overscan: 5,
@@ -248,14 +447,14 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         return
       }
 
-      if (!orders.length) {
+      if (!sortedOrders.length) {
         return
       }
 
       const items = instance.getVirtualItems()
       const lastItem = items[items.length - 1]
       const shouldLoadMore = lastItem
-        && lastItem.index >= orders.length - 2
+        && lastItem.index >= sortedOrders.length - 2
         && hasNextPage
         && !isFetchingNextPage
         && !infiniteScrollError
@@ -300,18 +499,23 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
     )
   }
 
-  const content = (
-    <div ref={parentRef} className="grid gap-4">
-      {loading && (
+  let content: ReactNode
+
+  if (loading) {
+    content = (
+      <div className="px-4 pb-4">
         <div className={`flex ${emptyHeightClass}
           items-center justify-center rounded-lg border border-dashed border-border px-4 text-sm text-muted-foreground
         `}
         >
           Loading open orders...
         </div>
-      )}
-
-      {!loading && orders.length === 0 && (
+      </div>
+    )
+  }
+  else if (!hasOrders) {
+    content = (
+      <div className="px-4 pb-4">
         <div className={`flex ${emptyHeightClass}
           items-center justify-center rounded-lg border border-dashed border-border px-4 text-center text-sm
           text-muted-foreground
@@ -319,22 +523,53 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         >
           You don&apos;t have any open orders for this market.
         </div>
-      )}
-
-      {!loading && orders.length > 0 && (
-        <div className="space-y-3">
+      </div>
+    )
+  }
+  else {
+    content = (
+      <div className="overflow-x-auto px-2 pb-4">
+        <div className="min-w-[780px]">
           <div
-            className="relative"
+            className={`
+              grid h-9 items-center gap-3 border-b border-border/60 bg-background px-3 text-2xs font-semibold
+              tracking-wide text-muted-foreground uppercase
+            `}
+            style={{ gridTemplateColumns: OPEN_ORDERS_GRID_TEMPLATE }}
+          >
+            <SortHeaderButton column="side" label="Side" sortState={sortState} onSort={handleSort} />
+            <SortHeaderButton column="outcome" label="Outcome" sortState={sortState} onSort={handleSort} />
+            <SortHeaderButton column="price" label="Price" alignment="center" sortState={sortState} onSort={handleSort} />
+            <SortHeaderButton column="filled" label="Filled" alignment="center" sortState={sortState} onSort={handleSort} />
+            <SortHeaderButton column="total" label="Total" alignment="center" sortState={sortState} onSort={handleSort} />
+            <SortHeaderButton column="expiration" label="Expiration" sortState={sortState} onSort={handleSort} />
+            <button
+              type="button"
+              className={`
+                flex justify-end text-2xs font-semibold tracking-wide text-destructive uppercase transition-opacity
+                disabled:opacity-40
+              `}
+              onClick={handleCancelAll}
+              disabled={isCancellingAll || !hasOrders}
+            >
+              {isCancellingAll ? 'Cancelling…' : 'Cancel All'}
+            </button>
+          </div>
+
+          <div
+            className="relative mt-2"
             style={{
               height: `${virtualizer.getTotalSize()}px`,
               width: '100%',
             }}
           >
             {virtualizer.getVirtualItems().map((virtualItem) => {
-              const order = orders[virtualItem.index]
+              const order = sortedOrders[virtualItem.index]
               if (!order) {
                 return null
               }
+
+              const translateY = virtualItem.start - (virtualizer.options.scrollMargin ?? 0)
 
               return (
                 <div
@@ -345,10 +580,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
                     top: 0,
                     left: 0,
                     width: '100%',
-                    transform: `translateY(${
-                      virtualItem.start
-                      - (virtualizer.options.scrollMargin ?? 0)
-                    }px)`,
+                    transform: `translateY(${translateY}px)`,
                   }}
                 >
                   <OpenOrderRow
@@ -360,59 +592,54 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
               )
             })}
           </div>
-
-          {isFetchingNextPage && (
-            <div className="flex items-center justify-center px-4 py-4 text-sm text-muted-foreground">
-              Loading more open orders...
-            </div>
-          )}
-
-          {!hasNextPage && orders.length > 0 && !isFetchingNextPage && (
-            <div className="border-t bg-muted/30 px-4 py-3 text-center text-xs text-muted-foreground">
-              All open orders for this market are loaded.
-            </div>
-          )}
-
-          {infiniteScrollError && (
-            <div className="border-t px-4 py-3">
-              <Alert variant="destructive">
-                <AlertCircleIcon />
-                <AlertTitle>Couldn&apos;t load more open orders</AlertTitle>
-                <AlertDescription>
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="sm"
-                    className="-ml-3"
-                    onClick={() => {
-                      setInfiniteScrollError(null)
-                      fetchNextPage().catch((error: any) => {
-                        if (error?.name === 'CanceledError' || error?.name === 'AbortError') {
-                          return
-                        }
-                        setInfiniteScrollError(error?.message || 'Failed to load more open orders')
-                      })
-                    }}
-                  >
-                    Try again
-                  </Button>
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
         </div>
-      )}
-    </div>
-  )
+      </div>
+    )
+  }
 
   return (
-    <section className="overflow-hidden rounded-xl border border-border/60 bg-background/80">
+    <section
+      ref={parentRef}
+      className="overflow-hidden rounded-xl border border-border/60 bg-background/80"
+    >
       <div className="px-4 py-4">
         <h3 className="text-lg font-semibold text-foreground">Open Orders</h3>
       </div>
-      <div className="px-4 pb-4">
-        {content}
-      </div>
+      {content}
+
+      {hasOrders && isFetchingNextPage && (
+        <div className="border-t border-border/60 px-4 py-3 text-center text-xs text-muted-foreground">
+          Loading more open orders...
+        </div>
+      )}
+
+      {infiniteScrollError && (
+        <div className="border-t border-border/60 px-4 py-3">
+          <Alert variant="destructive">
+            <AlertCircleIcon />
+            <AlertTitle>Couldn&apos;t load more open orders</AlertTitle>
+            <AlertDescription>
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                className="-ml-3"
+                onClick={() => {
+                  setInfiniteScrollError(null)
+                  fetchNextPage().catch((error: any) => {
+                    if (error?.name === 'CanceledError' || error?.name === 'AbortError') {
+                      return
+                    }
+                    setInfiniteScrollError(error?.message || 'Failed to load more open orders')
+                  })
+                }}
+              >
+                Try again
+              </Button>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
     </section>
   )
 }

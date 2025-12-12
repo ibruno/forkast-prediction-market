@@ -287,7 +287,9 @@ export interface UserOpenOrder {
   price: number
   maker_amount: number
   taker_amount: number
+  size_matched: number
   created_at: string
+  expiration?: number | null
   outcome: {
     index: number
     text: string

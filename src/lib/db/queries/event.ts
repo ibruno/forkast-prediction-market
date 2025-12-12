@@ -645,7 +645,9 @@ export const EventRepository = {
           status: orders.status,
           maker_amount: orders.maker_amount,
           taker_amount: orders.taker_amount,
+          size_matched: orders.size_matched,
           price: priceExpression,
+          expiration: orders.expiration,
           created_at: orders.created_at,
           condition_id: conditions.id,
           market_title: markets.title,
@@ -673,9 +675,11 @@ export const EventRepository = {
         price: safeNumber(row.price ?? 0.5),
         maker_amount: safeNumber(row.maker_amount),
         taker_amount: safeNumber(row.taker_amount),
+        size_matched: safeNumber(row.size_matched),
         created_at: row.created_at instanceof Date
           ? row.created_at.toISOString()
           : new Date().toISOString(),
+        expiration: safeNumber(row.expiration),
         outcome: {
           index: typeof row.outcome_index === 'number'
             ? row.outcome_index
