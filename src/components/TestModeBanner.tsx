@@ -36,9 +36,9 @@ export default function TestModeBanner({
       <div className="flex items-start gap-3 px-4 py-3">
         <div className="flex flex-col gap-2">
           <p className="text-sm leading-relaxed text-orange-900">
-            <span className="font-semibold text-orange-800">Heads up:</span>
+            <span className="font-semibold text-destructive">Heads up:</span>
             {' '}
-            {message}
+            <span className="text-muted-foreground">{message}</span>
           </p>
         </div>
         <button
@@ -53,7 +53,7 @@ export default function TestModeBanner({
             }
           }}
           className={`
-            ml-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg text-orange-700 transition
+            ml-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg text-destructive transition
             hover:bg-orange-100
             focus:outline-none
             focus-visible:ring-2 focus-visible:ring-orange-400/70 focus-visible:ring-offset-2

@@ -313,14 +313,11 @@ export default function EventCard({ event }: EventCardProps) {
       `}
     >
       <CardContent className="flex h-full flex-col p-3">
-        {/* Unified Header */}
         <div className="mb-3 flex items-start justify-between">
           <Link href={`/event/${event.slug}`} className="flex flex-1 items-start gap-2 pr-2">
-            {/* Creator Avatar */}
             <div
               className={`
-                flex size-10 flex-shrink-0 items-center justify-center overflow-hidden rounded bg-muted
-                text-muted-foreground
+                flex size-10 shrink-0 items-center justify-center overflow-hidden rounded bg-muted text-muted-foreground
               `}
             >
               <Image
@@ -332,7 +329,6 @@ export default function EventCard({ event }: EventCardProps) {
               />
             </div>
 
-            {/* Title */}
             <h3
               className={`
                 line-clamp-2 text-sm leading-tight font-bold transition-all duration-200
@@ -627,7 +623,6 @@ export default function EventCard({ event }: EventCardProps) {
               )}
         </div>
 
-        {/* Unified Footer - Always at bottom */}
         {!isInTradingMode && (
           <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
             <div className="flex items-center gap-2">
