@@ -67,7 +67,7 @@ export async function GET(
       : undefined
 
     const { data: marketMetadata, error: marketError } = await EventRepository.getEventMarketMetadata(slug)
-    if (marketError || !marketMetadata.length) {
+    if (marketError || !marketMetadata || marketMetadata.length === 0) {
       return NextResponse.json({ data: [] })
     }
 
