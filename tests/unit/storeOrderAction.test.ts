@@ -1,4 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
+import type { storeOrderAction } from '@/app/(platform)/event/[slug]/_actions/store-order'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+
+type StoreOrderInput = Parameters<typeof storeOrderAction>[0]
 
 const mocks = vi.hoisted(() => ({
   updateTag: vi.fn(),
@@ -57,7 +60,7 @@ describe('storeOrderAction', () => {
     return (`0x${'0'.repeat(40 - lastByte.length)}${lastByte}`) as const
   }
 
-  function basePayload(overrides: Record<string, any> = {}) {
+  function basePayload(overrides: Partial<StoreOrderInput> = {}): StoreOrderInput {
     return {
       salt: '1',
       maker: address('01'),

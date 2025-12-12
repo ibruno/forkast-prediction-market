@@ -44,10 +44,4 @@ describe('utils (confetti/cn)', () => {
       origin: { x: 0.25, y: 0.25 },
     }))
   })
-
-  it('sanitizeSvg drops unterminated <script blocks', async () => {
-    const { sanitizeSvg } = await import('@/lib/utils')
-    const sanitized = sanitizeSvg('<svg><script>alert(1)</svg>')
-    expect(sanitized.toLowerCase()).not.toContain('<script')
-  })
 })

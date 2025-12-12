@@ -169,8 +169,8 @@ describe('volume sync route', () => {
 
     const dateNowSpy = vi.spyOn(Date, 'now')
     dateNowSpy
-      .mockReturnValueOnce(0) // startedAt
-      .mockReturnValue(helpersModule.SYNC_TIME_LIMIT_MS + 1) // loop check
+      .mockReturnValueOnce(0)
+      .mockReturnValue(helpersModule.SYNC_TIME_LIMIT_MS + 1)
 
     const fetchMock = vi.fn()
     globalThis.fetch = fetchMock as any
