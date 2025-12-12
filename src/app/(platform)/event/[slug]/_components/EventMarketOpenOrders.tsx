@@ -1,6 +1,6 @@
 'use client'
 
-import type { ReactNode } from 'react'
+import type { InfiniteData } from '@tanstack/react-query'
 import type { Event, UserOpenOrder } from '@/types'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
@@ -271,7 +271,6 @@ function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
 }
 
 export default function EventMarketOpenOrders({ market, eventSlug }: EventMarketOpenOrdersProps) {
-  const emptyHeightClass = 'min-h-16'
   const parentRef = useRef<HTMLElement | null>(null)
   const user = useUser()
   const queryClient = useQueryClient()
@@ -295,15 +294,19 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
     }
   }, [market.condition_id, eventSlug])
 
+  const openOrdersQueryKey = useMemo(
+    () => ['user-open-orders', user?.id, eventSlug, market.condition_id] as const,
+    [eventSlug, market.condition_id, user?.id],
+  )
+
   const {
     status,
     data,
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-    refetch,
   } = useInfiniteQuery({
-    queryKey: ['user-open-orders', user?.id, eventSlug, market.condition_id],
+    queryKey: openOrdersQueryKey,
     queryFn: ({ pageParam = 0, signal }) =>
       fetchOpenOrders({
         pageParam,
@@ -326,8 +329,27 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
   const orders = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
   const sortedOrders = useMemo(() => sortOrders(orders, sortState), [orders, sortState])
   const hasOrders = sortedOrders.length > 0
-  const loading = status === 'pending'
-  const hasInitialError = status === 'error'
+
+  const removeOrdersFromCache = useCallback((orderIds: string[]) => {
+    if (!orderIds.length) {
+      return
+    }
+
+    queryClient.setQueryData<InfiniteData<UserOpenOrder[]>>(openOrdersQueryKey, (current) => {
+      if (!current) {
+        return current
+      }
+
+      const updatedPages = current.pages.map(page => page.filter(item => !orderIds.includes(item.id)))
+      return { ...current, pages: updatedPages }
+    })
+  }, [openOrdersQueryKey, queryClient])
+
+  const scheduleOpenOrdersRefresh = useCallback(() => {
+    setTimeout(() => {
+      void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+    }, 10_000)
+  }, [openOrdersQueryKey, queryClient])
 
   const handleCancelOrder = useCallback(async (order: UserOpenOrder) => {
     if (pendingCancelIds.has(order.id)) {
@@ -348,13 +370,13 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
 
       toast.success('Order cancelled')
 
-      await queryClient.invalidateQueries({
-        queryKey: ['user-open-orders', user?.id, eventSlug, market.condition_id],
-      })
+      removeOrdersFromCache([order.id])
+      await queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
       void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       }, 3000)
+      scheduleOpenOrdersRefresh()
     }
     catch (error: any) {
       const message = typeof error?.message === 'string'
@@ -369,7 +391,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         return next
       })
     }
-  }, [eventSlug, market.condition_id, pendingCancelIds, queryClient, user?.id])
+  }, [openOrdersQueryKey, pendingCancelIds, queryClient, removeOrdersFromCache, scheduleOpenOrdersRefresh])
 
   const handleSort = useCallback((column: SortColumn) => {
     setSortState((current) => {
@@ -399,6 +421,8 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
     try {
       const result = await cancelMultipleOrdersAction(orderIds)
       const failedCount = result.failed.length
+      const failedSet = new Set(result.failed.map(item => item.id))
+      const succeededIds = orderIds.filter(id => !failedSet.has(id))
 
       if (failedCount === 0) {
         toast.success('All open orders cancelled')
@@ -407,13 +431,15 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         toast.error(`Could not cancel ${failedCount} order${failedCount > 1 ? 's' : ''}.`)
       }
 
-      await queryClient.invalidateQueries({
-        queryKey: ['user-open-orders', user?.id, eventSlug, market.condition_id],
-      })
+      if (succeededIds.length) {
+        removeOrdersFromCache(succeededIds)
+      }
+      await queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
       void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       }, 3000)
+      scheduleOpenOrdersRefresh()
     }
     catch (error: any) {
       const message = typeof error?.message === 'string'
@@ -429,7 +455,19 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
       })
       setIsCancellingAll(false)
     }
-  }, [eventSlug, isCancellingAll, market.condition_id, queryClient, sortedOrders, user?.id])
+  }, [isCancellingAll, openOrdersQueryKey, queryClient, removeOrdersFromCache, scheduleOpenOrdersRefresh, sortedOrders])
+
+  useEffect(() => {
+    if (!hasOrders || typeof window === 'undefined') {
+      return
+    }
+
+    const intervalId = window.setInterval(() => {
+      void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+    }, 60_000)
+
+    return () => window.clearInterval(intervalId)
+  }, [hasOrders, openOrdersQueryKey, queryClient])
 
   const virtualizer = useWindowVirtualizer({
     count: sortedOrders.length,
@@ -471,131 +509,80 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
     },
   })
 
-  if (!user?.id) {
-    return (
-      <div className={`
-        rounded-lg border border-dashed border-border px-4 py-10 text-center text-sm text-muted-foreground
-      `}
-      >
-        Connect your wallet to view your open orders for this market.
-      </div>
-    )
+  const shouldRender = Boolean(user?.id && status === 'success' && hasOrders)
+
+  if (!shouldRender) {
+    return null
   }
 
-  if (hasInitialError) {
-    return (
-      <Alert variant="destructive">
-        <AlertCircleIcon />
-        <AlertTitle>Failed to load open orders</AlertTitle>
-        <AlertDescription className="flex flex-col gap-2">
-          <span>We couldn&apos;t fetch your open orders for this market.</span>
-          <div>
-            <Button type="button" variant="secondary" size="sm" onClick={() => refetch()}>
-              Try again
-            </Button>
-          </div>
-        </AlertDescription>
-      </Alert>
-    )
-  }
-
-  let content: ReactNode
-
-  if (loading) {
-    content = (
-      <div className="px-4 pb-4">
-        <div className={`flex ${emptyHeightClass}
-          items-center justify-center rounded-lg border border-dashed border-border px-4 text-sm text-muted-foreground
-        `}
+  const content = (
+    <div className="overflow-x-auto px-2 pb-4">
+      <div className="min-w-[780px]">
+        <div
+          className={`
+            grid h-9 items-center gap-3 border-b border-border/60 bg-background px-3 text-2xs font-semibold
+            tracking-wide text-muted-foreground uppercase
+          `}
+          style={{ gridTemplateColumns: OPEN_ORDERS_GRID_TEMPLATE }}
         >
-          Loading open orders...
-        </div>
-      </div>
-    )
-  }
-  else if (!hasOrders) {
-    content = (
-      <div className="px-4 pb-4">
-        <div className={`flex ${emptyHeightClass}
-          items-center justify-center rounded-lg border border-dashed border-border px-4 text-center text-sm
-          text-muted-foreground
-        `}
-        >
-          You don&apos;t have any open orders for this market.
-        </div>
-      </div>
-    )
-  }
-  else {
-    content = (
-      <div className="overflow-x-auto px-2 pb-4">
-        <div className="min-w-[780px]">
-          <div
+          <SortHeaderButton column="side" label="Side" sortState={sortState} onSort={handleSort} />
+          <SortHeaderButton column="outcome" label="Outcome" sortState={sortState} onSort={handleSort} />
+          <SortHeaderButton column="price" label="Price" alignment="center" sortState={sortState} onSort={handleSort} />
+          <SortHeaderButton column="filled" label="Filled" alignment="center" sortState={sortState} onSort={handleSort} />
+          <SortHeaderButton column="total" label="Total" alignment="center" sortState={sortState} onSort={handleSort} />
+          <SortHeaderButton column="expiration" label="Expiration" sortState={sortState} onSort={handleSort} />
+          <button
+            type="button"
             className={`
-              grid h-9 items-center gap-3 border-b border-border/60 bg-background px-3 text-2xs font-semibold
-              tracking-wide text-muted-foreground uppercase
+              flex justify-end text-2xs font-semibold tracking-wide text-destructive uppercase transition-opacity
+              disabled:opacity-40
             `}
-            style={{ gridTemplateColumns: OPEN_ORDERS_GRID_TEMPLATE }}
+            onClick={handleCancelAll}
+            disabled={isCancellingAll || !hasOrders}
           >
-            <SortHeaderButton column="side" label="Side" sortState={sortState} onSort={handleSort} />
-            <SortHeaderButton column="outcome" label="Outcome" sortState={sortState} onSort={handleSort} />
-            <SortHeaderButton column="price" label="Price" alignment="center" sortState={sortState} onSort={handleSort} />
-            <SortHeaderButton column="filled" label="Filled" alignment="center" sortState={sortState} onSort={handleSort} />
-            <SortHeaderButton column="total" label="Total" alignment="center" sortState={sortState} onSort={handleSort} />
-            <SortHeaderButton column="expiration" label="Expiration" sortState={sortState} onSort={handleSort} />
-            <button
-              type="button"
-              className={`
-                flex justify-end text-2xs font-semibold tracking-wide text-destructive uppercase transition-opacity
-                disabled:opacity-40
-              `}
-              onClick={handleCancelAll}
-              disabled={isCancellingAll || !hasOrders}
-            >
-              {isCancellingAll ? 'Cancelling…' : 'Cancel All'}
-            </button>
-          </div>
+            {isCancellingAll ? 'Cancelling…' : 'Cancel All'}
+          </button>
+        </div>
 
-          <div
-            className="relative mt-2"
-            style={{
-              height: `${virtualizer.getTotalSize()}px`,
-              width: '100%',
-            }}
-          >
-            {virtualizer.getVirtualItems().map((virtualItem) => {
-              const order = sortedOrders[virtualItem.index]
-              if (!order) {
-                return null
-              }
+        <div
+          className="relative mt-2"
+          style={{
+            height: `${virtualizer.getTotalSize()}px`,
+            width: '100%',
+          }}
+        >
+          {virtualizer.getVirtualItems().map((virtualItem) => {
+            const order = sortedOrders[virtualItem.index]
+            if (!order) {
+              return null
+            }
 
-              const translateY = virtualItem.start - (virtualizer.options.scrollMargin ?? 0)
+            const translateY = virtualItem.start - (virtualizer.options.scrollMargin ?? 0)
 
-              return (
-                <div
-                  key={virtualItem.key}
-                  data-index={virtualItem.index}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    transform: `translateY(${translateY}px)`,
-                  }}
-                >
-                  <OpenOrderRow
-                    order={order}
-                    onCancel={handleCancelOrder}
-                    isCancelling={pendingCancelIds.has(order.id)}
-                  />
-                </div>
-              )
-            })}
-          </div>
+            return (
+              <div
+                key={virtualItem.key}
+                data-index={virtualItem.index}
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '100%',
+                  transform: `translateY(${translateY}px)`,
+                }}
+              >
+                <OpenOrderRow
+                  order={order}
+                  onCancel={handleCancelOrder}
+                  isCancelling={pendingCancelIds.has(order.id)}
+                />
+              </div>
+            )
+          })}
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 
   return (
     <section

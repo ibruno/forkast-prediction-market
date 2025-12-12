@@ -464,6 +464,72 @@ export const EventRepository = {
     })
   },
 
+  async getEventMarketMetadata(slug: string): Promise<QueryResult<{
+    condition_id: string
+    title: string
+    slug: string
+    is_active: boolean
+    is_resolved: boolean
+    outcomes: Array<{
+      token_id: string
+      outcome_text: string
+      outcome_index: number
+    }>
+  }[]>> {
+    return runQuery(async () => {
+      const eventResult = await db.query.events.findFirst({
+        where: eq(events.slug, slug),
+        columns: { id: true },
+        with: {
+          markets: {
+            columns: {
+              condition_id: true,
+              title: true,
+              slug: true,
+              is_active: true,
+              is_resolved: true,
+            },
+            with: {
+              condition: {
+                columns: { id: true },
+                with: {
+                  outcomes: {
+                    columns: {
+                      token_id: true,
+                      outcome_text: true,
+                      outcome_index: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+
+      if (!eventResult) {
+        return { data: [], error: 'Event not found' }
+      }
+
+      const markets = (eventResult.markets ?? []).map(market => ({
+        condition_id: market.condition_id,
+        title: market.title,
+        slug: market.slug,
+        is_active: Boolean(market.is_active),
+        is_resolved: Boolean(market.is_resolved),
+        outcomes: (market.condition?.outcomes ?? []).map(outcome => ({
+          token_id: outcome.token_id,
+          outcome_text: outcome.outcome_text || '',
+          outcome_index: typeof outcome.outcome_index === 'number'
+            ? outcome.outcome_index
+            : Number(outcome.outcome_index || 0),
+        })),
+      }))
+
+      return { data: markets, error: null }
+    })
+  },
+
   async getEventBySlug(slug: string, userId: string = ''): Promise<QueryResult<Event>> {
     'use cache'
 

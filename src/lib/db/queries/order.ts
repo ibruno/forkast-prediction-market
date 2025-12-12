@@ -90,4 +90,26 @@ export const OrderRepository = {
       return { data: result[0], error: null }
     })
   },
+
+  async findUserOrdersByClobIds(userId: string, clobOrderIds: string[]) {
+    if (!clobOrderIds.length) {
+      return { data: [], error: null }
+    }
+
+    return await runQuery(async () => {
+      const rows = await db
+        .select({
+          id: orders.id,
+          clob_order_id: orders.clob_order_id,
+          condition_id: orders.condition_id,
+        })
+        .from(orders)
+        .where(and(
+          eq(orders.user_id, userId),
+          inArray(orders.clob_order_id, clobOrderIds),
+        ))
+
+      return { data: rows, error: null }
+    })
+  },
 }

@@ -78,6 +78,10 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const makerAddress = proxyWalletAddress ?? userAddress ?? null
   const signatureType = proxyWalletAddress ? 2 : 0
   const { sharesByCondition } = useUserShareBalances({ event, ownerAddress: makerAddress })
+  const openOrdersQueryKey = useMemo(
+    () => ['user-open-orders', user?.id, event.slug, state.market?.condition_id] as const,
+    [event.slug, state.market?.condition_id, user?.id],
+  )
   const isNegRiskEnabled = Boolean(event.enable_neg_risk)
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
   const endOfDayTimestamp = useMemo(() => {
@@ -168,31 +172,36 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         ? 'Yes'
         : undefined)
 
-  const avgSellPriceValue = useMemo(() => {
-    if (!state.market || !state.outcome) {
-      return 0
+  const sellOrderSnapshot = useMemo(() => {
+    if (state.side !== ORDER_SIDE.SELL) {
+      return { shares: 0, priceCents: 0, totalValue: 0 }
     }
 
-    return state.outcome.outcome_index === OUTCOME_INDEX.YES
-      ? Math.round(state.market.probability * 0.95)
-      : Math.round((100 - state.market.probability) * 0.95)
-  }, [state.market, state.outcome])
+    const shares = state.type === ORDER_TYPE.LIMIT
+      ? Number.parseFloat(state.limitShares || '0') || 0
+      : Number.parseFloat(state.amount || '0') || 0
 
-  const sellAmountValue = useMemo(() => {
-    if (!state.market || !state.outcome) {
-      return 0
+    const limitPrice = state.type === ORDER_TYPE.LIMIT
+      ? Number.parseFloat(state.limitPrice || '0') || 0
+      : null
+
+    const marketPriceCents = typeof state.outcome?.buy_price === 'number'
+      ? Number((state.outcome.buy_price * 100).toFixed(1))
+      : 0
+
+    const priceCents = limitPrice && limitPrice > 0 ? limitPrice : marketPriceCents
+    const totalValue = shares > 0 && priceCents > 0 ? (shares * priceCents) / 100 : 0
+
+    return {
+      shares,
+      priceCents,
+      totalValue,
     }
+  }, [state.amount, state.limitPrice, state.limitShares, state.outcome?.buy_price, state.side, state.type])
 
-    const shares = Number.parseFloat(state.amount || '0')
-    if (!Number.isFinite(shares) || shares <= 0) {
-      return 0
-    }
+  const sellAmountValue = state.side === ORDER_SIDE.SELL ? sellOrderSnapshot.totalValue : 0
 
-    const averagePrice = avgSellPriceValue / 100
-    return Number.isFinite(averagePrice) ? shares * averagePrice : 0
-  }, [avgSellPriceValue, state.amount, state.market, state.outcome])
-
-  const avgSellPriceLabel = formatCentsLabel(avgSellPriceValue, { fallback: '—' })
+  const avgSellPriceLabel = formatCentsLabel(sellOrderSnapshot.priceCents, { fallback: '—' })
   const avgBuyPriceLabel = formatCentsLabel(state.outcome?.buy_price, { fallback: '—' })
   const sellAmountLabel = formatCurrency(sellAmountValue)
   useEffect(() => {
@@ -310,9 +319,15 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         return
       }
 
+      const sellSharesLabel = state.side === ORDER_SIDE.SELL
+        ? (state.type === ORDER_TYPE.LIMIT ? state.limitShares : state.amount)
+        : undefined
+
       handleOrderSuccessFeedback({
         side: state.side,
         amountInput: state.amount,
+        sellSharesLabel,
+        isLimitOrder: state.type === ORDER_TYPE.LIMIT,
         outcomeText: state.outcome.outcome_text,
         eventTitle: event.title,
         marketImage: state.market?.icon_url,
@@ -324,6 +339,13 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         outcomeIndex: state.outcome.outcome_index,
         lastMouseEvent: state.lastMouseEvent,
       })
+
+      if (state.market?.condition_id && user?.id) {
+        void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+        setTimeout(() => {
+          void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+        }, 10_000)
+      }
 
       void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
 
