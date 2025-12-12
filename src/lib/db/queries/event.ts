@@ -508,7 +508,7 @@ export const EventRepository = {
       })
 
       if (!eventResult) {
-        return { data: [], error: 'Event not found' }
+        throw new Error('Event not found')
       }
 
       const markets = (eventResult.markets ?? []).map(market => ({
