@@ -136,7 +136,7 @@ export default function EventContent({ event, user, marketContextEnabled }: Even
         {event.total_markets_count === 1 && (
           <>
             { currentUser && <EventMarketPositions market={event.markets[0]} /> }
-            <EventSingleMarketOrderBook market={event.markets[0]} />
+            <EventSingleMarketOrderBook market={event.markets[0]} eventSlug={event.slug} />
             { currentUser && <EventMarketOpenOrders market={event.markets[0]} eventSlug={event.slug} />}
             { currentUser && <EventMarketHistory market={event.markets[0]} /> }
           </>

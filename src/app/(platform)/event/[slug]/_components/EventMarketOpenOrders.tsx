@@ -2,15 +2,17 @@
 
 import type { InfiniteData } from '@tanstack/react-query'
 import type { Event, UserOpenOrder } from '@/types'
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { AlertCircleIcon, ChevronDown, ChevronUp, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cancelMultipleOrdersAction } from '@/app/(platform)/event/[slug]/_actions/cancel-open-orders'
 import { cancelOrderAction } from '@/app/(platform)/event/[slug]/_actions/cancel-order'
+import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { formatCurrency, formatSharePriceLabel, sharesFormatter } from '@/lib/formatters'
@@ -20,13 +22,6 @@ import { useUser } from '@/stores/useUser'
 interface EventMarketOpenOrdersProps {
   market: Event['markets'][number]
   eventSlug: string
-}
-
-interface FetchOpenOrdersParams {
-  pageParam: number
-  eventSlug: string
-  conditionId: string
-  signal?: AbortSignal
 }
 
 interface OpenOrderRowProps {
@@ -40,7 +35,11 @@ type SortColumn = 'side' | 'outcome' | 'price' | 'filled' | 'total' | 'expiratio
 
 const OPEN_ORDERS_GRID_TEMPLATE = 'minmax(60px,0.6fr) minmax(140px,1.1fr) minmax(70px,0.7fr) minmax(110px,0.8fr) minmax(120px,1fr) minmax(180px,1.2fr) minmax(72px,0.4fr)'
 
-const CANCEL_ICON_BUTTON_CLASS = 'inline-flex h-8 w-8 items-center justify-center rounded-sm bg-muted text-white transition-colors hover:bg-muted/80 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
+const CANCEL_ICON_BUTTON_CLASS = `
+  inline-flex h-8 w-8 items-center justify-center rounded-md border border-border/70 bg-transparent text-foreground
+  transition-colors hover:bg-muted/30 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring
+  dark:border-white/30 dark:text-white dark:hover:bg-white/10
+`
 
 function getOrderSortValue(order: UserOpenOrder, column: SortColumn) {
   switch (column) {
@@ -181,33 +180,6 @@ function formatFilledLabel(filledShares: number, totalShares: number) {
   return `${sharesFormatter.format(normalizedFilled)}/${sharesFormatter.format(totalShares)}`
 }
 
-async function fetchOpenOrders({
-  pageParam,
-  eventSlug,
-  conditionId,
-  signal,
-}: FetchOpenOrdersParams): Promise<UserOpenOrder[]> {
-  const params = new URLSearchParams({
-    limit: '50',
-    offset: pageParam.toString(),
-  })
-
-  if (conditionId) {
-    params.set('conditionId', conditionId)
-  }
-
-  const response = await fetch(`/api/events/${encodeURIComponent(eventSlug)}/open-orders?${params}`, {
-    signal,
-  })
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch open orders')
-  }
-
-  const payload = await response.json()
-  return payload.data ?? []
-}
-
 function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
   const isBuy = order.side === 'buy'
   const sideLabel = isBuy ? 'Buy' : 'Sell'
@@ -256,15 +228,22 @@ function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
       <div className="text-2xs font-medium text-muted-foreground sm:text-xs">{expirationLabel}</div>
 
       <div className="flex justify-end">
-        <button
-          type="button"
-          aria-label={`Cancel ${sideLabel} order for ${outcomeLabel}`}
-          className={cn(CANCEL_ICON_BUTTON_CLASS, isCancelling && 'cursor-not-allowed opacity-60')}
-          disabled={isCancelling}
-          onClick={() => onCancel(order)}
-        >
-          <XIcon className="size-4 text-white" />
-        </button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <button
+              type="button"
+              aria-label={`Cancel ${sideLabel} order for ${outcomeLabel}`}
+              className={cn(CANCEL_ICON_BUTTON_CLASS, isCancelling && 'cursor-not-allowed opacity-60')}
+              disabled={isCancelling}
+              onClick={() => onCancel(order)}
+            >
+              <XIcon className="size-4" />
+            </button>
+          </TooltipTrigger>
+          <TooltipContent side="top" sideOffset={8} className="border border-border bg-background text-foreground" hideArrow>
+            Cancel order
+          </TooltipContent>
+        </Tooltip>
       </div>
     </div>
   )
@@ -295,7 +274,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
   }, [market.condition_id, eventSlug])
 
   const openOrdersQueryKey = useMemo(
-    () => ['user-open-orders', user?.id, eventSlug, market.condition_id] as const,
+    () => buildUserOpenOrdersQueryKey(user?.id, eventSlug, market.condition_id),
     [eventSlug, market.condition_id, user?.id],
   )
 
@@ -305,25 +284,10 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
     isFetchingNextPage,
     fetchNextPage,
     hasNextPage,
-  } = useInfiniteQuery({
-    queryKey: openOrdersQueryKey,
-    queryFn: ({ pageParam = 0, signal }) =>
-      fetchOpenOrders({
-        pageParam,
-        eventSlug,
-        conditionId: market.condition_id,
-        signal,
-      }),
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length === 50) {
-        return allPages.reduce((total, page) => total + page.length, 0)
-      }
-      return undefined
-    },
-    enabled: Boolean(user?.id && eventSlug && market.condition_id),
-    initialPageParam: 0,
-    staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10,
+  } = useUserOpenOrdersQuery({
+    userId: user?.id,
+    eventSlug,
+    conditionId: market.condition_id,
   })
 
   const orders = useMemo(() => data?.pages.flat() ?? [], [data?.pages])
@@ -372,6 +336,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
 
       removeOrdersFromCache([order.id])
       await queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+      void queryClient.invalidateQueries({ queryKey: ['orderbook-summary'] })
       void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
@@ -435,6 +400,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         removeOrdersFromCache(succeededIds)
       }
       await queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+      void queryClient.invalidateQueries({ queryKey: ['orderbook-summary'] })
       void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })

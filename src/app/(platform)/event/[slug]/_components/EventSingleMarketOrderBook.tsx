@@ -13,11 +13,12 @@ import { useOrder } from '@/stores/useOrder'
 
 interface EventSingleMarketOrderBookProps {
   market: Market
+  eventSlug: string
 }
 
 type OutcomeToggleIndex = typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO
 
-export default function EventSingleMarketOrderBook({ market }: EventSingleMarketOrderBookProps) {
+export default function EventSingleMarketOrderBook({ market, eventSlug }: EventSingleMarketOrderBookProps) {
   const [isExpanded, setIsExpanded] = useState(false)
   const orderMarket = useOrder(state => state.market)
   const orderOutcome = useOrder(state => state.outcome)
@@ -144,6 +145,7 @@ export default function EventSingleMarketOrderBook({ market }: EventSingleMarket
             summaries={orderBookSummaries}
             isLoadingSummaries={isLoadingSummaries}
             lastPriceOverrideCents={lastPriceOverrideCents}
+            eventSlug={eventSlug}
           />
         </div>
       )}

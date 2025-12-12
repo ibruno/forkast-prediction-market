@@ -274,6 +274,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                         summaries={orderBookSummaries}
                         isLoadingSummaries={shouldShowOrderBookLoader}
                         lastPriceOverrideCents={lastPriceOverrideCents}
+                        eventSlug={event.slug}
                       />
                     )}
 

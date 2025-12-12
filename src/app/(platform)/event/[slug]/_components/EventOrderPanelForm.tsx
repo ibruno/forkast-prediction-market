@@ -342,8 +342,10 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
 
       if (state.market?.condition_id && user?.id) {
         void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+        void queryClient.invalidateQueries({ queryKey: ['orderbook-summary'] })
         setTimeout(() => {
           void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+          void queryClient.invalidateQueries({ queryKey: ['orderbook-summary'] })
         }, 10_000)
       }
 

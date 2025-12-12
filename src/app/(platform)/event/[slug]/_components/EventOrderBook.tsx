@@ -1,12 +1,20 @@
 'use client'
 
-import type { Market, Outcome } from '@/types'
-import { useQuery } from '@tanstack/react-query'
-import { Loader2Icon } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import type { InfiniteData } from '@tanstack/react-query'
+import type { Market, Outcome, UserOpenOrder } from '@/types'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { CircleXIcon, Clock4Icon, Loader2Icon } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { toast } from 'sonner'
+import { cancelOrderAction } from '@/app/(platform)/event/[slug]/_actions/cancel-order'
+import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
 import { ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { formatCentsLabel, sharesFormatter, toCents, usdFormatter } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 import { useOrder } from '@/stores/useOrder'
+import { useUser } from '@/stores/useUser'
 
 interface OrderBookLevel {
   side: 'ask' | 'bid'
@@ -23,6 +31,7 @@ interface EventOrderBookProps {
   summaries?: OrderBookSummariesResponse
   isLoadingSummaries: boolean
   lastPriceOverrideCents?: number | null
+  eventSlug: string
 }
 
 interface OrderbookLevelSummary {
@@ -59,6 +68,14 @@ interface OrderBookSnapshot {
   spread: number | null
   maxTotal: number
   outcomeLabel: string
+}
+
+interface OrderBookUserOrder {
+  id: string
+  priceCents: number
+  totalShares: number
+  filledShares: number
+  side: 'ask' | 'bid'
 }
 
 const DEFAULT_MAX_LEVELS = 12
@@ -168,7 +185,12 @@ export default function EventOrderBook({
   summaries,
   isLoadingSummaries,
   lastPriceOverrideCents,
+  eventSlug,
 }: EventOrderBookProps) {
+  const user = useUser()
+  const queryClient = useQueryClient()
+  const refreshTimeoutRef = useRef<number | null>(null)
+  const [pendingCancelIds, setPendingCancelIds] = useState<Set<string>>(() => new Set())
   const tokenId = outcome?.token_id || market.outcomes[0]?.token_id
 
   const summary = tokenId ? summaries?.[tokenId] ?? null : null
@@ -179,6 +201,122 @@ export default function EventOrderBook({
   const inputRef = useOrder(state => state.inputRef)
   const currentOrderType = useOrder(state => state.type)
   const currentOrderSide = useOrder(state => state.side)
+  const openOrdersQueryKey = useMemo(
+    () => buildUserOpenOrdersQueryKey(user?.id, eventSlug, market.condition_id),
+    [eventSlug, market.condition_id, user?.id],
+  )
+  const { data: userOpenOrdersData } = useUserOpenOrdersQuery({
+    userId: user?.id,
+    eventSlug,
+    conditionId: market.condition_id,
+    enabled: Boolean(user?.id),
+  })
+  const userOpenOrders = useMemo(() => userOpenOrdersData?.pages.flat() ?? [], [userOpenOrdersData?.pages])
+  const userOrdersByLevel = useMemo(() => {
+    const map = new Map<string, OrderBookUserOrder>()
+    userOpenOrders.forEach((order) => {
+      const bookSide: 'ask' | 'bid' = order.side === 'sell' ? 'ask' : 'bid'
+      const roundedPrice = getRoundedCents(order.price ?? 0, bookSide)
+      const totalShares = order.side === 'buy'
+        ? microToUnit(order.taker_amount)
+        : microToUnit(order.maker_amount)
+
+      if (!Number.isFinite(totalShares) || totalShares <= 0) {
+        return
+      }
+
+      const filledShares = Math.min(microToUnit(order.size_matched), totalShares)
+      const key = getOrderBookUserKey(bookSide, roundedPrice)
+      if (map.has(key)) {
+        return
+      }
+
+      map.set(key, {
+        id: order.id,
+        priceCents: roundedPrice,
+        totalShares,
+        filledShares,
+        side: bookSide,
+      })
+    })
+    return map
+  }, [userOpenOrders])
+
+  const removeOrderFromCache = useCallback((orderIds: string[]) => {
+    if (!orderIds.length) {
+      return
+    }
+
+    queryClient.setQueryData<InfiniteData<UserOpenOrder[]>>(openOrdersQueryKey, (current) => {
+      if (!current) {
+        return current
+      }
+
+      const nextPages = current.pages.map(page => page.filter(order => !orderIds.includes(order.id)))
+      return { ...current, pages: nextPages }
+    })
+  }, [openOrdersQueryKey, queryClient])
+
+  const scheduleOpenOrdersRefresh = useCallback(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+    if (refreshTimeoutRef.current) {
+      window.clearTimeout(refreshTimeoutRef.current)
+    }
+    refreshTimeoutRef.current = window.setTimeout(() => {
+      void queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+    }, 10_000)
+  }, [openOrdersQueryKey, queryClient])
+
+  const handleCancelUserOrder = useCallback(async (orderId: string) => {
+    if (!orderId || pendingCancelIds.has(orderId)) {
+      return
+    }
+
+    setPendingCancelIds((current) => {
+      const next = new Set(current)
+      next.add(orderId)
+      return next
+    })
+
+    try {
+      const response = await cancelOrderAction(orderId)
+      if (response?.error) {
+        throw new Error(response.error)
+      }
+
+      toast.success('Order cancelled')
+      removeOrderFromCache([orderId])
+
+      await queryClient.invalidateQueries({ queryKey: openOrdersQueryKey })
+      void queryClient.invalidateQueries({ queryKey: ['orderbook-summary'] })
+      void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
+      setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
+      }, 3000)
+      scheduleOpenOrdersRefresh()
+    }
+    catch (error: any) {
+      const message = typeof error?.message === 'string'
+        ? error.message
+        : 'Failed to cancel order.'
+      toast.error(message)
+    }
+    finally {
+      setPendingCancelIds((current) => {
+        const next = new Set(current)
+        next.delete(orderId)
+        return next
+      })
+    }
+  }, [openOrdersQueryKey, pendingCancelIds, queryClient, removeOrderFromCache, scheduleOpenOrdersRefresh])
+
+  useEffect(() => () => {
+    if (refreshTimeoutRef.current) {
+      window.clearTimeout(refreshTimeoutRef.current)
+    }
+  }, [])
 
   const {
     asks,
@@ -262,15 +400,21 @@ export default function EventOrderBook({
 
         {renderedAsks.length > 0
           ? (
-              renderedAsks.map((level, index) => (
-                <OrderBookRow
-                  key={`ask-${level.priceCents}-${index}`}
-                  level={level}
-                  maxTotal={maxTotal}
-                  showBadge={index === renderedAsks.length - 1 ? 'ask' : undefined}
-                  onSelect={handleLevelSelect}
-                />
-              ))
+              renderedAsks.map((level, index) => {
+                const userOrder = userOrdersByLevel.get(getOrderBookUserKey(level.side, level.priceCents))
+                return (
+                  <OrderBookRow
+                    key={`ask-${level.priceCents}-${index}`}
+                    level={level}
+                    maxTotal={maxTotal}
+                    showBadge={index === renderedAsks.length - 1 ? 'ask' : undefined}
+                    onSelect={handleLevelSelect}
+                    userOrder={userOrder}
+                    isCancelling={userOrder ? pendingCancelIds.has(userOrder.id) : false}
+                    onCancelUserOrder={handleCancelUserOrder}
+                  />
+                )
+              })
             )
           : <OrderBookEmptyRow label="No asks" />}
 
@@ -297,15 +441,21 @@ export default function EventOrderBook({
 
         {bids.length > 0
           ? (
-              bids.map((level, index) => (
-                <OrderBookRow
-                  key={`bid-${level.priceCents}-${index}`}
-                  level={level}
-                  maxTotal={maxTotal}
-                  showBadge={index === 0 ? 'bid' : undefined}
-                  onSelect={handleLevelSelect}
-                />
-              ))
+              bids.map((level, index) => {
+                const userOrder = userOrdersByLevel.get(getOrderBookUserKey(level.side, level.priceCents))
+                return (
+                  <OrderBookRow
+                    key={`bid-${level.priceCents}-${index}`}
+                    level={level}
+                    maxTotal={maxTotal}
+                    showBadge={index === 0 ? 'bid' : undefined}
+                    onSelect={handleLevelSelect}
+                    userOrder={userOrder}
+                    isCancelling={userOrder ? pendingCancelIds.has(userOrder.id) : false}
+                    onCancelUserOrder={handleCancelUserOrder}
+                  />
+                )
+              })
             )
           : <OrderBookEmptyRow label="No bids" />}
       </div>
@@ -318,9 +468,12 @@ interface OrderBookRowProps {
   maxTotal: number
   showBadge?: 'ask' | 'bid'
   onSelect?: (level: OrderBookLevel) => void
+  userOrder?: OrderBookUserOrder | null
+  isCancelling?: boolean
+  onCancelUserOrder?: (orderId: string) => void
 }
 
-function OrderBookRow({ level, maxTotal, showBadge, onSelect }: OrderBookRowProps) {
+function OrderBookRow({ level, maxTotal, showBadge, onSelect, userOrder, isCancelling, onCancelUserOrder }: OrderBookRowProps) {
   const isAsk = level.side === 'ask'
   const backgroundClass = isAsk ? 'bg-no/25 dark:bg-no/20' : 'bg-yes/25 dark:bg-yes/20'
   const hoverClass = isAsk ? 'hover:bg-no/10' : 'hover:bg-yes/10'
@@ -345,9 +498,77 @@ function OrderBookRow({ level, maxTotal, showBadge, onSelect }: OrderBookRowProp
         </div>
       </div>
       <div className="flex h-full items-center justify-center px-4">
-        <span className={`text-sm font-medium ${priceClass}`}>
-          {formatOrderBookPrice(level.priceCents)}
-        </span>
+        <div className="flex items-center gap-1">
+          {userOrder && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    if (!isCancelling) {
+                      onCancelUserOrder?.(userOrder.id)
+                    }
+                  }}
+                  disabled={isCancelling}
+                  className={cn(
+                    'group inline-flex items-center justify-center text-base transition-colors',
+                    userOrder.side === 'ask' ? 'text-no' : 'text-yes',
+                    isCancelling && 'cursor-not-allowed opacity-60',
+                  )}
+                >
+                  {isCancelling
+                    ? <Loader2Icon className="size-3 animate-spin" />
+                    : (
+                        <>
+                          <Clock4Icon className="size-3 group-hover:hidden" />
+                          <CircleXIcon className="hidden size-3 group-hover:block" />
+                        </>
+                      )}
+                </button>
+              </TooltipTrigger>
+              <TooltipContent
+                side="left"
+                sideOffset={8}
+                hideArrow
+                className="w-48 border border-border bg-background p-3 text-xs text-foreground shadow-xl"
+              >
+                <div className="flex items-center justify-between text-sm font-semibold">
+                  <span>Filled</span>
+                  <span>
+                    {formatTooltipShares(userOrder.filledShares)}
+                    {' '}
+                    /
+                    {' '}
+                    {formatTooltipShares(userOrder.totalShares)}
+                  </span>
+                </div>
+                <div
+                  className={cn(
+                    'mt-2 h-1.5 w-full overflow-hidden rounded-full',
+                    userOrder.side === 'ask' ? 'bg-no/10' : 'bg-yes/10',
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'h-full rounded-full transition-all',
+                      userOrder.side === 'ask' ? 'bg-no' : 'bg-yes',
+                    )}
+                    style={{ width: `${Math.min(100, Math.max(0, (userOrder.filledShares / userOrder.totalShares) * 100))}%` }}
+                  />
+                </div>
+                <div className="mt-2 text-xs font-medium text-muted-foreground">
+                  {formatTooltipShares(Math.max(userOrder.totalShares - userOrder.filledShares, 0))}
+                  {' '}
+                  remaining
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          )}
+          <span className={`text-sm font-medium ${priceClass}`}>
+            {formatOrderBookPrice(level.priceCents)}
+          </span>
+        </div>
       </div>
       <div className="flex h-full items-center justify-center px-4">
         <span className="text-sm font-medium text-foreground">
@@ -486,6 +707,17 @@ function normalizeLevels(levels: OrderbookLevelSummary[] | undefined, side: 'ask
   })
 }
 
+function getOrderBookUserKey(side: 'ask' | 'bid', priceCents: number) {
+  return `${side}:${priceCents.toFixed(1)}`
+}
+
+function microToUnit(value?: number) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return 0
+  }
+  return value / 1_000_000
+}
+
 function OrderBookEmptyRow({ label }: { label: string }) {
   return (
     <div className="grid h-9 grid-cols-[40%_20%_20%_20%] items-center px-4">
@@ -518,6 +750,13 @@ function calculateLimitAmount(priceCents: string, shares: string) {
   }
 
   return total.toFixed(2)
+}
+
+function formatTooltipShares(value: number) {
+  if (!Number.isFinite(value)) {
+    return '0'
+  }
+  return sharesFormatter.format(Number(value.toFixed(2)))
 }
 
 function formatOrderBookPrice(value: number | null | undefined) {
