@@ -16,7 +16,7 @@ interface OrderSuccessFeedbackArgs {
   side: OrderSide
   amountInput: string
   sellSharesLabel?: string
-  isLimitOrder: boolean
+  isLimitOrder?: boolean
   outcomeText: string
   eventTitle: string
   marketImage?: string
