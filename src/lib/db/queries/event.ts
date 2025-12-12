@@ -477,6 +477,21 @@ export const EventRepository = {
     }>
   }[]>> {
     return runQuery(async () => {
+      interface MarketMetadataRow {
+        condition_id: string
+        title: string
+        slug: string
+        is_active: boolean | null
+        is_resolved: boolean | null
+        condition: {
+          outcomes: Array<{
+            token_id: string
+            outcome_text: string | null
+            outcome_index: number | null
+          }>
+        } | null
+      }
+
       const eventResult = await db.query.events.findFirst({
         where: eq(events.slug, slug),
         columns: { id: true },
@@ -505,7 +520,7 @@ export const EventRepository = {
             },
           },
         },
-      })
+      }) as { markets?: MarketMetadataRow[] } | undefined
 
       if (!eventResult) {
         throw new Error('Event not found')
