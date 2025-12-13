@@ -26,18 +26,19 @@ export default async function Loading() {
 
       <Teleport to="#event-order-panel">
         <section className="rounded-lg border bg-card/60 p-4 shadow-xl/5 lg:w-[340px]">
-          <div className="space-y-4">
-            <Skeleton className="h-4 w-1/3" />
-            <div className="flex gap-2">
-              <Skeleton className="h-10 w-full rounded-full" />
-              <Skeleton className="h-10 w-full rounded-full" />
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <Skeleton className="h-10 w-full rounded-lg" />
-              <Skeleton className="h-10 w-full rounded-lg" />
-            </div>
-            <Skeleton className="h-12 w-full rounded-lg" />
+          <Skeleton className="h-4 w-1/3" />
+          <div className="mt-6 flex gap-2">
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
           </div>
+          <Skeleton className="mt-6 h-10 w-full" />
+          <div className="mt-4 flex justify-end gap-2">
+            <Skeleton className="h-8 w-10" />
+            <Skeleton className="h-8 w-10" />
+            <Skeleton className="h-8 w-10" />
+            <Skeleton className="h-8 w-10" />
+          </div>
+          <Skeleton className="mt-4 h-12 w-full" />
         </section>
       </Teleport>
     </div>
