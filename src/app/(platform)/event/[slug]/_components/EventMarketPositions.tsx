@@ -148,7 +148,7 @@ function MarketPositionRow({
           size="icon"
           aria-label={`Share ${outcomeButtonLabel} position`}
           className={cn(
-            'h-8 w-8 rounded-md border border-border/70 bg-transparent text-foreground',
+            'size-8 rounded-md border border-border/70 bg-transparent text-foreground',
             'hover:bg-muted/30 dark:border-white/30 dark:text-white dark:hover:bg-white/10',
           )}
         >

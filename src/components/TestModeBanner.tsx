@@ -68,7 +68,7 @@ export default function TestModeBanner({
               //
             }
           }}
-          className="ml-2 inline-flex h-7 w-7 shrink-0 items-center justify-center text-lg text-foreground"
+          className="ml-2 inline-flex size-7 shrink-0 items-center justify-center text-lg text-foreground"
           aria-label="Dismiss test mode banner"
         >
           &times;

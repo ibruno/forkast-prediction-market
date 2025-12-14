@@ -17,7 +17,7 @@ export default function EventTradeToast({ title, marketImage, marketTitle, child
           alt={marketTitle || title}
           width={40}
           height={40}
-          className="h-10 w-10 rounded object-cover"
+          className="size-10 rounded object-cover"
         />
       )}
       <div>

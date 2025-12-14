@@ -119,7 +119,7 @@ function ProfileOverviewCard({
               variant="ghost"
               size="icon"
               className={`
-                h-9 w-9 rounded-full border border-border/60 bg-background/60 text-muted-foreground shadow-sm
+                size-9 rounded-full border border-border/60 bg-background/60 text-muted-foreground shadow-sm
                 transition-colors
                 hover:bg-background
               `}
