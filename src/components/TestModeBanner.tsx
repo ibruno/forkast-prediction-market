@@ -1,14 +1,31 @@
 'use client'
 
+import type { ReactNode } from 'react'
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 interface TestModeBannerProps {
-  message?: string
+  message?: ReactNode
   persistKey?: string
 }
 
 export default function TestModeBanner({
-  message = 'You are in test mode. USDC is on Amoy Network (no real value).',
+  message = (
+    <>
+      You’re in test mode (no real value).
+      {' '}
+      <Link
+        href="https://faucet.circle.com/"
+        target="_blank"
+        rel="noreferrer"
+        className="font-semibold text-primary underline-offset-4 hover:underline"
+      >
+        Get free USDC
+      </Link>
+      {' '}
+      on Polygon Amoy.
+    </>
+  ),
   persistKey = 'test_mode_banner_closed_session',
 }: TestModeBannerProps) {
   const [visible, setVisible] = useState<boolean | null>(null)
@@ -29,16 +46,15 @@ export default function TestModeBanner({
 
   return (
     <div className={`
-      fixed right-4 bottom-4 z-60 max-w-xs rounded-xl border border-orange-200 bg-linear-to-br from-orange-50
-      via-orange-50 to-amber-50 text-orange-900 shadow-[0_20px_35px_rgba(249,115,22,0.14)]
+      fixed right-4 bottom-4 z-60 max-w-xs rounded-xl border border-border/60 bg-background text-foreground shadow-xl
     `}
     >
       <div className="flex items-start gap-3 px-4 py-3">
         <div className="flex flex-col gap-2">
-          <p className="text-sm leading-relaxed text-orange-900">
+          <p className="text-sm leading-relaxed">
             <span className="font-semibold text-destructive">Heads up:</span>
             {' '}
-            <span className="text-muted-foreground">{message}</span>
+            {message}
           </p>
         </div>
         <button
@@ -52,13 +68,7 @@ export default function TestModeBanner({
               //
             }
           }}
-          className={`
-            ml-2 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-lg text-destructive transition
-            hover:bg-orange-100
-            focus:outline-none
-            focus-visible:ring-2 focus-visible:ring-orange-400/70 focus-visible:ring-offset-2
-            focus-visible:ring-offset-orange-50
-          `}
+          className="ml-2 inline-flex h-7 w-7 shrink-0 items-center justify-center text-lg text-foreground"
           aria-label="Dismiss test mode banner"
         >
           &times;
