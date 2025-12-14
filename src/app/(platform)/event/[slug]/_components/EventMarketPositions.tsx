@@ -297,15 +297,7 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
   }
 
   if (loading || positions.length === 0) {
-    return (
-      <div className={`
-        flex min-h-16 items-center justify-center rounded border border-dashed border-border px-4 text-center text-sm
-        text-muted-foreground
-      `}
-      >
-        No positions for this outcome.
-      </div>
-    )
+    return null
   }
 
   return (

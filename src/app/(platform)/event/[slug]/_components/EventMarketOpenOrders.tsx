@@ -480,15 +480,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
   const shouldRender = Boolean(user?.id && status === 'success' && hasOrders)
 
   if (!shouldRender) {
-    return (
-      <div className={`
-        flex min-h-16 items-center justify-center rounded border border-dashed border-border px-4 text-center text-sm
-        text-muted-foreground
-      `}
-      >
-        No open orders.
-      </div>
-    )
+    return null
   }
 
   return (
