@@ -183,15 +183,18 @@ export default function EventSplitSharesDialog({
         description: marketTitle ?? 'Request submitted.',
         icon: <SuccessIcon />,
       })
+      void queryClient.invalidateQueries({ queryKey: ['user-conditional-shares'] })
       void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       void queryClient.invalidateQueries({ queryKey: ['user-market-positions'] })
       setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ['user-conditional-shares'] })
         void queryClient.invalidateQueries({ queryKey: [SAFE_BALANCE_QUERY_KEY] })
       }, 3000)
       setTimeout(() => {
         void queryClient.invalidateQueries({ queryKey: ['user-market-positions'] })
       }, 3000)
       setTimeout(() => {
+        void queryClient.invalidateQueries({ queryKey: ['user-conditional-shares'] })
         void queryClient.invalidateQueries({ queryKey: ['user-market-positions'] })
       }, 12_000)
       setAmount('')

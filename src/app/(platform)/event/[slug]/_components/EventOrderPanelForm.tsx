@@ -15,6 +15,7 @@ import EventOrderPanelSubmitButton from '@/app/(platform)/event/[slug]/_componen
 import EventOrderPanelTermsDisclaimer from '@/app/(platform)/event/[slug]/_components/EventOrderPanelTermsDisclaimer'
 import EventOrderPanelUserShares from '@/app/(platform)/event/[slug]/_components/EventOrderPanelUserShares'
 import { handleOrderCancelledFeedback, handleOrderErrorFeedback, handleOrderSuccessFeedback, handleValidationError, notifyWalletApprovalPrompt } from '@/app/(platform)/event/[slug]/_components/feedback'
+import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
 import { useUserShareBalances } from '@/app/(platform)/event/[slug]/_hooks/useUserShareBalances'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit } from '@/hooks/useAppKit'
@@ -34,6 +35,18 @@ import { useUser } from '@/stores/useUser'
 interface EventOrderPanelFormProps {
   isMobile: boolean
   event: Event
+}
+
+const MICRO_UNIT = 1_000_000
+
+function normalizeShares(value?: number) {
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    return 0
+  }
+
+  // Values coming from the API are usually micro (1e6). If the magnitude is small,
+  // assume it's already in whole units to avoid under-counting locked shares.
+  return value > 100_000 ? value / MICRO_UNIT : value
 }
 
 export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanelFormProps) {
@@ -79,9 +92,15 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const signatureType = proxyWalletAddress ? 2 : 0
   const { sharesByCondition } = useUserShareBalances({ event, ownerAddress: makerAddress })
   const openOrdersQueryKey = useMemo(
-    () => ['user-open-orders', user?.id, event.slug, state.market?.condition_id] as const,
+    () => buildUserOpenOrdersQueryKey(user?.id, event.slug, state.market?.condition_id),
     [event.slug, state.market?.condition_id, user?.id],
   )
+  const openOrdersQuery = useUserOpenOrdersQuery({
+    userId: user?.id,
+    eventSlug: event.slug,
+    conditionId: state.market?.condition_id,
+    enabled: Boolean(user?.id && state.market?.condition_id),
+  })
   const isNegRiskEnabled = Boolean(event.enable_neg_risk)
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
   const endOfDayTimestamp = useMemo(() => {
@@ -137,6 +156,46 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     }, {})
   }, [positionsQuery.data])
 
+  const openOrders = useMemo(
+    () => openOrdersQuery.data?.pages?.flatMap(page => page) ?? [],
+    [openOrdersQuery.data],
+  )
+
+  const openSellSharesByCondition = useMemo(() => {
+    if (!openOrders.length) {
+      return {}
+    }
+
+    return openOrders.reduce<Record<string, Record<typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO, number>>>((acc, order) => {
+      if (order.side !== 'sell' || !order.market?.condition_id) {
+        return acc
+      }
+
+      const conditionId = order.market.condition_id
+      const outcomeIndex = order.outcome?.index === OUTCOME_INDEX.NO ? OUTCOME_INDEX.NO : OUTCOME_INDEX.YES
+      const totalShares = Math.max(
+        normalizeShares(order.maker_amount),
+        normalizeShares(order.taker_amount),
+      )
+      const filledShares = Math.max(normalizeShares(order.size_matched), 0)
+      const remainingShares = Math.max(totalShares - Math.min(filledShares, totalShares), 0)
+
+      if (remainingShares <= 0) {
+        return acc
+      }
+
+      if (!acc[conditionId]) {
+        acc[conditionId] = {
+          [OUTCOME_INDEX.YES]: 0,
+          [OUTCOME_INDEX.NO]: 0,
+        }
+      }
+
+      acc[conditionId][outcomeIndex] += remainingShares
+      return acc
+    }, {})
+  }, [openOrders])
+
   useEffect(() => {
     if (!makerAddress) {
       setUserShares({}, { replace: true })
@@ -157,11 +216,25 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const noTokenShares = conditionTokenShares?.[OUTCOME_INDEX.NO] ?? 0
   const yesPositionShares = conditionPositionShares?.[OUTCOME_INDEX.YES] ?? 0
   const noPositionShares = conditionPositionShares?.[OUTCOME_INDEX.NO] ?? 0
-  const availableMergeShares = Math.max(0, Math.min(yesTokenShares, noTokenShares))
+  const lockedYesShares = state.market ? openSellSharesByCondition[state.market.condition_id]?.[OUTCOME_INDEX.YES] ?? 0 : 0
+  const lockedNoShares = state.market ? openSellSharesByCondition[state.market.condition_id]?.[OUTCOME_INDEX.NO] ?? 0 : 0
+  const availableYesTokenShares = Math.max(0, yesTokenShares - lockedYesShares)
+  const availableNoTokenShares = Math.max(0, noTokenShares - lockedNoShares)
+  const availableYesPositionShares = Math.max(0, yesPositionShares - lockedYesShares)
+  const availableNoPositionShares = Math.max(0, noPositionShares - lockedNoShares)
+  const availableMergeShares = Math.max(0, Math.min(availableYesTokenShares, availableNoTokenShares))
   const availableSplitBalance = Math.max(0, balance.raw)
   const outcomeIndex = state.outcome?.outcome_index as typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO | undefined
-  const selectedTokenShares = outcomeIndex === undefined ? 0 : conditionTokenShares?.[outcomeIndex] ?? 0
-  const selectedPositionShares = outcomeIndex === undefined ? 0 : conditionPositionShares?.[outcomeIndex] ?? 0
+  const selectedTokenShares = outcomeIndex === undefined
+    ? 0
+    : outcomeIndex === OUTCOME_INDEX.YES
+      ? availableYesTokenShares
+      : availableNoTokenShares
+  const selectedPositionShares = outcomeIndex === undefined
+    ? 0
+    : outcomeIndex === OUTCOME_INDEX.YES
+      ? availableYesPositionShares
+      : availableNoPositionShares
   const selectedShares = state.side === ORDER_SIDE.SELL
     ? (isLimitOrder ? selectedTokenShares : selectedPositionShares)
     : selectedTokenShares
@@ -432,8 +505,8 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
             <div className="mb-4">
               {state.side === ORDER_SIDE.SELL && (
                 <EventOrderPanelUserShares
-                  yesShares={yesTokenShares}
-                  noShares={noTokenShares}
+                  yesShares={availableYesTokenShares}
+                  noShares={availableNoTokenShares}
                   activeOutcome={outcomeIndex}
                 />
               )}
@@ -461,8 +534,8 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
               {state.side === ORDER_SIDE.SELL
                 ? (
                     <EventOrderPanelUserShares
-                      yesShares={yesPositionShares}
-                      noShares={noPositionShares}
+                      yesShares={availableYesPositionShares}
+                      noShares={availableNoPositionShares}
                       activeOutcome={outcomeIndex}
                     />
                   )

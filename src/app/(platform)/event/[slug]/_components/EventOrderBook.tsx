@@ -499,72 +499,74 @@ function OrderBookRow({ level, maxTotal, showBadge, onSelect, userOrder, isCance
       </div>
       <div className="flex h-full items-center justify-center px-4">
         <div className="flex items-center gap-1">
-          {userOrder && (
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={(event) => {
-                    event.stopPropagation()
-                    if (!isCancelling) {
-                      onCancelUserOrder?.(userOrder.id)
-                    }
-                  }}
-                  disabled={isCancelling}
-                  className={cn(
-                    'group inline-flex items-center justify-center text-base transition-colors',
-                    userOrder.side === 'ask' ? 'text-no' : 'text-yes',
-                    isCancelling && 'cursor-not-allowed opacity-60',
-                  )}
+          <div className="flex h-5 w-5 items-center justify-center">
+            {userOrder && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      if (!isCancelling) {
+                        onCancelUserOrder?.(userOrder.id)
+                      }
+                    }}
+                    disabled={isCancelling}
+                    className={cn(
+                      'group inline-flex h-5 w-5 items-center justify-center text-base transition-colors',
+                      userOrder.side === 'ask' ? 'text-no' : 'text-yes',
+                      isCancelling && 'cursor-not-allowed opacity-60',
+                    )}
+                  >
+                    {isCancelling
+                      ? <Loader2Icon className="size-3 animate-spin" />
+                      : (
+                          <>
+                            <Clock4Icon className="size-3 group-hover:hidden" />
+                            <CircleXIcon className="hidden size-3 group-hover:block" />
+                          </>
+                        )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="left"
+                  sideOffset={8}
+                  hideArrow
+                  className="w-48 border border-border bg-background p-3 text-xs text-foreground shadow-xl"
                 >
-                  {isCancelling
-                    ? <Loader2Icon className="size-3 animate-spin" />
-                    : (
-                        <>
-                          <Clock4Icon className="size-3 group-hover:hidden" />
-                          <CircleXIcon className="hidden size-3 group-hover:block" />
-                        </>
-                      )}
-                </button>
-              </TooltipTrigger>
-              <TooltipContent
-                side="left"
-                sideOffset={8}
-                hideArrow
-                className="w-48 border border-border bg-background p-3 text-xs text-foreground shadow-xl"
-              >
-                <div className="flex items-center justify-between text-sm font-semibold">
-                  <span>Filled</span>
-                  <span>
-                    {formatTooltipShares(userOrder.filledShares)}
-                    {' '}
-                    /
-                    {' '}
-                    {formatTooltipShares(userOrder.totalShares)}
-                  </span>
-                </div>
-                <div
-                  className={cn(
-                    'mt-2 h-1.5 w-full overflow-hidden rounded-full',
-                    userOrder.side === 'ask' ? 'bg-no/10' : 'bg-yes/10',
-                  )}
-                >
+                  <div className="flex items-center justify-between text-sm font-semibold">
+                    <span>Filled</span>
+                    <span>
+                      {formatTooltipShares(userOrder.filledShares)}
+                      {' '}
+                      /
+                      {' '}
+                      {formatTooltipShares(userOrder.totalShares)}
+                    </span>
+                  </div>
                   <div
                     className={cn(
-                      'h-full rounded-full transition-all',
-                      userOrder.side === 'ask' ? 'bg-no' : 'bg-yes',
+                      'mt-2 h-1.5 w-full overflow-hidden rounded-full',
+                      userOrder.side === 'ask' ? 'bg-no/10' : 'bg-yes/10',
                     )}
-                    style={{ width: `${Math.min(100, Math.max(0, (userOrder.filledShares / userOrder.totalShares) * 100))}%` }}
-                  />
-                </div>
-                <div className="mt-2 text-xs font-medium text-muted-foreground">
-                  {formatTooltipShares(Math.max(userOrder.totalShares - userOrder.filledShares, 0))}
-                  {' '}
-                  remaining
-                </div>
-              </TooltipContent>
-            </Tooltip>
-          )}
+                  >
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-all',
+                        userOrder.side === 'ask' ? 'bg-no' : 'bg-yes',
+                      )}
+                      style={{ width: `${Math.min(100, Math.max(0, (userOrder.filledShares / userOrder.totalShares) * 100))}%` }}
+                    />
+                  </div>
+                  <div className="mt-2 text-xs font-medium text-muted-foreground">
+                    {formatTooltipShares(Math.max(userOrder.totalShares - userOrder.filledShares, 0))}
+                    {' '}
+                    remaining
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </div>
           <span className={`text-sm font-medium ${priceClass}`}>
             {formatOrderBookPrice(level.priceCents)}
           </span>
