@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import PublicActivityList from '@/app/(platform)/[username]/_components/PublicActivityList'
 import PublicPositionsList from '@/app/(platform)/[username]/_components/PublicPositionsList'
-import { cn, sanitizeSvg } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 type TabType = 'positions' | 'activity'
 
@@ -76,20 +76,6 @@ export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProp
               width: `${indicatorStyle.width}px`,
             }}
           />
-        </div>
-
-        <div className="pointer-events-none absolute top-0 right-0">
-          <div className="flex items-center gap-2 text-muted-foreground opacity-40 select-none">
-            <div
-              className="size-6"
-              dangerouslySetInnerHTML={{
-                __html: sanitizeSvg(process.env.NEXT_PUBLIC_SITE_LOGO_SVG!),
-              }}
-            />
-            <span className="text-2xl font-bold">
-              {process.env.NEXT_PUBLIC_SITE_NAME}
-            </span>
-          </div>
         </div>
       </div>
 

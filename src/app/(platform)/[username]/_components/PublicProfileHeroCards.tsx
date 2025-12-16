@@ -268,7 +268,7 @@ function ProfitLossCard({
           <div className="flex items-center gap-2 text-muted-foreground/70">
             {platformLogoSvg && (
               <div
-                className="size-10 opacity-50"
+                className="size-6 opacity-50"
                 dangerouslySetInnerHTML={{ __html: sanitizeSvg(platformLogoSvg) }}
               />
             )}
