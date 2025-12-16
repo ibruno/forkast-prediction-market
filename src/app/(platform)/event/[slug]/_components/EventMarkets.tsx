@@ -1,5 +1,9 @@
+import type { OrderBookSummariesResponse } from '@/app/(platform)/event/[slug]/_components/EventOrderBook'
 import type { MarketDetailTab } from '@/app/(platform)/event/[slug]/_hooks/useMarketDetailController'
+import type { SharesByCondition } from '@/app/(platform)/event/[slug]/_hooks/useUserShareBalances'
+import type { DataApiActivity } from '@/lib/data-api/user'
 import type { Event } from '@/types'
+import { useQuery } from '@tanstack/react-query'
 import { RefreshCwIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import EventMarketCard from '@/app/(platform)/event/[slug]/_components/EventMarketCard'
@@ -11,21 +15,15 @@ import MarketOutcomeGraph from '@/app/(platform)/event/[slug]/_components/Market
 import { useChanceRefresh } from '@/app/(platform)/event/[slug]/_hooks/useChanceRefresh'
 import { useEventMarketRows } from '@/app/(platform)/event/[slug]/_hooks/useEventMarketRows'
 import { useMarketDetailController } from '@/app/(platform)/event/[slug]/_hooks/useMarketDetailController'
+import { useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
 import { useUserShareBalances } from '@/app/(platform)/event/[slug]/_hooks/useUserShareBalances'
 import { Button } from '@/components/ui/button'
 import { ORDER_SIDE, OUTCOME_INDEX } from '@/lib/constants'
+import { fetchUserActivityData } from '@/lib/data-api/user'
 import { cn } from '@/lib/utils'
 import { useIsSingleMarket, useOrder } from '@/stores/useOrder'
 import { useUser } from '@/stores/useUser'
 
-const MARKET_DETAIL_TABS: Array<{ id: MarketDetailTab, label: string }> = [
-  { id: 'positions', label: 'Positions' },
-  { id: 'orderBook', label: 'Order Book' },
-  { id: 'openOrders', label: 'Open Orders' },
-  { id: 'graph', label: 'Graph' },
-  { id: 'resolution', label: 'Resolution' },
-  { id: 'history', label: 'History' },
-]
 const MARKET_DETAIL_PANEL_CLASS = 'rounded-lg border border-border bg-muted/20 p-4 min-h-20 mb-4'
 
 interface EventMarketsProps {
@@ -114,13 +112,6 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
       setChancePulseToken(token => token + 1)
     }
   }, [hasChanceData, isPriceHistoryFetching])
-
-  const visibleDetailTabs = useMemo(
-    () => (user?.address
-      ? MARKET_DETAIL_TABS
-      : MARKET_DETAIL_TABS.filter(tab => tab.id !== 'positions' && tab.id !== 'openOrders')),
-    [user?.address],
-  )
 
   const handleToggle = useCallback((market: Event['markets'][number]) => {
     toggleMarket(market.condition_id)
@@ -217,10 +208,6 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
           const activeOutcomeIndex = selectedOutcome && selectedOutcome.condition_id === market.condition_id
             ? selectedOutcome.outcome_index
             : null
-          const selectedDetailTab = getSelectedDetailTab(market.condition_id)
-          const tabToRender = visibleDetailTabs.some(tab => tab.id === selectedDetailTab)
-            ? selectedDetailTab
-            : visibleDetailTabs[0]?.id ?? 'orderBook'
 
           return (
             <div key={market.condition_id} className="transition-colors">
@@ -236,96 +223,22 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
               />
 
               {isExpanded && (
-                <div className="pt-2">
-                  <div className="px-4">
-                    <div className="scrollbar-hide flex gap-4 overflow-x-auto border-b border-border/60">
-                      {visibleDetailTabs.map((tab) => {
-                        const isActive = tabToRender === tab.id
-                        return (
-                          <button
-                            key={`${market.condition_id}-${tab.id}`}
-                            type="button"
-                            className={cn(
-                              `
-                                border-b-2 border-transparent pt-1 pb-2 text-sm font-semibold whitespace-nowrap
-                                transition-colors
-                              `,
-                              isActive
-                                ? 'border-primary text-foreground'
-                                : 'text-muted-foreground hover:text-foreground',
-                            )}
-                            onClick={(event) => {
-                              event.stopPropagation()
-                              selectDetailTab(market.condition_id, tab.id)
-                            }}
-                          >
-                            {tab.label}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="px-4 pt-4">
-                    {tabToRender === 'orderBook' && (
-                      <EventOrderBook
-                        market={market}
-                        outcome={activeOutcomeForMarket}
-                        summaries={orderBookSummaries}
-                        isLoadingSummaries={shouldShowOrderBookLoader}
-                        lastPriceOverrideCents={lastPriceOverrideCents}
-                        eventSlug={event.slug}
-                      />
-                    )}
-
-                    {tabToRender === 'graph' && activeOutcomeForMarket && (
-                      <div className={MARKET_DETAIL_PANEL_CLASS}>
-                        <MarketOutcomeGraph
-                          market={market}
-                          outcome={activeOutcomeForMarket}
-                          allMarkets={event.markets}
-                          eventCreatedAt={event.created_at}
-                          isMobile={isMobile}
-                        />
-                      </div>
-                    )}
-
-                    {tabToRender === 'positions' && (
-                      <div className={MARKET_DETAIL_PANEL_CLASS}>
-                        <EventMarketPositions market={market} />
-                      </div>
-                    )}
-
-                    {tabToRender === 'openOrders' && (
-                      <div className={MARKET_DETAIL_PANEL_CLASS}>
-                        <EventMarketOpenOrders market={market} eventSlug={event.slug} />
-                      </div>
-                    )}
-
-                    {tabToRender === 'history' && (
-                      <div className={MARKET_DETAIL_PANEL_CLASS}>
-                        <EventMarketHistory market={market} />
-                      </div>
-                    )}
-
-                    {tabToRender === 'resolution' && (
-                      <div className={MARKET_DETAIL_PANEL_CLASS}>
-                        <div className={`
-                          flex min-h-16 items-center justify-center rounded border border-dashed border-border
-                        `}
-                        >
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={event => event.stopPropagation()}
-                          >
-                            Propose resolution
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <MarketDetailTabs
+                  market={market}
+                  event={event}
+                  isMobile={isMobile}
+                  activeOutcomeForMarket={activeOutcomeForMarket}
+                  tabController={{
+                    selected: getSelectedDetailTab(market.condition_id),
+                    select: tabId => selectDetailTab(market.condition_id, tabId),
+                  }}
+                  orderBookData={{
+                    summaries: orderBookSummaries,
+                    isLoading: shouldShowOrderBookLoader,
+                    lastPriceOverrideCents,
+                  }}
+                  sharesByCondition={sharesByCondition}
+                />
               )}
 
               {index !== orderedMarkets.length - 1 && (
@@ -334,6 +247,187 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
             </div>
           )
         })}
+    </div>
+  )
+}
+
+interface MarketDetailTabsProps {
+  market: Event['markets'][number]
+  event: Event
+  isMobile: boolean
+  activeOutcomeForMarket: Event['markets'][number]['outcomes'][number] | undefined
+  tabController: {
+    selected: MarketDetailTab | undefined
+    select: (tabId: MarketDetailTab) => void
+  }
+  orderBookData: {
+    summaries: OrderBookSummariesResponse | undefined
+    isLoading: boolean
+    lastPriceOverrideCents: number | null
+  }
+  sharesByCondition: SharesByCondition
+}
+
+function MarketDetailTabs({
+  market,
+  event,
+  isMobile,
+  activeOutcomeForMarket,
+  tabController,
+  orderBookData,
+  sharesByCondition,
+}: MarketDetailTabsProps) {
+  const user = useUser()
+  const { selected: controlledTab, select } = tabController
+  const marketShares = sharesByCondition?.[market.condition_id]
+  const hasPositions = Boolean(
+    user?.address
+    && marketShares
+    && ((marketShares[OUTCOME_INDEX.YES] ?? 0) > 0 || (marketShares[OUTCOME_INDEX.NO] ?? 0) > 0),
+  )
+
+  const { data: openOrdersData } = useUserOpenOrdersQuery({
+    userId: user?.id,
+    eventSlug: event.slug,
+    conditionId: market.condition_id,
+    enabled: Boolean(user?.id),
+  })
+  const hasOpenOrders = useMemo(() => {
+    const pages = openOrdersData?.pages ?? []
+    return pages.some(page => page.length > 0)
+  }, [openOrdersData?.pages])
+
+  const { data: historyPreview } = useQuery<DataApiActivity[]>({
+    queryKey: ['user-market-activity-preview', user?.address, market.condition_id],
+    queryFn: ({ signal }) =>
+      fetchUserActivityData({
+        pageParam: 0,
+        userAddress: user?.address ?? '',
+        conditionId: market.condition_id,
+        signal,
+      }),
+    enabled: Boolean(user?.address && market.condition_id),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+  })
+  const hasHistory = useMemo(() => (historyPreview?.length ?? 0) > 0, [historyPreview?.length])
+
+  const visibleTabs = useMemo(() => {
+    const tabs: Array<{ id: MarketDetailTab, label: string }> = [
+      { id: 'orderBook', label: 'Order Book' },
+      { id: 'graph', label: 'Graph' },
+      { id: 'resolution', label: 'Resolution' },
+    ]
+
+    if (hasOpenOrders) {
+      tabs.splice(1, 0, { id: 'openOrders', label: 'Open Orders' })
+    }
+    if (hasPositions) {
+      tabs.unshift({ id: 'positions', label: 'Positions' })
+    }
+    if (hasHistory) {
+      tabs.push({ id: 'history', label: 'History' })
+    }
+    return tabs
+  }, [hasHistory, hasOpenOrders, hasPositions])
+
+  const selectedTab = useMemo<MarketDetailTab>(() => {
+    if (controlledTab && visibleTabs.some(tab => tab.id === controlledTab)) {
+      return controlledTab
+    }
+    return visibleTabs[0]?.id ?? 'orderBook'
+  }, [controlledTab, visibleTabs])
+
+  useEffect(() => {
+    if (selectedTab !== controlledTab) {
+      select(selectedTab)
+    }
+  }, [controlledTab, select, selectedTab])
+
+  return (
+    <div className="pt-2">
+      <div className="px-4">
+        <div className="scrollbar-hide flex gap-4 overflow-x-auto border-b border-border/60">
+          {visibleTabs.map((tab) => {
+            const isActive = selectedTab === tab.id
+            return (
+              <button
+                key={`${market.condition_id}-${tab.id}`}
+                type="button"
+                className={cn(
+                  `border-b-2 border-transparent pt-1 pb-2 text-sm font-semibold whitespace-nowrap transition-colors`,
+                  isActive
+                    ? 'border-primary text-foreground'
+                    : 'text-muted-foreground hover:text-foreground',
+                )}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  select(tab.id)
+                }}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="px-4 pt-4">
+        {selectedTab === 'orderBook' && (
+          <EventOrderBook
+            market={market}
+            outcome={activeOutcomeForMarket}
+            summaries={orderBookData.summaries}
+            isLoadingSummaries={orderBookData.isLoading}
+            lastPriceOverrideCents={orderBookData.lastPriceOverrideCents}
+            eventSlug={event.slug}
+          />
+        )}
+
+        {selectedTab === 'graph' && activeOutcomeForMarket && (
+          <div className={MARKET_DETAIL_PANEL_CLASS}>
+            <MarketOutcomeGraph
+              market={market}
+              outcome={activeOutcomeForMarket}
+              allMarkets={event.markets}
+              eventCreatedAt={event.created_at}
+              isMobile={isMobile}
+            />
+          </div>
+        )}
+
+        {selectedTab === 'positions' && (
+          <div className={MARKET_DETAIL_PANEL_CLASS}>
+            <EventMarketPositions market={market} />
+          </div>
+        )}
+
+        {selectedTab === 'openOrders' && (
+          <div className={MARKET_DETAIL_PANEL_CLASS}>
+            <EventMarketOpenOrders market={market} eventSlug={event.slug} />
+          </div>
+        )}
+
+        {selectedTab === 'history' && (
+          <div className={MARKET_DETAIL_PANEL_CLASS}>
+            <EventMarketHistory market={market} />
+          </div>
+        )}
+
+        {selectedTab === 'resolution' && (
+          <div className={MARKET_DETAIL_PANEL_CLASS}>
+            <div className="flex min-h-16 items-center justify-center rounded border border-dashed border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={event => event.stopPropagation()}
+              >
+                Propose resolution
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
