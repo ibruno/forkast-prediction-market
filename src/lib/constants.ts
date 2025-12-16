@@ -15,7 +15,7 @@ const conditionalTokensAddress = (
 const collateralTokenAddress = (
   process.env.COLLATERAL_TOKEN_ADDRESS
   ?? process.env.NEXT_PUBLIC_COLLATERAL_TOKEN_ADDRESS
-  ?? '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582'
+  ?? '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
 ) as `0x${string}`
 
 export const CONDITIONAL_TOKENS_CONTRACT = conditionalTokensAddress
