@@ -81,7 +81,7 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
   }
 
   return (
-    <div className="rounded-lg border transition-all duration-200 ease-in-out">
+    <div className="overflow-hidden rounded-lg border transition-all duration-200 ease-in-out">
       <button
         type="button"
         onClick={() => setIsExpanded(current => !current)}
@@ -126,8 +126,8 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
       </button>
 
       {isExpanded && (
-        <div className="border-t border-border/30 px-3 pb-3">
-          <div className="flex flex-wrap gap-3 py-3 text-sm font-semibold">
+        <div className="border-t border-border/30">
+          <div className="flex flex-wrap gap-3 px-6 py-3 text-sm font-semibold">
             <OutcomeToggle
               label="Trade Yes"
               selected={selectedOutcomeIndex === OUTCOME_INDEX.YES}
