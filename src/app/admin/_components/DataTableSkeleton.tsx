@@ -43,7 +43,7 @@ export function DataTableSkeleton({
             <TableRow>
               {Array.from({ length: columnCount }).map((_, i) => (
                 <TableHead key={`skeleton-col-${i}`} className="whitespace-nowrap">
-                  <Skeleton className="h-4 w-[80px]" />
+                  <Skeleton className="h-4 w-20" />
                 </TableHead>
               ))}
             </TableRow>
@@ -58,7 +58,7 @@ export function DataTableSkeleton({
                       : cellIndex === 1
                         ? (
                             <div className="flex min-w-[200px] items-start gap-3">
-                              <Skeleton className="size-10 flex-shrink-0 rounded-full" />
+                              <Skeleton className="size-10 shrink-0 rounded-full" />
                               <div className="flex min-w-0 flex-col gap-1">
                                 <Skeleton className="h-4 w-[120px]" />
                                 <Skeleton className="h-3 w-[60px]" />
@@ -67,19 +67,19 @@ export function DataTableSkeleton({
                           )
                         : cellIndex === 2
                           ? (
-                              <div className="min-w-[80px]">
+                              <div className="min-w-20">
                                 <Skeleton className="size-4" />
                               </div>
                             )
                           : cellIndex === 3
                             ? (
                                 <div className="min-w-[100px]">
-                                  <Skeleton className="h-4 w-[80px]" />
+                                  <Skeleton className="h-4 w-20" />
                                 </div>
                               )
                             : (
                                 <div className="min-w-[100px] text-right">
-                                  <Skeleton className="ml-auto h-4 w-[80px]" />
+                                  <Skeleton className="ml-auto h-4 w-20" />
                                 </div>
                               )}
                   </TableCell>

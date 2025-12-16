@@ -224,8 +224,8 @@ function ProfitLossCard({
                 !isPositive && !isNegative && 'border-border/60 bg-muted/40 text-muted-foreground',
               )}
             >
-              {isPositive && <TriangleIcon className="size-4 -translate-y-[1px] fill-current" />}
-              {isNegative && <TriangleIcon className="size-4 translate-y-[1px] rotate-180 fill-current" />}
+              {isPositive && <TriangleIcon className="size-4 -translate-y-px fill-current" />}
+              {isNegative && <TriangleIcon className="size-4 translate-y-px rotate-180 fill-current" />}
               {!isPositive && !isNegative && <MinusIcon className="size-4" />}
             </span>
             <span className="text-base font-semibold text-foreground">Profit/Loss</span>
@@ -292,7 +292,7 @@ function ProfitLossCard({
             <path d={line} fill="none" stroke={`url(#${lineGradientId})`} strokeWidth="2.2" strokeLinecap="round" />
           </svg>
           <div className={`
-            pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-transparent/60 to-transparent
+            pointer-events-none absolute inset-0 bg-linear-to-t from-background via-transparent/60 to-transparent
           `}
           />
         </div>

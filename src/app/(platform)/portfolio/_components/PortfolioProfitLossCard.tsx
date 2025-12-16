@@ -94,7 +94,7 @@ export default function PortfolioProfitLossCard() {
         </div>
 
         {/* Chart area - altura mínima */}
-        <div className="relative h-[20px]">
+        <div className="relative h-5">
           <svg
             width="100"
             height="20"

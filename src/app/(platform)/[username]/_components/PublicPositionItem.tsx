@@ -37,7 +37,7 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <Link
           href={`/event/${eventSlug}`}
-          className="size-10 flex-shrink-0 overflow-hidden rounded bg-muted sm:size-12"
+          className="size-10 shrink-0 overflow-hidden rounded bg-muted sm:size-12"
         >
           <Image
             src={`https://gateway.irys.xyz/${item.icon}`}
@@ -89,7 +89,7 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
       </div>
 
       {/* Average Position */}
-      <div className="flex-shrink-0 text-right">
+      <div className="shrink-0 text-right">
         <div className="text-xs font-semibold sm:text-sm">
           {formatCurrency(item.avgPrice, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>
@@ -97,7 +97,7 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
       </div>
 
       {/* Total Position Value */}
-      <div className="flex-shrink-0 text-right">
+      <div className="shrink-0 text-right">
         <div className="text-xs font-semibold sm:text-sm">
           {formatCurrency(item.currentValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </div>

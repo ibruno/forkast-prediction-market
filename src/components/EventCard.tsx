@@ -530,7 +530,7 @@ export default function EventCard({ event }: EventCardProps) {
                                       }}
                                       title={`${market.outcomes[0].outcome_text}: ${displayChance}%`}
                                       variant="yes"
-                                      className="group h-auto w-[40px] px-2 py-1 text-2xs"
+                                      className="group h-auto w-10 px-2 py-1 text-2xs"
                                     >
                                       <span className="truncate group-hover:hidden">
                                         {market.outcomes[0].outcome_text}
@@ -550,7 +550,7 @@ export default function EventCard({ event }: EventCardProps) {
                                       title={`${market.outcomes[1].outcome_text}: ${oppositeChance}%`}
                                       variant="no"
                                       size="sm"
-                                      className="group h-auto w-[40px] px-2 py-1 text-2xs"
+                                      className="group h-auto w-10 px-2 py-1 text-2xs"
                                     >
                                       <span className="truncate group-hover:hidden">
                                         {market.outcomes[1].outcome_text}

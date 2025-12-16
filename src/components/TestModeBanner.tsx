@@ -1,16 +1,17 @@
 'use client'
 
-import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
 interface TestModeBannerProps {
-  message?: ReactNode
   persistKey?: string
 }
 
 export default function TestModeBanner({
-  message = (
+  persistKey = 'test_mode_banner_closed_session',
+}: TestModeBannerProps) {
+  const [visible, setVisible] = useState<boolean | null>(null)
+  const message = (
     <>
       You’re in test mode (no real value).
       {' '}
@@ -25,10 +26,7 @@ export default function TestModeBanner({
       {' '}
       on Polygon Amoy.
     </>
-  ),
-  persistKey = 'test_mode_banner_closed_session',
-}: TestModeBannerProps) {
-  const [visible, setVisible] = useState<boolean | null>(null)
+  )
 
   useEffect(() => {
     try {

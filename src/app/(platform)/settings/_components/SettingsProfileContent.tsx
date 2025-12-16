@@ -58,7 +58,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
         <div className="rounded-lg border p-6">
           <div className="flex items-center gap-4">
             <div className={`
-              flex size-16 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-primary
+              flex size-16 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-primary
               to-primary/60
             `}
             >

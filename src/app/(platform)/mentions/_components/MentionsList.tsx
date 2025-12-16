@@ -195,7 +195,7 @@ function MentionsListItem({ event }: MentionsListItemProps) {
                   className={cn(
                     `
                       max-w-[calc(100vw-2.5rem)] rounded-xl border border-border bg-background/95 p-3 text-sm
-                      break-words whitespace-normal text-foreground shadow-xl backdrop-blur-sm
+                      wrap-break-word whitespace-normal text-foreground shadow-xl backdrop-blur-sm
                       sm:max-w-[360px]
                     `,
                   )}
@@ -224,7 +224,7 @@ function MentionsListItem({ event }: MentionsListItemProps) {
         )}
       </div>
 
-      <div className="hidden md:flex md:w-[180px] md:flex-shrink-0 md:flex-col md:items-center md:justify-center">
+      <div className="hidden md:flex md:w-[180px] md:shrink-0 md:flex-col md:items-center md:justify-center">
         <Button asChild size="lg" className="px-6">
           <span>Trade</span>
         </Button>

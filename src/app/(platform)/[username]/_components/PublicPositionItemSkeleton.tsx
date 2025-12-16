@@ -18,7 +18,7 @@ export default function PublicPositionItemSkeleton({ isInfiniteScroll = false }:
       {/* Market */}
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         {/* Market icon skeleton */}
-        <Skeleton className="size-10 flex-shrink-0 rounded bg-muted sm:size-12" />
+        <Skeleton className="size-10 shrink-0 rounded bg-muted sm:size-12" />
 
         <div className="min-w-0 flex-1 space-y-2">
           {/* Market title skeleton - varying widths for more realistic look */}
@@ -43,13 +43,13 @@ export default function PublicPositionItemSkeleton({ isInfiniteScroll = false }:
       </div>
 
       {/* Average Position */}
-      <div className="flex-shrink-0 space-y-1 text-right">
+      <div className="shrink-0 space-y-1 text-right">
         <Skeleton className="h-4 w-16" />
         <Skeleton className="h-3 w-8" />
       </div>
 
       {/* Total Position Value */}
-      <div className="flex-shrink-0 space-y-1 text-right">
+      <div className="shrink-0 space-y-1 text-right">
         <Skeleton className="h-4 w-16" />
         <Skeleton className="h-3 w-10" />
         {/* Mobile timestamp skeleton */}

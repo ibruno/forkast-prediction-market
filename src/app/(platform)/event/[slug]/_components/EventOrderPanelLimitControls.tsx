@@ -239,7 +239,7 @@ export default function EventOrderPanelLimitControls({
               value={formattedLimitShares}
               onChange={event => handleLimitSharesInputChange(event.target.value)}
               className={cn(
-                'h-10 !bg-transparent text-right font-bold',
+                'h-10 bg-transparent! text-right font-bold',
                 limitSharesSizeClass,
               )}
             />

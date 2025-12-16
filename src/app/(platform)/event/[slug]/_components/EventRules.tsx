@@ -107,8 +107,8 @@ export default function EventRules({ event }: EventRulesProps) {
               <div className="flex items-center justify-between">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`size-10 bg-gradient-to-r ${resolverGradient}
-                      flex flex-shrink-0 items-center justify-center rounded-sm
+                    className={`size-10 bg-linear-to-r ${resolverGradient}
+                      flex shrink-0 items-center justify-center rounded-sm
                     `}
                   >
                   </div>

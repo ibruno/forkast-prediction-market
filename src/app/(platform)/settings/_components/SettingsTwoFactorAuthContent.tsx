@@ -297,7 +297,7 @@ export default function SettingsTwoFactorAuthContent({ user }: { user: User }) {
                 className="-ml-2 max-w-[18rem] text-xs text-muted-foreground"
                 title={copied ? 'Copied!' : 'Copy address'}
               >
-                <span className="block min-w-0 break-words whitespace-normal">{extractTotpSecret()}</span>
+                <span className="block min-w-0 wrap-break-word whitespace-normal">{extractTotpSecret()}</span>
                 {copied
                   ? <CheckIcon className="size-3.5 text-yes" data-testid="check-icon" />
                   : <CopyIcon className="size-3.5" data-testid="copy-icon" />}

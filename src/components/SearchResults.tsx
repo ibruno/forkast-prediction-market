@@ -132,7 +132,7 @@ function EventResults({ events, query, isLoading, onResultClick }: EventResultsP
           `}
         >
           <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="size-8 flex-shrink-0 overflow-hidden rounded">
+            <div className="size-8 shrink-0 overflow-hidden rounded">
               <Image
                 src={result.icon_url}
                 alt={result.title}

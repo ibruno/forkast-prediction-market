@@ -217,7 +217,7 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
       const snapshotValue = latestSnapshot[seriesItem.key]
       const value = typeof hoveredValue === 'number' && Number.isFinite(hoveredValue)
         ? hoveredValue
-        : (typeof snapshotValue === 'number' && Number.isFinite(snapshotValue)
+        : (Number.isFinite(snapshotValue)
             ? snapshotValue
             : null)
       return { ...seriesItem, value }
@@ -244,7 +244,7 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
   const noChanceDisplay = typeof roundedNoChance === 'number' ? roundedNoChance : '--'
   const legendContent = shouldRenderLegendEntries
     ? (
-        <div className="flex min-h-[20px] flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+        <div className="flex min-h-5 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
           {legendEntries.map((entry) => {
             const resolvedValue = typeof entry.value === 'number' ? entry.value : 0
             return (

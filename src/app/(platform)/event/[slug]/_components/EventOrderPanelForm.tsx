@@ -44,8 +44,6 @@ function normalizeShares(value?: number) {
     return 0
   }
 
-  // Values coming from the API are usually micro (1e6). If the magnitude is small,
-  // assume it's already in whole units to avoid under-counting locked shares.
   return value > 100_000 ? value / MICRO_UNIT : value
 }
 

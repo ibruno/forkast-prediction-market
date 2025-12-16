@@ -42,7 +42,7 @@ export default function AdminCategoriesTable() {
 
     if (result.success) {
       toast.success(`${category.name} ${checked ? 'is now shown as a main category.' : 'is no longer marked as main.'}`)
-      queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
     }
     else {
       toast.error(result.error || 'Failed to update category')
@@ -60,7 +60,7 @@ export default function AdminCategoriesTable() {
 
     if (result.success) {
       toast.success(`${category.name} is now ${checked ? 'hidden' : 'visible'} on the site.`)
-      queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
     }
     else {
       toast.error(result.error || 'Failed to update category')
@@ -78,7 +78,7 @@ export default function AdminCategoriesTable() {
 
     if (result.success) {
       toast.success(`Events with category "${category.name}" are now ${checked ? 'hidden' : 'visible'} on the site.`)
-      queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
+      void queryClient.invalidateQueries({ queryKey: ['admin-categories'] })
     }
     else {
       toast.error(result.error || 'Failed to update category')

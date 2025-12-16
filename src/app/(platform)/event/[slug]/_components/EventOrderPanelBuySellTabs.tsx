@@ -96,12 +96,12 @@ export default function EventOrderPanelBuySellTabs({
               `
                 cursor-pointer rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 text-sm font-semibold
                 text-muted-foreground transition-colors duration-200
-                hover:!bg-transparent hover:text-foreground
-                focus:!bg-transparent
-                focus-visible:!bg-transparent focus-visible:outline-none
-                active:!bg-transparent
-                dark:hover:!bg-transparent dark:focus:!bg-transparent dark:focus-visible:!bg-transparent
-                dark:active:!bg-transparent
+                hover:bg-transparent! hover:text-foreground
+                focus:bg-transparent!
+                focus-visible:bg-transparent! focus-visible:outline-none
+                active:bg-transparent!
+                dark:hover:bg-transparent! dark:focus:bg-transparent! dark:focus-visible:bg-transparent!
+                dark:active:bg-transparent!
               `,
               side === ORDER_SIDE.BUY && 'border-foreground text-foreground',
             )}
@@ -115,12 +115,12 @@ export default function EventOrderPanelBuySellTabs({
               `
                 cursor-pointer rounded-none border-b-2 border-transparent bg-transparent px-0 pb-2 text-sm font-semibold
                 text-muted-foreground transition-colors duration-200
-                hover:!bg-transparent hover:text-foreground
-                focus:!bg-transparent
-                focus-visible:!bg-transparent focus-visible:outline-none
-                active:!bg-transparent
-                dark:hover:!bg-transparent dark:focus:!bg-transparent dark:focus-visible:!bg-transparent
-                dark:active:!bg-transparent
+                hover:bg-transparent! hover:text-foreground
+                focus:bg-transparent!
+                focus-visible:bg-transparent! focus-visible:outline-none
+                active:bg-transparent!
+                dark:hover:bg-transparent! dark:focus:bg-transparent! dark:focus-visible:bg-transparent!
+                dark:active:bg-transparent!
               `,
               side === ORDER_SIDE.SELL && 'border-foreground text-foreground',
             )}
@@ -154,7 +154,7 @@ export default function EventOrderPanelBuySellTabs({
               />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[9rem]">
+          <DropdownMenuContent align="end" className="min-w-36">
             <DropdownMenuRadioGroup value={type} onValueChange={value => onTypeChange(value as OrderType)}>
               <DropdownMenuRadioItem
                 value={ORDER_TYPE.MARKET}
@@ -185,7 +185,7 @@ export default function EventOrderPanelBuySellTabs({
                 More
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
-                <DropdownMenuSubContent className="min-w-[8rem]" alignOffset={-4}>
+                <DropdownMenuSubContent className="min-w-32" alignOffset={-4}>
                   <DropdownMenuItem
                     className="cursor-pointer"
                     onSelect={(event) => {

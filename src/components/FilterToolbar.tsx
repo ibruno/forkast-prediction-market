@@ -333,7 +333,7 @@ function FilterSettingsRow({ filters, onChange, onClear, hasActiveFilters, class
           htmlFor={`filter-${key}`}
           className={cn(
             `
-              flex flex-shrink-0 items-center gap-2 rounded-full bg-muted/60 px-3 py-2 text-xs font-medium
+              flex shrink-0 items-center gap-2 rounded-full bg-muted/60 px-3 py-2 text-xs font-medium
               text-muted-foreground
             `,
             'transition-colors hover:bg-muted',
@@ -359,7 +359,7 @@ function FilterSettingsRow({ filters, onChange, onClear, hasActiveFilters, class
           type="button"
           variant="ghost"
           className={cn(
-            'h-8 flex-shrink-0 rounded-full px-3 text-xs font-medium text-muted-foreground',
+            'h-8 shrink-0 rounded-full px-3 text-xs font-medium text-muted-foreground',
             'hover:text-foreground hover:underline',
           )}
           onClick={onClear}
@@ -392,10 +392,7 @@ function FilterSettingsSelect({ label, value, options, onChange }: FilterSetting
       <SelectTrigger
         size="sm"
         className={cn(
-          `
-            h-9 min-w-[160px] flex-shrink-0 gap-2 rounded-full border-none bg-muted/60 px-3 text-xs font-medium
-            text-foreground/90
-          `,
+          `h-9 min-w-40 shrink-0 gap-2 rounded-full border-none bg-muted/60 px-3 text-xs font-medium text-foreground/90`,
           'shadow-none',
           'hover:bg-muted',
         )}

@@ -14,12 +14,12 @@ export function ActivitySkeletonRows({ count = 8 }: ActivitySkeletonRowsProps) {
           key={index}
           className="flex items-center gap-3 border-b border-border px-3 py-4 last:border-b-0 sm:gap-4 sm:px-5"
         >
-          <div className="w-12 flex-shrink-0 sm:w-16">
+          <div className="w-12 shrink-0 sm:w-16">
             <Skeleton className="h-4 w-8" />
           </div>
 
           <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
-            <Skeleton className="size-10 flex-shrink-0 rounded-lg sm:size-12" />
+            <Skeleton className="size-10 shrink-0 rounded-lg sm:size-12" />
 
             <div className="min-w-0 flex-1 space-y-2">
               <Skeleton className="h-4" style={{ width: '80%' }} />
@@ -31,7 +31,7 @@ export function ActivitySkeletonRows({ count = 8 }: ActivitySkeletonRowsProps) {
             </div>
           </div>
 
-          <div className="flex-shrink-0 space-y-1 text-right">
+          <div className="shrink-0 space-y-1 text-right">
             <Skeleton className="h-4 w-16" />
             <div className="flex items-center justify-end gap-1 sm:gap-2">
               <Skeleton className="hidden h-3 w-12 sm:block" />

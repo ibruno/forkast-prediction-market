@@ -276,7 +276,7 @@ export default function PublicActivityList({ userAddress }: PublicActivityListPr
                         onClick={() => {
                           setInfiniteScrollError(null)
                           setRetryCount(0)
-                          queryClient.invalidateQueries({
+                          void queryClient.invalidateQueries({
                             queryKey: ['user-activity', userAddress],
                           })
                         }}

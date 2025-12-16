@@ -19,7 +19,7 @@ export default function PublicProfileHeader({ profile }: PublicProfileHeaderProp
 
   const fallbackAddress = profile.proxy_wallet_address ?? profile.address
   function handleCopyAddress() {
-    copy(fallbackAddress)
+    void copy(fallbackAddress)
   }
 
   const address = truncateAddress(fallbackAddress)

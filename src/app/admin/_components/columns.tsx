@@ -71,7 +71,7 @@ export const columns: ColumnDef<AdminUserRow>[] = [
             alt={user.username || user.address}
             width={28}
             height={28}
-            className="flex-shrink-0 rounded-full sm:size-8"
+            className="shrink-0 rounded-full sm:size-8"
           />
           <div className="min-w-44 flex-1">
             <a
@@ -114,7 +114,7 @@ export const columns: ColumnDef<AdminUserRow>[] = [
                   href={`mailto:${user.email}`}
                   className="inline-flex touch-manipulation items-center gap-1 text-muted-foreground hover:text-primary"
                 >
-                  <MailIcon className="size-4 flex-shrink-0" />
+                  <MailIcon className="size-4 shrink-0" />
                   <span className="sr-only">
                     Email
                     {user.email}
@@ -138,7 +138,7 @@ export const columns: ColumnDef<AdminUserRow>[] = [
         </div>
       )
     },
-    enableSorting: false, // Disable sorting since this is a computed field not available in the database
+    enableSorting: false,
     cell: ({ row }) => {
       const user = row.original
       return (

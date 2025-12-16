@@ -17,7 +17,7 @@ export default function SettingsExportPrivateKeyContent() {
       {/* Warning Alert */}
       <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex size-5 flex-shrink-0 items-center justify-center rounded-full bg-destructive/20">
+          <div className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-destructive/20">
             <span className="text-xs font-bold text-destructive">!</span>
           </div>
           <div>
@@ -37,7 +37,7 @@ export default function SettingsExportPrivateKeyContent() {
           <ol className="space-y-3 text-sm">
             <li className="flex">
               <span className={`
-                mr-3 flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium
+                mr-3 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium
                 text-primary
               `}
               >
@@ -53,7 +53,7 @@ export default function SettingsExportPrivateKeyContent() {
 
             <li className="flex">
               <span className={`
-                mr-3 flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium
+                mr-3 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium
                 text-primary
               `}
               >
@@ -69,7 +69,7 @@ export default function SettingsExportPrivateKeyContent() {
 
             <li className="flex">
               <span className={`
-                mr-3 flex size-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium
+                mr-3 flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/10 font-medium
                 text-primary
               `}
               >

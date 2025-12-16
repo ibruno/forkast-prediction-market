@@ -136,7 +136,7 @@ export default function HeaderNotifications() {
                     key={notification.id}
                     className="flex cursor-pointer items-start gap-3 p-3 transition-colors hover:bg-accent/50"
                   >
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       {notification.user_avatar
                         ? (
                             <Image
@@ -169,7 +169,7 @@ export default function HeaderNotifications() {
                           </p>
                         </div>
 
-                        <div className="flex flex-shrink-0 items-center gap-1">
+                        <div className="flex shrink-0 items-center gap-1">
                           <span className="text-xs text-muted-foreground">
                             {timeLabel}
                           </span>

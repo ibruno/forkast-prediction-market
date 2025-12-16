@@ -235,7 +235,7 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
 
     setMarketStatusFilter(newStatus)
 
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: ['user-positions', userAddress],
     })
   }, [queryClient, userAddress])
@@ -256,7 +256,7 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
 
     setMinAmountFilter(newFilter)
 
-    queryClient.invalidateQueries({
+    void queryClient.invalidateQueries({
       queryKey: ['user-positions', userAddress],
     })
   }, [queryClient, userAddress])
@@ -563,7 +563,7 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
               onStartOver={() => {
                 setInfiniteScrollError(null)
                 setRetryCount(0)
-                queryClient.invalidateQueries({
+                void queryClient.invalidateQueries({
                   queryKey: ['user-positions', userAddress, marketStatusFilter, minAmountFilter, debouncedSearchQuery],
                 })
               }}

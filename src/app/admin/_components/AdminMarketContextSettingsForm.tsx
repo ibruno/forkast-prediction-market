@@ -211,7 +211,7 @@ export default function AdminMarketContextSettingsForm({
             onValueChange={handleModelChange}
             disabled={!modelDropdownEnabled || isPending}
           >
-            <SelectTrigger className="!h-12 w-full max-w-md justify-between">
+            <SelectTrigger className="h-12! w-full max-w-md justify-between">
               <SelectValue placeholder="Select a model" />
             </SelectTrigger>
             <SelectContent>

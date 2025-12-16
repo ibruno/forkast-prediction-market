@@ -11,8 +11,8 @@ export default function EventCardSkeleton() {
       </div>
 
       <div className="mt-6 mb-3 grid grid-cols-2 gap-2">
-        <div className="h-[48px] rounded bg-muted"></div>
-        <div className="h-[48px] rounded bg-muted"></div>
+        <div className="h-12 rounded bg-muted"></div>
+        <div className="h-12 rounded bg-muted"></div>
       </div>
 
       <div className="flex items-center justify-between">

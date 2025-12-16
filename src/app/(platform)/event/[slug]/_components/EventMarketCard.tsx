@@ -63,7 +63,7 @@ function EventMarketCardComponent({
                 alt={market.title}
                 width={42}
                 height={42}
-                className="flex-shrink-0 rounded-md"
+                className="shrink-0 rounded-md"
               />
             )}
             <div>
@@ -142,7 +142,7 @@ function EventMarketCardComponent({
               alt={market.title}
               width={42}
               height={42}
-              className="flex-shrink-0 rounded-md"
+              className="shrink-0 rounded-md"
             />
           )}
           <div>

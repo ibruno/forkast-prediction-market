@@ -321,17 +321,17 @@ export default function NavigationTab({ tag, childParentMap }: NavigationTabProp
                 'relative scrollbar-hide flex w-full max-w-full min-w-0 items-center gap-2 overflow-x-auto',
                 (showLeftShadow || showRightShadow)
                 && `
-                  [mask-image:linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
+                  mask-[linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
                   [-webkit-mask-image:linear-gradient(to_right,transparent,black_32px,black_calc(100%-32px),transparent)]
                 `,
                 showLeftShadow && !showRightShadow
                 && `
-                  [mask-image:linear-gradient(to_right,transparent,black_32px,black)]
+                  mask-[linear-gradient(to_right,transparent,black_32px,black)]
                   [-webkit-mask-image:linear-gradient(to_right,transparent,black_32px,black)]
                 `,
                 showRightShadow && !showLeftShadow
                 && `
-                  [mask-image:linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
+                  mask-[linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
                   [-webkit-mask-image:linear-gradient(to_right,black,black_calc(100%-32px),transparent)]
                 `,
               )}

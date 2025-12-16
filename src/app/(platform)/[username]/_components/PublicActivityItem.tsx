@@ -22,7 +22,7 @@ export function PublicActivityItem({ item }: { item: PublicActivity }) {
     `}
     >
       {/* Type */}
-      <div className="w-12 flex-shrink-0 sm:w-16">
+      <div className="w-12 shrink-0 sm:w-16">
         <span className="text-xs font-medium capitalize sm:text-sm">{item.type}</span>
       </div>
 
@@ -30,7 +30,7 @@ export function PublicActivityItem({ item }: { item: PublicActivity }) {
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <Link
           href={`/event/${item.eventSlug}`}
-          className="size-10 flex-shrink-0 overflow-hidden rounded bg-muted sm:size-12"
+          className="size-10 shrink-0 overflow-hidden rounded bg-muted sm:size-12"
         >
           <Image
             src={`https://gateway.irys.xyz/${item.icon}`}
@@ -94,7 +94,7 @@ export function PublicActivityItem({ item }: { item: PublicActivity }) {
       </div>
 
       {/* Amount & Time */}
-      <div className="flex-shrink-0 space-y-1 text-right">
+      <div className="shrink-0 space-y-1 text-right">
         <div className="text-xs font-semibold sm:text-sm">
           {formatCurrency(totalValueUsd)}
         </div>
