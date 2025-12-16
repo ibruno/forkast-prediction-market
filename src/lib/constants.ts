@@ -4,11 +4,15 @@ export const DEFAULT_ERROR_MESSAGE = 'Internal server error. Try again in a few 
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x${string}`
 
-export const AMOY_CHAIN_ID = 80002
+export const AMOY_CHAIN_ID = 80_002
+
+export const IS_TEST_MODE = defaultNetwork.id === AMOY_CHAIN_ID
 
 export const CONDITIONAL_TOKENS_CONTRACT = '0x4F047bD628145de7F902Af7f8B5988e1A8767148' as `0x${string}`
 
-export const COLLATERAL_TOKEN_ADDRESS = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' as `0x${string}`
+export const COLLATERAL_TOKEN_ADDRESS = IS_TEST_MODE
+  ? '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' as `0x${string}`
+  : '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' as `0x${string}`
 
 export const ZERO_COLLECTION_ID = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
 
