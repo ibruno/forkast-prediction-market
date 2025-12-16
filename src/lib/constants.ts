@@ -6,21 +6,12 @@ export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as `0x$
 
 export const AMOY_CHAIN_ID = 80002
 
-const conditionalTokensAddress = (
-  process.env.CONDITIONAL_TOKENS_CONTRACT
-  ?? process.env.NEXT_PUBLIC_CONDITIONAL_TOKENS_ADDRESS
-  ?? '0x4F047bD628145de7F902Af7f8B5988e1A8767148'
-) as `0x${string}`
+export const CONDITIONAL_TOKENS_CONTRACT = '0x4F047bD628145de7F902Af7f8B5988e1A8767148' as `0x${string}`
 
-const collateralTokenAddress = (
-  process.env.COLLATERAL_TOKEN_ADDRESS
-  ?? process.env.NEXT_PUBLIC_COLLATERAL_TOKEN_ADDRESS
-  ?? '0x2791bca1f2de4661ed88a30c99a7a9449aa84174'
-) as `0x${string}`
+export const COLLATERAL_TOKEN_ADDRESS = '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' as `0x${string}`
 
-export const CONDITIONAL_TOKENS_CONTRACT = conditionalTokensAddress
-export const COLLATERAL_TOKEN_ADDRESS = collateralTokenAddress
 export const ZERO_COLLECTION_ID = '0x0000000000000000000000000000000000000000000000000000000000000000' as `0x${string}`
+
 export const DEFAULT_CONDITION_PARTITION = ['1', '2'] as const
 
 export const ORDER_SIDE = {
