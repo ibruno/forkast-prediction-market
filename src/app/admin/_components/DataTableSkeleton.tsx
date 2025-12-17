@@ -25,7 +25,7 @@ export function DataTableSkeleton({
 }: DataTableSkeletonProps) {
   return (
     <div className="space-y-4">
-      {/* Toolbar skeleton */}
+
       {searchable && (
         <div className="flex items-center justify-between">
           <div className="flex flex-1 items-center space-x-2">
@@ -36,7 +36,6 @@ export function DataTableSkeleton({
         </div>
       )}
 
-      {/* Table skeleton */}
       <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-full">
           <TableHeader>
@@ -90,7 +89,6 @@ export function DataTableSkeleton({
         </Table>
       </div>
 
-      {/* Pagination skeleton */}
       {showPagination && (
         <div className="flex items-center justify-between px-2">
           <div className="flex-1 text-sm text-muted-foreground">

@@ -38,7 +38,7 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
   )
 
   function handleSwitchChange(field: keyof NotificationSettings, checked: boolean) {
-    const prev = optimisticSettings // snapshot before optimistic update
+    const prev = optimisticSettings
 
     startTransition(() => {
       updateOptimisticSettings({ [field]: checked })

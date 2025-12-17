@@ -29,7 +29,7 @@ export default function PortfolioSummaryCard() {
   return (
     <Card className="border border-border/60 bg-transparent">
       <CardContent className="flex flex-col p-6">
-        {/* Header with icon and balance chip */}
+
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="rounded border border-border/60 p-1">
@@ -70,7 +70,6 @@ export default function PortfolioSummaryCard() {
           </div>
         </div>
 
-        {/* Daily change */}
         <div className="mb-6">
           <div className={`flex items-center gap-1 text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
             <span>
@@ -86,7 +85,6 @@ export default function PortfolioSummaryCard() {
           </div>
         </div>
 
-        {/* Action buttons */}
         <PortfolioWalletActions className="mt-auto" />
       </CardContent>
     </Card>

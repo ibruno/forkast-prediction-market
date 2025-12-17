@@ -43,7 +43,7 @@ export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProp
 
   return (
     <div className="space-y-8">
-      {/* Tab Navigation */}
+
       <div className="relative">
         <div className="relative flex space-x-8 border-b border-border">
           {tabs.map((tab, index) => (
@@ -65,7 +65,6 @@ export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProp
             </button>
           ))}
 
-          {/* Animated indicator */}
           <div
             className={cn(
               'absolute bottom-0 h-0.5 bg-primary',

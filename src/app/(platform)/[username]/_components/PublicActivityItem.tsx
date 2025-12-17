@@ -21,12 +21,11 @@ export function PublicActivityItem({ item }: { item: PublicActivity }) {
       sm:gap-4 sm:px-5
     `}
     >
-      {/* Type */}
+
       <div className="w-12 shrink-0 sm:w-16">
         <span className="text-xs font-medium capitalize sm:text-sm">{item.type}</span>
       </div>
 
-      {/* Market */}
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <Link
           href={`/event/${item.eventSlug}`}
@@ -93,7 +92,6 @@ export function PublicActivityItem({ item }: { item: PublicActivity }) {
         </div>
       </div>
 
-      {/* Amount & Time */}
       <div className="shrink-0 space-y-1 text-right">
         <div className="text-xs font-semibold sm:text-sm">
           {formatCurrency(totalValueUsd)}
@@ -113,7 +111,7 @@ export function PublicActivityItem({ item }: { item: PublicActivity }) {
             <SquareArrowOutUpRightIcon className="size-3" />
           </a>
         </div>
-        {/* Show timestamp on mobile below the amount */}
+
         <div className="text-xs text-muted-foreground sm:hidden">
           {formatTimeAgo(item.timestamp.toString())}
         </div>

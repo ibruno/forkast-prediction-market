@@ -33,7 +33,7 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
       sm:gap-4 sm:px-5
     `}
     >
-      {/* Market */}
+
       <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
         <Link
           href={`/event/${eventSlug}`}
@@ -88,7 +88,6 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
         </div>
       </div>
 
-      {/* Average Position */}
       <div className="shrink-0 text-right">
         <div className="text-xs font-semibold sm:text-sm">
           {formatCurrency(item.avgPrice, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -96,7 +95,6 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
         <div className="text-xs text-muted-foreground">Avg Price</div>
       </div>
 
-      {/* Total Position Value */}
       <div className="shrink-0 text-right">
         <div className="text-xs font-semibold sm:text-sm">
           {formatCurrency(item.currentValue, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -104,7 +102,7 @@ export default function PublicPositionItem({ item }: PositionItemProps) {
         <div className="text-xs text-muted-foreground">
           {item.status === 'closed' ? 'Realized' : 'Value'}
         </div>
-        {/* Show timestamp on mobile below the amount */}
+
         <div className="text-xs text-muted-foreground sm:hidden">
           {formatTimeAgo(item.timestamp.toString())}
         </div>

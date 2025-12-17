@@ -11,7 +11,6 @@ import {
   timestamp,
 } from 'drizzle-orm/pg-core'
 
-// Conditions table - Primary entity from Activity/PnL subgraphs
 export const conditions = pgTable(
   'conditions',
   {
@@ -66,7 +65,6 @@ export const events = pgTable(
   },
 )
 
-// Markets table - Core trading markets (belongs to events)
 export const markets = pgTable(
   'markets',
   {
@@ -93,7 +91,7 @@ export const markets = pgTable(
     icon_url: text(),
     is_active: boolean().default(true).notNull(),
     is_resolved: boolean().default(false).notNull(),
-    metadata: text(), // JSONB as text
+    metadata: text(),
     volume_24h: numeric({ precision: 20, scale: 6 }).default('0').notNull(),
     volume: numeric({ precision: 20, scale: 6 }).default('0').notNull(),
     created_at: timestamp({ withTimezone: true }).defaultNow().notNull(),
@@ -101,7 +99,6 @@ export const markets = pgTable(
   },
 )
 
-// Outcomes table - Individual market outcomes (belongs to markets via condition_id)
 export const outcomes = pgTable(
   'outcomes',
   {
@@ -120,7 +117,6 @@ export const outcomes = pgTable(
   },
 )
 
-// Tags table - Hierarchical categorization system for events
 export const tags = pgTable(
   'tags',
   {
@@ -138,7 +134,6 @@ export const tags = pgTable(
   },
 )
 
-// Event-Tag relationship table - Many-to-many between events and tags
 export const event_tags = pgTable(
   'event_tags',
   {

@@ -442,7 +442,7 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
 
   return (
     <div ref={parentRef} className="space-y-6">
-      {/* Filter Controls */}
+
       <PositionsFilterControls
         marketStatusFilter={marketStatusFilter}
         searchQuery={searchQuery}
@@ -452,7 +452,6 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
         handleAmountFilterChange={handleAmountFilterChange}
       />
 
-      {/* Column Headers */}
       <div className={`
         mb-2 flex items-center gap-3 px-3 py-2 text-xs font-medium tracking-wide text-muted-foreground uppercase
         sm:gap-4 sm:px-5

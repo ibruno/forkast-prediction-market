@@ -12,7 +12,7 @@ function parseAdminWalletsEnv(value: string): string[] {
     }
   }
   catch {
-    // Not JSON, fallback to comma-separated
+    //
   }
 
   return trimmed

@@ -381,8 +381,8 @@ export const AffiliateRepository = {
         .from(affiliate_referrals)
         .innerJoin(users, eq(affiliate_referrals.user_id, users.id))
         .where(eq(affiliate_referrals.affiliate_user_id, affiliateUserId))
-        .orderBy(desc(affiliate_referrals.created_at)) // Apply descending order by created_at using Drizzle orderBy
-        .limit(limit) // Implement pagination with configurable limit using Drizzle limit
+        .orderBy(desc(affiliate_referrals.created_at))
+        .limit(limit)
 
       const data = result.map(row => ({
         user_id: row.user_id,

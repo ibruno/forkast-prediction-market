@@ -163,7 +163,7 @@ export default function PublicActivityList({ userAddress }: PublicActivityListPr
 
   return (
     <div ref={parentRef} className="space-y-6">
-      {/* Column Headers */}
+
       <div className={`
         mb-2 flex items-center gap-3 px-3 py-2 text-xs font-medium tracking-wide text-muted-foreground uppercase
         sm:gap-4 sm:px-5

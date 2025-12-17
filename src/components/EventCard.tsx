@@ -339,7 +339,6 @@ export default function EventCard({ event }: EventCardProps) {
             </h3>
           </Link>
 
-          {/* Right side - Probability badge OR Close button */}
           {isInTradingMode
             ? (
                 <button
@@ -367,7 +366,7 @@ export default function EventCard({ event }: EventCardProps) {
                         viewBox="0 0 72 52"
                         className="rotate-0 transform"
                       >
-                        {/* Background arc */}
+
                         <path
                           d="M 6 46 A 30 30 0 0 1 66 46"
                           fill="none"
@@ -375,7 +374,7 @@ export default function EventCard({ event }: EventCardProps) {
                           strokeWidth="5"
                           className="text-slate-200 dark:text-slate-600"
                         />
-                        {/* Progress arc */}
+
                         <path
                           d="M 6 46 A 30 30 0 0 1 66 46"
                           fill="none"
@@ -393,7 +392,7 @@ export default function EventCard({ event }: EventCardProps) {
                           strokeDashoffset="0"
                         />
                       </svg>
-                      {/* Percentage number centered in arc */}
+
                       <div className="absolute inset-0 flex items-center justify-center pt-4">
                         <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
                           {roundedPrimaryDisplayChance}
@@ -401,7 +400,7 @@ export default function EventCard({ event }: EventCardProps) {
                         </span>
                       </div>
                     </div>
-                    {/* "chance" text positioned close to the arc */}
+
                     <div className="-mt-2 text-xs font-medium text-slate-500 dark:text-slate-400">
                       chance
                     </div>
@@ -410,7 +409,6 @@ export default function EventCard({ event }: EventCardProps) {
               )}
         </div>
 
-        {/* Dynamic Content Area */}
         <div className="flex flex-1 flex-col">
           {activeOutcome
             ? (
@@ -449,7 +447,6 @@ export default function EventCard({ event }: EventCardProps) {
                     />
                   </div>
 
-                  {/* Confirm Trade Button */}
                   <Button
                     type="button"
                     onClick={(e) => {
@@ -496,7 +493,7 @@ export default function EventCard({ event }: EventCardProps) {
               )
             : (
                 <>
-                  {/* Show multi-market options only for non-binary markets */}
+
                   {!isSingleMarket && (
                     <div className="mt-auto mb-1 scrollbar-hide max-h-14 space-y-2 overflow-y-auto">
                       {event.markets.map(market => (
@@ -570,7 +567,6 @@ export default function EventCard({ event }: EventCardProps) {
                     </div>
                   )}
 
-                  {/* Trading Actions - Only for binary markets */}
                   {isSingleMarket && yesOutcome && noOutcome && (
                     <div className="mt-auto mb-2 grid grid-cols-2 gap-2">
                       <Button

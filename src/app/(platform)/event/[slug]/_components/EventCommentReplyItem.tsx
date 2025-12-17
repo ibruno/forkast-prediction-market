@@ -135,7 +135,6 @@ export default function EventCommentReplyItem({
         )}
       </div>
 
-      {/* Reply input field for second level replies */}
       {replyingTo === reply.id && (
         <div className="mt-3">
           <EventCommentReplyForm

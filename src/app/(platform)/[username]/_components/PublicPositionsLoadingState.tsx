@@ -28,7 +28,6 @@ export default function PublicPositionsLoadingState({
         ))}
       </div>
 
-      {/* Loading message footer */}
       <div className="p-4 text-center">
         <div className="space-y-2">
           <div className="text-sm text-muted-foreground">

@@ -39,7 +39,6 @@ export default function PortfolioProfitLossCard() {
   const isPositive = profitLoss > 0
   const isNegative = profitLoss < 0
 
-  // Function to get the appropriate icon and color
   function getStatusIcon() {
     if (isPositive) {
       return <TriangleIcon className="size-4 fill-green-600 text-green-600" />
@@ -55,7 +54,7 @@ export default function PortfolioProfitLossCard() {
   return (
     <Card className="border border-border/60 bg-transparent">
       <CardContent className="flex flex-col p-6">
-        {/* Header with title and timeframe pills */}
+
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {getStatusIcon()}
@@ -67,14 +66,13 @@ export default function PortfolioProfitLossCard() {
           />
         </div>
 
-        {/* Main value and logo row */}
         <div className="mb-2 flex items-center justify-between">
           <div className={`text-3xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
             {isPositive ? '+' : isNegative ? '-' : ''}
             $
             {Math.abs(profitLoss).toFixed(2)}
           </div>
-          {/* Logo alinhada com o valor */}
+
           <div className="flex items-center gap-1 text-muted-foreground opacity-40">
             <div
               className="size-6"
@@ -88,12 +86,10 @@ export default function PortfolioProfitLossCard() {
           </div>
         </div>
 
-        {/* Subtitle */}
         <div className="mb-3">
           <span className="text-sm text-muted-foreground">All-Time</span>
         </div>
 
-        {/* Chart area - altura mínima */}
         <div className="relative h-5">
           <svg
             width="100"
@@ -108,7 +104,6 @@ export default function PortfolioProfitLossCard() {
               </linearGradient>
             </defs>
 
-            {/* Simple declining line with area */}
             <path
               d="M0,8 Q25,6 50,10 T100,14 L100,20 L0,20 Z"
               fill="url(#miniChartGradient)"

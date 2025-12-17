@@ -159,12 +159,10 @@ export default function EventRelated({ event }: EventRelatedProps) {
       return
     }
 
-    // Use requestAnimationFrame to ensure layout calculations happen after DOM updates
     requestAnimationFrame(() => {
       const buttonRect = activeButton.getBoundingClientRect()
       const containerRect = container.getBoundingClientRect()
 
-      // Calculate position relative to the container
       const left = buttonRect.left - containerRect.left
       const top = buttonRect.top - containerRect.top
 

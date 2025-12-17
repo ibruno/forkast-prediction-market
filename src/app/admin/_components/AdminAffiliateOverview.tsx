@@ -37,7 +37,6 @@ export default function AdminAffiliateOverview({ rows }: AdminAffiliateOverviewP
         </div>
       </div>
 
-      {/* Desktop Table View */}
       <div className="hidden overflow-x-auto md:block">
         <table className="min-w-full divide-y">
           <thead className="text-xs text-muted-foreground uppercase">
@@ -94,7 +93,6 @@ export default function AdminAffiliateOverview({ rows }: AdminAffiliateOverviewP
         </table>
       </div>
 
-      {/* Mobile Card View */}
       <div className="divide-y md:hidden">
         {rows.map((row) => {
           return (

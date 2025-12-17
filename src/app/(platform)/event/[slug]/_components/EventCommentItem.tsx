@@ -133,7 +133,6 @@ export default function EventCommentItem({
         </div>
       </ProfileLink>
 
-      {/* Reply input field */}
       {replyingTo === comment.id && (
         <div className="mt-3 ml-11">
           <EventCommentReplyForm
@@ -150,7 +149,6 @@ export default function EventCommentItem({
         </div>
       )}
 
-      {/* Render replies */}
       {comment.recent_replies && comment.recent_replies.length > 0 && (
         <div className="ml-11 flex flex-col gap-3">
           {comment.recent_replies.map(reply => (

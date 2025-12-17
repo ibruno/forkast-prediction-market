@@ -53,7 +53,7 @@ export interface Market {
   is_resolved: boolean
   block_number: number
   block_timestamp: string
-  metadata?: any // JSONB
+  metadata?: any
   volume_24h: number
   volume: number
   created_at: string
@@ -274,7 +274,7 @@ export interface TopHolder {
   outcome_text: string
 }
 
-export type OrderSide = 0 | 1 // 0 = buy, 1 = sell
+export type OrderSide = 0 | 1 // 0 = BUY, 1 = SELL
 export type OrderType = 'MARKET' | 'LIMIT'
 export type ClobOrderType = 'FOK' | 'FAK' | 'GTC' | 'GTD'
 export type MarketOrderType = 'FAK' | 'FOK'

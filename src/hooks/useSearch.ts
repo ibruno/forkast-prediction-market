@@ -103,7 +103,6 @@ export function useSearch(): UseSearch {
     return () => clearTimeout(timer)
   }, [query, search])
 
-  // Determine default tab based on results
   useEffect(() => {
     const hasEvents = results.events.length > 0 || isLoading.events
     const hasProfiles = results.profiles.length > 0 || isLoading.profiles

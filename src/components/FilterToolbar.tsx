@@ -150,7 +150,6 @@ export default function FilterToolbar({ filters, onFiltersChange }: FilterToolba
     setFilterSettings((prev) => {
       const next = { ...prev, ...updates }
 
-      // Update parent component's filter state for hide options
       const hideSportsChanged = 'hideSports' in updates && updates.hideSports !== undefined && updates.hideSports !== prev.hideSports
       const hideCryptoChanged = 'hideCrypto' in updates && updates.hideCrypto !== undefined && updates.hideCrypto !== prev.hideCrypto
       const hideEarningsChanged = 'hideEarnings' in updates && updates.hideEarnings !== undefined && updates.hideEarnings !== prev.hideEarnings

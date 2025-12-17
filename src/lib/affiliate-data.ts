@@ -8,12 +8,12 @@ export interface AffiliateSettingsResponse {
 }
 
 export interface FormattedAffiliateSettings {
-  tradeFeePercent: string // "1.00"
-  affiliateSharePercent: string // "40.00"
-  platformSharePercent: string // "60.00"
-  tradeFeeDecimal: number // 0.01
-  affiliateShareDecimal: number // 0.40
-  platformShareDecimal: number // 0.60
+  tradeFeePercent: string
+  affiliateSharePercent: string
+  platformSharePercent: string
+  tradeFeeDecimal: number
+  affiliateShareDecimal: number
+  platformShareDecimal: number
 }
 
 export interface AffiliateDataError {
