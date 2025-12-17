@@ -31,7 +31,7 @@ CREATE TABLE orders
   created_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW()           NOT NULL,
   updated_at           TIMESTAMP WITH TIME ZONE DEFAULT NOW()           NOT NULL,
   CONSTRAINT orders_type_check CHECK (orders.type IN ('FAK', 'FOK', 'GTC', 'GTD')),
-  CONSTRAINT orders_side_check CHECK (orders.side IN (0, 1)),
+  CONSTRAINT orders_side_check CHECK (orders.side IN (0, 1))
 );
 
 -- ===========================================
