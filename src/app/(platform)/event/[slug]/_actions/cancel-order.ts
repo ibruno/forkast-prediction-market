@@ -1,7 +1,6 @@
 'use server'
 
 import { z } from 'zod'
-import { OrderRepository } from '@/lib/db/queries/order'
 import { UserRepository } from '@/lib/db/queries/user'
 import { buildClobHmacSignature } from '@/lib/hmac'
 import { TRADING_AUTH_REQUIRED_ERROR } from '@/lib/trading-auth/errors'
@@ -32,18 +31,9 @@ export async function cancelOrderAction(rawOrderId: string) {
     return { error: parsed.error.issues[0]?.message ?? 'Invalid order.' }
   }
 
-  const lookup = await OrderRepository.findUserOrderById(parsed.data.orderId, user.id)
-  if (lookup.error || !lookup.data) {
-    return { error: 'Order not found.' }
-  }
-
-  if (!['live', 'pending'].includes(lookup.data.status)) {
-    return { error: 'This order can no longer be cancelled.' }
-  }
-
   const method = 'DELETE'
   const path = '/order'
-  const body = JSON.stringify({ orderId: lookup.data.clob_order_id })
+  const body = JSON.stringify({ orderId: parsed.data.orderId })
   const timestamp = Math.floor(Date.now() / 1000)
   const signature = buildClobHmacSignature(
     auth.clob.secret,
@@ -93,11 +83,6 @@ export async function cancelOrderAction(rawOrderId: string) {
 
       console.error('Failed to cancel order on CLOB.', message ?? `Status ${response.status}`)
       return { error: message || CANCEL_ORDER_ERROR }
-    }
-
-    const { error: cancelError } = await OrderRepository.cancelOrder(lookup.data.id, user.id)
-    if (cancelError) {
-      console.error('Failed to mark order as cancelled locally.', cancelError)
     }
 
     return { error: null }

@@ -1,33 +1,9 @@
 import type { ClobOrderType, OrderSide } from '@/types'
-import { and, eq, inArray } from 'drizzle-orm'
 import { orders } from '@/lib/db/schema/orders/tables'
 import { runQuery } from '@/lib/db/utils/run-query'
 import { db } from '@/lib/drizzle'
 
 export const OrderRepository = {
-  async findUserOrderById(orderId: string, userId: string) {
-    return await runQuery(async () => {
-      const [order] = await db
-        .select({
-          id: orders.id,
-          clob_order_id: orders.clob_order_id,
-          status: orders.status,
-        })
-        .from(orders)
-        .where(and(
-          eq(orders.id, orderId),
-          eq(orders.user_id, userId),
-        ))
-        .limit(1)
-
-      if (!order) {
-        return { data: null, error: 'Order not found' }
-      }
-
-      return { data: order, error: null }
-    })
-  },
-
   async createOrder(args: {
     // begin blockchain data
     salt: bigint
@@ -52,9 +28,7 @@ export const OrderRepository = {
     user_id: string
     affiliate_user_id: string
     condition_id: string
-    status: string
     clob_order_id: string
-    size_matched: bigint
   }) {
     return await runQuery(async () => {
       const result = await db
@@ -63,53 +37,6 @@ export const OrderRepository = {
         .returning()
 
       return { data: result[0], error: null }
-    })
-  },
-
-  async cancelOrder(orderId: string, userId: string) {
-    return await runQuery(async () => {
-      const result = await db
-        .update(orders)
-        .set({
-          status: 'cancelled',
-        })
-        .where(and(
-          eq(orders.id, orderId),
-          eq(orders.user_id, userId),
-          inArray(orders.status, ['delayed', 'live']),
-        ))
-        .returning()
-
-      if (result.length === 0) {
-        return {
-          data: null,
-          error: 'No matching order found or order cannot be cancelled',
-        }
-      }
-
-      return { data: result[0], error: null }
-    })
-  },
-
-  async findUserOrdersByClobIds(userId: string, clobOrderIds: string[]) {
-    if (!clobOrderIds.length) {
-      return { data: [], error: null }
-    }
-
-    return await runQuery(async () => {
-      const rows = await db
-        .select({
-          id: orders.id,
-          clob_order_id: orders.clob_order_id,
-          condition_id: orders.condition_id,
-        })
-        .from(orders)
-        .where(and(
-          eq(orders.user_id, userId),
-          inArray(orders.clob_order_id, clobOrderIds),
-        ))
-
-      return { data: rows, error: null }
     })
   },
 }

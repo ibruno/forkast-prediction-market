@@ -5,8 +5,6 @@ const mocks = vi.hoisted(() => ({
   buildClobHmacSignature: vi.fn(() => 'sig'),
   getUserTradingAuthSecrets: vi.fn(),
   getCurrentUser: vi.fn(),
-  findUserOrderById: vi.fn(),
-  cancelOrder: vi.fn(),
 }))
 
 vi.mock('@/lib/hmac', () => ({
@@ -21,21 +19,12 @@ vi.mock('@/lib/db/queries/user', () => ({
   UserRepository: { getCurrentUser: (...args: any[]) => mocks.getCurrentUser(...args) },
 }))
 
-vi.mock('@/lib/db/queries/order', () => ({
-  OrderRepository: {
-    findUserOrderById: (...args: any[]) => mocks.findUserOrderById(...args),
-    cancelOrder: (...args: any[]) => mocks.cancelOrder(...args),
-  },
-}))
-
 describe('cancelOrderAction', () => {
   beforeEach(() => {
     vi.resetModules()
     mocks.buildClobHmacSignature.mockReset()
     mocks.getUserTradingAuthSecrets.mockReset()
     mocks.getCurrentUser.mockReset()
-    mocks.findUserOrderById.mockReset()
-    mocks.cancelOrder.mockReset()
   })
 
   it('rejects unauthenticated users', async () => {
@@ -62,26 +51,6 @@ describe('cancelOrderAction', () => {
     expect(await cancelOrderAction('order-1')).toEqual({ error: 'Deploy your proxy wallet before trading.' })
   })
 
-  it('validates the order id and ownership/status', async () => {
-    process.env.CLOB_URL = 'https://clob.local'
-    const user = {
-      id: 'user-1',
-      address: '0x0000000000000000000000000000000000000001',
-      proxy_wallet_address: '0x0000000000000000000000000000000000000002',
-    }
-    mocks.getCurrentUser.mockResolvedValue(user)
-    mocks.getUserTradingAuthSecrets.mockResolvedValue({ clob: { key: 'k', passphrase: 'p', secret: 's' } })
-
-    const { cancelOrderAction } = await import('@/app/(platform)/event/[slug]/_actions/cancel-order')
-    expect(await cancelOrderAction('')).toEqual({ error: 'Order id is required.' })
-
-    mocks.findUserOrderById.mockResolvedValueOnce({ data: null, error: null })
-    expect(await cancelOrderAction('order-1')).toEqual({ error: 'Order not found.' })
-
-    mocks.findUserOrderById.mockResolvedValueOnce({ data: { id: '1', status: 'matched' }, error: null })
-    expect(await cancelOrderAction('order-1')).toEqual({ error: 'This order can no longer be cancelled.' })
-  })
-
   it('maps CLOB HTTP errors to user-facing messages', async () => {
     process.env.CLOB_URL = 'https://clob.local'
     mocks.getCurrentUser.mockResolvedValueOnce({
@@ -90,7 +59,6 @@ describe('cancelOrderAction', () => {
       proxy_wallet_address: '0x0000000000000000000000000000000000000002',
     })
     mocks.getUserTradingAuthSecrets.mockResolvedValueOnce({ clob: { key: 'k', passphrase: 'p', secret: 's' } })
-    mocks.findUserOrderById.mockResolvedValueOnce({ data: { id: 'local', status: 'live', clob_order_id: 'clob-1' }, error: null })
 
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: false,
@@ -110,17 +78,14 @@ describe('cancelOrderAction', () => {
       proxy_wallet_address: '0x0000000000000000000000000000000000000002',
     })
     mocks.getUserTradingAuthSecrets.mockResolvedValueOnce({ clob: { key: 'k', passphrase: 'p', secret: 's' } })
-    mocks.findUserOrderById.mockResolvedValueOnce({ data: { id: 'local', status: 'pending', clob_order_id: 'clob-1' }, error: null })
 
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
       status: 200,
       json: async () => ({}),
     }) as any
-    mocks.cancelOrder.mockResolvedValueOnce({ error: null })
 
     const { cancelOrderAction } = await import('@/app/(platform)/event/[slug]/_actions/cancel-order')
     expect(await cancelOrderAction('order-1')).toEqual({ error: null })
-    expect(mocks.cancelOrder).toHaveBeenCalledWith('local', 'user-1')
   })
 })
