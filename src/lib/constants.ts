@@ -8,7 +8,7 @@ export const AMOY_CHAIN_ID = 80_002
 
 export const IS_TEST_MODE = defaultNetwork.id === AMOY_CHAIN_ID
 
-export const CONDITIONAL_TOKENS_CONTRACT = '0x4F047bD628145de7F902Af7f8B5988e1A8767148' as `0x${string}`
+export const CONDITIONAL_TOKENS_CONTRACT = '0x211B46233799C69da351cd7e8d0Bfe9071323Cb6' as `0x${string}`
 
 export const COLLATERAL_TOKEN_ADDRESS = IS_TEST_MODE
   ? '0x41E94Eb019C0762f9Bfcf9Fb1E58725BfB0e7582' as `0x${string}`
@@ -43,11 +43,11 @@ export const OUTCOME_INDEX = {
 export const CAP_MICRO = 990_000n
 export const FLOOR_MICRO = 10_000n
 
-export const CTF_EXCHANGE_ADDRESS = '0x606aB3037e170cC00484d9BF413ce0f088Eef6B5' as `0x${string}`
+export const CTF_EXCHANGE_ADDRESS = '0x828da759D63e7d7890AF8F30e3Cdc9c456F7533e' as `0x${string}`
 const negRiskExchangeAddress = (
   process.env.NEGRISK_CTFEXCHANGE_ADDRESS
   ?? process.env.NEXT_PUBLIC_NEGRISK_CTFEXCHANGE_ADDRESS
-  ?? '0x7BF55f022475aA95032ab9c2905Ac38d8b204FcA'
+  ?? '0x3314ad2140f1b5F3b305Fd062E2D2d3E75Fc5205'
 ) as `0x${string}`
 export const NEG_RISK_CTF_EXCHANGE_ADDRESS = negRiskExchangeAddress
 
