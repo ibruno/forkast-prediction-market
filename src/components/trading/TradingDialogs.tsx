@@ -153,6 +153,8 @@ function TradingStepsList({
   onTradingAuthAction,
   onApprovalsAction,
 }: TradingStepsProps) {
+  const tradingAuthSatisfied = hasTradingAuth || tradingAuthStep === 'completed'
+
   return (
     <div className="mt-6 space-y-6 text-left">
       <TradingRequirementStep
@@ -187,7 +189,7 @@ function TradingStepsList({
         actionLabel={approvalsStep === 'signing' ? 'Signing…' : 'Sign'}
         isLoading={approvalsStep === 'signing'}
         disabled={
-          !hasTradingAuth
+          !tradingAuthSatisfied
           || !hasDeployedProxyWallet
           || approvalsStep === 'completed'
           || approvalsStep === 'signing'

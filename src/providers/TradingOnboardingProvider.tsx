@@ -83,6 +83,7 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
   )
   const approvalsSettings = tradingAuthSettings?.approvals ?? null
   const hasTokenApprovals = Boolean(approvalsSettings?.enabled)
+  const tradingAuthSatisfied = hasTradingAuth || tradingAuthStep === 'completed'
   const localStepsComplete
     = proxyStep === 'completed'
       && tradingAuthStep === 'completed'
@@ -423,7 +424,7 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
       return
     }
 
-    if (!hasTradingAuth) {
+    if (!tradingAuthSatisfied) {
       setTokenApprovalError('Enable trading before approving tokens.')
       return
     }
@@ -519,7 +520,7 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
       }
       setApprovalsStep('idle')
     }
-  }, [hasTradingAuth, refreshSessionUserState, signMessageAsync, user])
+  }, [refreshSessionUserState, signMessageAsync, tradingAuthSatisfied, user])
 
   const ensureTradingReady = useCallback(() => {
     if (!user) {
