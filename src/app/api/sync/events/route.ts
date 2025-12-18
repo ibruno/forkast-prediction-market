@@ -37,7 +37,7 @@ interface SyncStats {
 
 function getAllowedCreators(): string[] {
   const fixedCreators = [
-    '0xa4221e79Aa4c29c8AB2f76be76a4cc97579e542d', // Polymarket cloned markets on Amoy
+    '0x1FD81E09dA67D84f02DB0c0eBabd5a217D1B928d', // Polymarket cloned markets on Amoy
   ]
   const envCreators = MARKET_CREATORS_ADDRESS
     ? MARKET_CREATORS_ADDRESS.split(',').map(addr => addr.trim()).filter(addr => addr.length > 0)
