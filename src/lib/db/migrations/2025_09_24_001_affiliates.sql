@@ -47,23 +47,19 @@ CREATE OR REPLACE FUNCTION get_affiliate_stats(target_user_id CHAR(26))
 AS
 $$
 SELECT COALESCE((SELECT COUNT(*) FROM affiliate_referrals ar WHERE ar.affiliate_user_id = target_user_id),
-                0)                               AS total_referrals,
+                0)                                               AS total_referrals,
        COALESCE((SELECT COUNT(DISTINCT o.user_id)
                  FROM orders o
-                 WHERE o.affiliate_user_id = target_user_id
-                   AND o.status = 'matched'), 0) AS active_referrals,
+                 WHERE o.affiliate_user_id = target_user_id), 0) AS active_referrals,
        COALESCE((SELECT SUM(o.maker_amount)
                  FROM orders o
-                 WHERE o.affiliate_user_id = target_user_id
-                   AND o.status = 'matched'), 0) AS volume,
+                 WHERE o.affiliate_user_id = target_user_id), 0) AS volume,
        COALESCE((SELECT SUM(o.affiliate_percentage)
                  FROM orders o
-                 WHERE o.affiliate_user_id = target_user_id
-                   AND o.status = 'matched'), 0) AS total_affiliate_fees,
+                 WHERE o.affiliate_user_id = target_user_id), 0) AS total_affiliate_fees,
        COALESCE((SELECT SUM(o.affiliate_percentage)
                  FROM orders o
-                 WHERE o.affiliate_user_id = target_user_id
-                   AND o.status = 'matched'), 0) AS total_fork_fees;
+                 WHERE o.affiliate_user_id = target_user_id), 0) AS total_fork_fees;
 $$;
 
 CREATE OR REPLACE FUNCTION get_affiliate_overview()
@@ -88,8 +84,8 @@ FROM users u
                   FROM affiliate_referrals
                   GROUP BY affiliate_user_id) ar ON ar.affiliate_user_id = u.id
        LEFT JOIN (SELECT affiliate_user_id,
-                         SUM(CASE WHEN status = 'matched' THEN maker_amount ELSE 0 END)         AS volume,
-                         SUM(CASE WHEN status = 'matched' THEN affiliate_percentage ELSE 0 END) AS total_affiliate_fees
+                         SUM(maker_amount)         AS volume,
+                         SUM(affiliate_percentage) AS total_affiliate_fees
                   FROM orders
                   WHERE affiliate_user_id IS NOT NULL
                   GROUP BY affiliate_user_id) ord ON ord.affiliate_user_id = u.id
