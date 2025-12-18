@@ -10,6 +10,11 @@ interface EventOrderPanelUserSharesProps {
 }
 
 export default function EventOrderPanelUserShares({ yesShares, noShares, activeOutcome }: EventOrderPanelUserSharesProps) {
+  const shouldShow = yesShares > 0 || noShares > 0
+  if (!shouldShow) {
+    return null
+  }
+
   const formattedYesShares = sharesFormatter.format(Math.max(0, yesShares))
   const formattedNoShares = sharesFormatter.format(Math.max(0, noShares))
   const yesClass = activeOutcome === OUTCOME_INDEX.YES ? 'text-yes' : 'text-muted-foreground'

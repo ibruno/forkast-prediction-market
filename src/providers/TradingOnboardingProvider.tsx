@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import type { SafeTransactionRequestPayload } from '@/lib/safe/transactions'
-import type { ProxyWalletStatus } from '@/types'
+import type { ProxyWalletStatus, User } from '@/types'
 import { createContext, use, useCallback, useEffect, useMemo, useState } from 'react'
 import { hashTypedData, UserRejectedRequestError } from 'viem'
 import { useSignMessage, useSignTypedData } from 'wagmi'
@@ -119,7 +119,7 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
           disableCookieCache: true,
         },
       })
-      const sessionUser = session?.data?.user
+      const sessionUser = session?.data?.user as User | undefined
       if (sessionUser) {
         useUser.setState((previous) => {
           if (!previous) {
