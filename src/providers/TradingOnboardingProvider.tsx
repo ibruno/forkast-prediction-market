@@ -114,12 +114,30 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
 
   const refreshSessionUserState = useCallback(async () => {
     try {
-      const session = await authClient.getSession()
+      const session = await authClient.getSession({
+        query: {
+          disableCookieCache: true,
+        },
+      })
       const sessionUser = session?.data?.user
       if (sessionUser) {
-        useUser.setState({
-          ...sessionUser,
-          image: sessionUser.image ?? '',
+        useUser.setState((previous) => {
+          if (!previous) {
+            return {
+              ...sessionUser,
+              image: sessionUser.image ?? '',
+            }
+          }
+
+          return {
+            ...previous,
+            ...sessionUser,
+            image: sessionUser.image ?? previous.image ?? '',
+            settings: {
+              ...(previous.settings ?? {}),
+              ...(sessionUser.settings ?? {}),
+            },
+          }
         })
       }
     }
