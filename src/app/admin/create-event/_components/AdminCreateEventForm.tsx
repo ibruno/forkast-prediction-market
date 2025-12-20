@@ -12,6 +12,7 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { OUTCOME_INDEX } from '@/lib/constants'
+import { RESOLVED_BY_ADDRESS } from '@/lib/contracts'
 
 interface EventTag {
   label: string
@@ -501,7 +502,7 @@ export default function AdminCreateEventForm() {
           ...market,
           outcomes: market.outcomes.filter(outcome => outcome.outcome.trim()),
           oracle_type: 'native',
-          resolved_by: '0x584A660a399895eFc33c1Df22c4d9F66681ca0ba',
+          resolved_by: RESOLVED_BY_ADDRESS,
         })),
       }
 
