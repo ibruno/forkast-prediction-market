@@ -1,6 +1,6 @@
 import type { MarketOrderType, ProxyWalletStatus, User } from '@/types'
 import { randomBytes } from 'node:crypto'
-import { asc, count, desc, eq, ilike, inArray, or } from 'drizzle-orm'
+import { asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { cookies, headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
@@ -13,14 +13,12 @@ import { getSupabaseImageUrl } from '@/lib/supabase'
 import { sanitizeTradingAuthSettings } from '@/lib/trading-auth/utils'
 
 export const UserRepository = {
-  async getProfileByUsername(username: string) {
-    'use cache'
-
+  async getProfileByUsernameOrProxyAddress(username: string) {
     return await runQuery(async () => {
+      const normalizedUsername = username.toLowerCase()
       const result = await db
         .select({
           id: users.id,
-          address: users.address,
           proxy_wallet_address: users.proxy_wallet_address,
           username: users.username,
           image: users.image,
@@ -28,9 +26,8 @@ export const UserRepository = {
         })
         .from(users)
         .where(or(
-          eq(users.username, username),
-          eq(users.address, username),
-          eq(users.proxy_wallet_address, username),
+          eq(sql`LOWER(${users.username})`, normalizedUsername),
+          eq(sql`LOWER(${users.proxy_wallet_address})`, normalizedUsername),
         ))
         .limit(1)
 
@@ -42,10 +39,9 @@ export const UserRepository = {
 
       const data = {
         id: rawData.id,
-        address: rawData.address,
         proxy_wallet_address: rawData.proxy_wallet_address,
         username: rawData.username!,
-        image: rawData.image ? getSupabaseImageUrl(rawData.image) : `https://avatar.vercel.sh/${rawData.address}.png`,
+        image: rawData.image ? getSupabaseImageUrl(rawData.image) : `https://avatar.vercel.sh/${rawData.username}.png`,
         created_at: rawData.created_at,
       }
 
