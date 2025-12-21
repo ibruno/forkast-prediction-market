@@ -15,7 +15,7 @@ export default function EventTabSelector({ activeTab, setActiveTab, commentsCoun
 
   const eventTabs = useMemo(() => ([
     { key: 'comments', label: `Comments (${formattedCommentsCount})` },
-    { key: 'holders', label: 'Holders' },
+    { key: 'holders', label: 'Top Holders' },
     { key: 'activity', label: 'Activity' },
   ]), [formattedCommentsCount])
   const tabRefs = useRef<(HTMLLIElement | null)[]>([])
