@@ -6,6 +6,7 @@ import { AlertCircleIcon, ShareIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/useIsMobile'
 import { ORDER_SIDE, OUTCOME_INDEX } from '@/lib/constants'
 import { fetchUserPositionsForMarket } from '@/lib/data-api/user'
@@ -83,6 +84,22 @@ function MarketPositionRow({
   const outcomeButtonLabel = outcomeText || (isYesOutcome ? 'Yes' : 'No')
 
   const returnColorClass = isPositive ? 'text-yes' : 'text-no'
+  const signedPercentLabel = `${isPositive ? '+' : '-'}${percentLabel}`
+
+  function formatSignedCurrency(value: number) {
+    const abs = formatCurrency(Math.abs(value), { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    if (value > 0) {
+      return `+${abs}`
+    }
+    if (value < 0) {
+      return `-${abs}`
+    }
+    return `+${abs}`
+  }
+
+  const unrealizedLabel = formatSignedCurrency(profitLossValue)
+  const realizedLabel = formatSignedCurrency(0)
+  const totalLabel = displayedReturnValue
 
   return (
     <div
@@ -115,20 +132,56 @@ function MarketPositionRow({
         </span>
       </div>
       <div className="flex items-center gap-1 text-2xs leading-tight font-semibold sm:text-sm">
-        <span
-          className="inline-flex items-center"
-          style={{ borderBottom: '1px dotted currentColor', paddingBottom: '0.04rem' }}
-        >
-          {displayedReturnValue}
-        </span>
-        {!isNeutralReturn && (
-          <span className={cn('text-2xs font-semibold', returnColorClass)}>
-            (
-            {isPositive ? '+' : '-'}
-            {percentLabel}
-            )
-          </span>
-        )}
+        <Tooltip delayDuration={0}>
+          <TooltipTrigger asChild>
+            <span className="inline-flex items-center gap-1">
+              <span
+                className="inline-flex items-center"
+                style={{ borderBottom: '1px dotted currentColor', paddingBottom: '0.04rem' }}
+              >
+                {displayedReturnValue}
+              </span>
+              {!isNeutralReturn && (
+                <span className={cn('text-2xs font-semibold sm:text-sm', returnColorClass)}>
+                  (
+                  {signedPercentLabel}
+                  )
+                </span>
+              )}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent
+            side="bottom"
+            sideOffset={6}
+            hideArrow={true}
+            className="relative w-56 border border-border bg-background text-sm leading-tight text-foreground shadow-lg"
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-muted-foreground">Unrealized</span>
+                <span className="font-semibold text-no">{unrealizedLabel}</span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span>Realized</span>
+                <span className="font-semibold">{realizedLabel}</span>
+              </div>
+              <div className="my-1 border-t border-border" />
+              <div className="flex items-center justify-between gap-3">
+                <span>Total</span>
+                <span className="font-semibold">
+                  {totalLabel}
+                  {!isNeutralReturn && (
+                    <span className={cn('ml-1 font-semibold', returnColorClass)}>
+                      (
+                      {signedPercentLabel}
+                      )
+                    </span>
+                  )}
+                </span>
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
       </div>
       <div className="flex items-center justify-end gap-2">
         <Button
