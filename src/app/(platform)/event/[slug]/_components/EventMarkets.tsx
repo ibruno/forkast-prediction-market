@@ -83,14 +83,11 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   } = useOrderBookSummaries(eventTokenIds, { enabled: shouldEnableOrderBookPolling })
   const shouldShowOrderBookLoader = !shouldEnableOrderBookPolling || (isOrderBookLoading && !orderBookSummaries)
   const ownerAddress = useMemo(() => {
-    if (!user?.address) {
-      return null
-    }
-    if (user.proxy_wallet_address && user.proxy_wallet_status === 'deployed') {
+    if (user && user.proxy_wallet_address && user.proxy_wallet_status === 'deployed') {
       return user.proxy_wallet_address as `0x${string}`
     }
-    return user.address as `0x${string}`
-  }, [user?.address, user?.proxy_wallet_address, user?.proxy_wallet_status])
+    return '' as `0x${string}`
+  }, [user])
   const { sharesByCondition } = useUserShareBalances({ event, ownerAddress })
 
   useEffect(() => {
@@ -281,7 +278,7 @@ function MarketDetailTabs({
   const { selected: controlledTab, select } = tabController
   const marketShares = sharesByCondition?.[market.condition_id]
   const hasPositions = Boolean(
-    user?.address
+    user?.proxy_wallet_address
     && marketShares
     && ((marketShares[OUTCOME_INDEX.YES] ?? 0) > 0 || (marketShares[OUTCOME_INDEX.NO] ?? 0) > 0),
   )
@@ -298,15 +295,15 @@ function MarketDetailTabs({
   }, [openOrdersData?.pages])
 
   const { data: historyPreview } = useQuery<DataApiActivity[]>({
-    queryKey: ['user-market-activity-preview', user?.address, market.condition_id],
+    queryKey: ['user-market-activity-preview', user?.proxy_wallet_address, market.condition_id],
     queryFn: ({ signal }) =>
       fetchUserActivityData({
         pageParam: 0,
-        userAddress: user?.address ?? '',
+        userAddress: user?.proxy_wallet_address ?? '',
         conditionId: market.condition_id,
         signal,
       }),
-    enabled: Boolean(user?.address && market.condition_id),
+    enabled: Boolean(user?.proxy_wallet_address && market.condition_id),
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   })

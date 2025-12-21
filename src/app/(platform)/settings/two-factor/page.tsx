@@ -1,6 +1,7 @@
 'use cache: private'
 
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import SettingsTwoFactorAuthContent from '@/app/(platform)/settings/_components/SettingsTwoFactorAuthContent'
 import { UserRepository } from '@/lib/db/queries/user'
 
@@ -10,6 +11,9 @@ export const metadata: Metadata = {
 
 export default async function TwoFactorSettingsPage() {
   const user = await UserRepository.getCurrentUser({ disableCookieCache: true })
+  if (!user) {
+    notFound()
+  }
 
   return (
     <section className="grid gap-8">
