@@ -15,9 +15,20 @@ interface ProfileLinkProps {
   position?: number
   date?: string
   children?: ReactNode
+  trailing?: ReactNode
+  usernameMaxWidthClassName?: string
+  usernameClassName?: string
 }
 
-export default function ProfileLink({ user, position, date, children }: ProfileLinkProps) {
+export default function ProfileLink({
+  user,
+  position,
+  date,
+  children,
+  trailing,
+  usernameMaxWidthClassName,
+  usernameClassName,
+}: ProfileLinkProps) {
   const medalColor = {
     1: '#FFD700',
     2: '#C0C0C0',
@@ -28,7 +39,12 @@ export default function ProfileLink({ user, position, date, children }: ProfileL
   const profileHref = `/@${user.username}` as any
 
   return (
-    <div className={cn('flex gap-3 py-2', children ? 'items-start' : 'items-center')}>
+    <div
+      className={cn(
+        'flex gap-3 py-2',
+        children ? 'items-start' : 'items-center',
+      )}
+    >
       <Link href={profileHref} className="relative shrink-0">
         <Image
           src={user.image}
@@ -47,18 +63,35 @@ export default function ProfileLink({ user, position, date, children }: ProfileL
           </Badge>
         )}
       </Link>
-      <div className="w-full">
-        <div className="flex max-w-32 items-center gap-1 lg:max-w-64">
-          <Link href={profileHref} className="truncate text-sm font-medium">
-            {user.username}
-          </Link>
-          {date && (
-            <span className="text-xs whitespace-nowrap text-muted-foreground">
-              {formatTimeAgo(date)}
-            </span>
-          )}
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <div
+            className={cn(
+              'flex min-w-0 items-center gap-1',
+              usernameMaxWidthClassName ?? 'max-w-32 lg:max-w-64',
+            )}
+          >
+            <Link
+              href={profileHref}
+              className={cn('truncate text-sm font-medium', usernameClassName)}
+            >
+              {user.username}
+            </Link>
+            {date && (
+              <span className="text-xs whitespace-nowrap text-muted-foreground">
+                {formatTimeAgo(date)}
+              </span>
+            )}
+          </div>
+          {children}
         </div>
-        {children}
+        {trailing
+          ? (
+              <div className="ml-2 flex shrink-0 items-center text-right">
+                {trailing}
+              </div>
+            )
+          : null}
       </div>
     </div>
   )

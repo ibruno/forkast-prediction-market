@@ -10,6 +10,7 @@ import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { fetchTopHolders } from '@/lib/data-api/holders'
+import { sharesFormatter } from '@/lib/formatters'
 import { useIsSingleMarket, useOrder } from '@/stores/useOrder'
 
 interface EventTopHoldersProps {
@@ -26,6 +27,18 @@ function useEventHolders(conditionId?: string, yesToken?: string, noToken?: stri
     refetchOnWindowFocus: false,
     retry: 3,
   })
+}
+
+function formatHolderShares(value: string | number | null | undefined) {
+  const numericValue = typeof value === 'string'
+    ? Number.parseFloat(value)
+    : Number(value ?? 0)
+
+  if (!Number.isFinite(numericValue)) {
+    return '0'
+  }
+
+  return sharesFormatter.format(Number(numericValue.toFixed(2)))
 }
 
 export default function EventTopHolders({ event }: EventTopHoldersProps) {
@@ -88,14 +101,50 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
         <Skeleton className="mb-4 h-8 w-32" />
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <ProfileLinkSkeleton showPosition={true} showChildren={true} />
-            <ProfileLinkSkeleton showPosition={true} showChildren={true} />
-            <ProfileLinkSkeleton showPosition={true} showChildren={true} />
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+            <div className="mt-1 divide-y divide-border border-t">
+              <ProfileLinkSkeleton
+                showChildren={false}
+                showTrailing={true}
+                usernameMaxWidthClassName="max-w-[140px]"
+              />
+              <ProfileLinkSkeleton
+                showChildren={false}
+                showTrailing={true}
+                usernameMaxWidthClassName="max-w-[140px]"
+              />
+              <ProfileLinkSkeleton
+                showChildren={false}
+                showTrailing={true}
+                usernameMaxWidthClassName="max-w-[140px]"
+              />
+            </div>
           </div>
           <div>
-            <ProfileLinkSkeleton showPosition={true} showChildren={true} />
-            <ProfileLinkSkeleton showPosition={true} showChildren={true} />
-            <ProfileLinkSkeleton showPosition={true} showChildren={true} />
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-3 w-12" />
+            </div>
+            <div className="mt-1 divide-y divide-border border-t">
+              <ProfileLinkSkeleton
+                showChildren={false}
+                showTrailing={true}
+                usernameMaxWidthClassName="max-w-[140px]"
+              />
+              <ProfileLinkSkeleton
+                showChildren={false}
+                showTrailing={true}
+                usernameMaxWidthClassName="max-w-[140px]"
+              />
+              <ProfileLinkSkeleton
+                showChildren={false}
+                showTrailing={true}
+                usernameMaxWidthClassName="max-w-[140px]"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -134,46 +183,56 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
 
       <div className="grid grid-cols-2 gap-6">
         <div>
-          <span className="text-sm font-medium">Yes holders</span>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">Yes holders</span>
+            <span className="text-[11px] leading-none font-semibold tracking-wide text-muted-foreground">
+              SHARES
+            </span>
+          </div>
           <div className="mt-1 divide-y divide-border border-t">
             {!data?.yesHolders || data.yesHolders.length === 0
               ? <p className="py-2 text-sm text-muted-foreground">No holders found</p>
               : (
-                  data.yesHolders.map((holder, index) => (
+                  data.yesHolders.map(holder => (
                     <ProfileLink
                       key={holder.user.proxy_wallet_address!}
                       user={holder.user}
-                      position={index + 1}
-                    >
-                      <span className="text-xs font-semibold text-yes">
-                        {holder.net_position}
-                        {' '}
-                        shares
-                      </span>
-                    </ProfileLink>
+                      usernameClassName="font-semibold text-foreground"
+                      usernameMaxWidthClassName="max-w-[140px]"
+                      trailing={(
+                        <span className="text-sm font-semibold text-yes tabular-nums">
+                          {formatHolderShares(holder.net_position)}
+                        </span>
+                      )}
+                    />
                   ))
                 )}
           </div>
         </div>
 
         <div>
-          <span className="text-sm font-medium">No holders</span>
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold">No holders</span>
+            <span className="text-[11px] leading-none font-semibold tracking-wide text-muted-foreground">
+              SHARES
+            </span>
+          </div>
           <div className="mt-1 divide-y divide-border border-t">
             {!data?.noHolders || data.noHolders.length === 0
               ? <p className="py-2 text-sm text-muted-foreground">No holders found</p>
               : (
-                  data.noHolders.map((holder, index) => (
+                  data.noHolders.map(holder => (
                     <ProfileLink
                       key={holder.user.proxy_wallet_address!}
                       user={holder.user}
-                      position={index + 1}
-                    >
-                      <span className="text-xs font-semibold text-no">
-                        {holder.net_position}
-                        {' '}
-                        shares
-                      </span>
-                    </ProfileLink>
+                      usernameClassName="font-semibold text-foreground"
+                      usernameMaxWidthClassName="max-w-[140px]"
+                      trailing={(
+                        <span className="text-sm font-semibold text-no tabular-nums">
+                          {formatHolderShares(holder.net_position)}
+                        </span>
+                      )}
+                    />
                   ))
                 )}
           </div>
