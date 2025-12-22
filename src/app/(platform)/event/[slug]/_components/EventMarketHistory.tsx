@@ -218,33 +218,26 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
                   top: 0,
                   left: 0,
                   width: '100%',
-                  transform: `translateY(${
-                    virtualItem.start
-                    - (virtualizer.options.scrollMargin ?? 0)
-                  }px)`,
+                  transform: `translateY(${virtualItem.start - (virtualizer.options.scrollMargin ?? 0)}px)`,
                 }}
               >
-                <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm text-foreground">
-                  <div className="flex flex-wrap items-center gap-1">
-                    <span className="font-semibold">
-                      {actionLabel}
-                    </span>
+                <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm leading-tight text-foreground">
+                  <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
+                    <span className="font-semibold">{actionLabel}</span>
                     <span className={cn('font-semibold', outcomeColorClass)}>
                       {sharesLabel}
                       {' '}
                       {activity.outcome.text}
                     </span>
-                    <span>at</span>
-                    <span className="font-semibold">
-                      {priceLabel}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-foreground">at</span>
+                    <span className="font-semibold">{priceLabel}</span>
+                    <span className="text-muted-foreground">
                       (
                       {totalValueLabel}
                       )
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground" title={fullDateLabel}>
+                  <span className="text-xs whitespace-nowrap text-muted-foreground" title={fullDateLabel}>
                     {timeAgoLabel}
                   </span>
                 </div>

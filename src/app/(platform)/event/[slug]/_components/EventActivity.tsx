@@ -3,16 +3,18 @@
 import type { ActivityOrder, Event } from '@/types'
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import { AlertCircleIcon } from 'lucide-react'
+import { AlertCircleIcon, ExternalLinkIcon } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
-import ProfileLink from '@/components/ProfileLink'
 import ProfileLinkSkeleton from '@/components/ProfileLinkSkeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { OUTCOME_INDEX } from '@/lib/constants'
+import { defaultNetwork } from '@/lib/appkit'
 import { fetchEventTrades } from '@/lib/data-api/trades'
-import { formatCurrency, formatSharePriceLabel, fromMicro } from '@/lib/formatters'
+import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 
 interface EventActivityProps {
   event: Event
@@ -72,6 +74,9 @@ export default function EventActivity({ event }: EventActivityProps) {
   const activities: ActivityOrder[] = data?.pages.flat() ?? []
   const loading = hasMarkets && status === 'pending'
   const hasInitialError = hasMarkets && status === 'error'
+  const polygonscanBase = defaultNetwork.id === 80002
+    ? 'https://amoy.polygonscan.com'
+    : 'https://polygonscan.com'
 
   const virtualizer = useWindowVirtualizer({
     count: activities.length,
@@ -211,6 +216,16 @@ export default function EventActivity({ event }: EventActivityProps) {
                 return null
               }
 
+              const timeAgoLabel = formatTimeAgo(activity.created_at)
+              const txUrl = activity.tx_hash ? `${polygonscanBase}/tx/${activity.tx_hash}` : null
+              const priceLabel = formatSharePriceLabel(Number(activity.price))
+              const valueLabel = formatTotalValue(activity.total_value)
+              const amountLabel = fromMicro(activity.amount)
+              const sideColorClass = activity.side === 'buy' ? 'text-yes' : 'text-no'
+              const profileHref = activity.user.address
+                ? `/@${activity.user.address}`
+                : `/@${activity.user.username}`
+
               return (
                 <div
                   key={virtualItem.key}
@@ -226,47 +241,66 @@ export default function EventActivity({ event }: EventActivityProps) {
                     }px)`,
                   }}
                 >
-                  <ProfileLink
-                    user={activity.user}
-                    date={activity.created_at}
+                  <div
+                    className={cn(`
+                      flex items-center justify-between gap-3 px-3 py-2 text-sm leading-tight text-foreground
+                    `)}
                   >
-                    <div className="flex-1">
-                      <span className="text-sm text-muted-foreground">
-                        {' '}
-                        {activity.side === 'buy' ? 'bought' : 'sold'}
-                        {' '}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {fromMicro(activity.amount)}
-                      </span>
-                      <span className={`ml-1 text-sm font-semibold ${
-                        activity.outcome.index === OUTCOME_INDEX.YES
-                          ? 'text-yes'
-                          : 'text-no'
-                      }`}
-                      >
-                        {activity.outcome.text}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {' '}
-                        for
-                        {' '}
-                        {activity.market.title}
-                        {' '}
-                        at
-                        {' '}
-                      </span>
-                      <span className="text-sm font-semibold">
-                        {formatSharePriceLabel(Number(activity.price))}
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {' '}
-                        (
-                        {formatTotalValue(activity.total_value)}
-                        )
+                    <div className="flex min-w-0 items-center gap-3">
+                      <Link href={profileHref} className="shrink-0">
+                        <Image
+                          src={activity.user.image}
+                          alt={activity.user.username}
+                          width={32}
+                          height={32}
+                          className="size-8 rounded-full object-cover"
+                        />
+                      </Link>
+                      <div className="flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                        <Link
+                          href={profileHref}
+                          className="max-w-[140px] truncate font-semibold text-foreground"
+                          title={activity.user.username}
+                        >
+                          {activity.user.username}
+                        </Link>
+                        <span className="text-foreground">
+                          {activity.side === 'buy' ? 'bought' : 'sold'}
+                        </span>
+                        <span className={cn('font-semibold', sideColorClass)}>
+                          {amountLabel}
+                          {activity.outcome.text ? ` ${activity.outcome.text}` : ''}
+                        </span>
+                        <span className="text-foreground">
+                          at
+                        </span>
+                        <span className="font-semibold text-foreground">
+                          {priceLabel}
+                        </span>
+                        <span className="text-muted-foreground">
+                          (
+                          {valueLabel}
+                          )
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                      {txUrl && (
+                        <a
+                          href={txUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="View transaction on Polygonscan"
+                          className="transition-colors hover:text-foreground"
+                        >
+                          <ExternalLinkIcon className="size-3.5" />
+                        </a>
+                      )}
+                      <span className="whitespace-nowrap">
+                        {timeAgoLabel}
                       </span>
                     </div>
-                  </ProfileLink>
+                  </div>
                 </div>
               )
             })}

@@ -23,6 +23,10 @@ export interface DataApiActivity {
   icon?: string
   eventSlug?: string
   outcome?: string
+  name?: string
+  pseudonym?: string
+  profileImage?: string
+  profileImageOptimized?: string
 }
 
 export interface DataApiPosition {
@@ -61,13 +65,72 @@ function assertDataApiUrl() {
   }
 }
 
+function normalizeValue(value: number | undefined | null): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  const numeric = Number(value)
+  if (numeric > 1e12) {
+    return numeric / 1e6
+  }
+  if (numeric > 1e6) {
+    return numeric / 1e6
+  }
+
+  return numeric
+}
+
+function normalizeShares(value?: number | null): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  const numeric = Number(value)
+  const abs = Math.abs(numeric)
+  if (abs > 1e12 || abs > 1e6 || abs > 1e4) {
+    return numeric / 1e6
+  }
+  if (abs > 1e3) {
+    return numeric / 1e3
+  }
+
+  return numeric
+}
+
+function normalizeUsd(value?: number | null): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  const numeric = Number(value)
+  const abs = Math.abs(numeric)
+  if (abs > 1e12 || abs > 1e6 || abs > 1e4) {
+    return numeric / 1e6
+  }
+
+  return numeric
+}
+
+function sanitizePrice(value?: number | null): number {
+  if (!Number.isFinite(value)) {
+    return 0
+  }
+
+  let numeric = Number(value)
+  while (numeric > 10) {
+    numeric /= 100
+  }
+  return numeric
+}
+
 export function mapDataApiActivityToPublicActivity(activity: DataApiActivity): PublicActivity {
   const slug = activity.slug || activity.conditionId || 'unknown-market'
   const eventSlug = activity.eventSlug || slug
   const timestampMs = typeof activity.timestamp === 'number'
     ? activity.timestamp * 1000
     : Date.now()
-  const usdcValue = Number.isFinite(activity.usdcSize) ? Number(activity.usdcSize) : 0
+  const usdcValue = normalizeUsd(activity.usdcSize)
   const baseShares = Number.isFinite(activity.size) ? Number(activity.size) : undefined
   const shares = baseShares != null && activity.type?.toLowerCase() === 'split'
     ? baseShares * 2
@@ -97,27 +160,56 @@ export function mapDataApiActivityToActivityOrder(activity: DataApiActivity): Ac
   const timestampMs = typeof activity.timestamp === 'number'
     ? activity.timestamp * 1000
     : Date.now()
-  const baseSize = Number.isFinite(activity.size) ? Number(activity.size) : 0
   const isSplit = activity.type?.toLowerCase() === 'split'
-  const size = isSplit ? baseSize * 2 : baseSize
-  const usdcValue = Number.isFinite(activity.usdcSize) ? Number(activity.usdcSize) : 0
+  let normalizedUsd = normalizeUsd(activity.usdcSize)
+  let normalizedPrice = sanitizePrice(normalizeValue(activity.price))
+  if (normalizedPrice < 0) {
+    normalizedPrice = 0
+  }
 
-  const price = isSplit
-    ? 0.5
-    : (Number.isFinite(activity.price) ? Number(activity.price) : 0)
+  let baseSize = normalizeShares(activity.size)
+  if (baseSize > 10_000) {
+    baseSize = baseSize / 1e6
+  }
+  if (normalizedUsd > 10_000) {
+    normalizedUsd = normalizedUsd / 1e6
+  }
+
+  const price = isSplit ? 0.5 : normalizedPrice
+  const canDeriveFromUsd = normalizedUsd > 0 && price > 0
+  if (canDeriveFromUsd && (baseSize <= 0 || baseSize > 1_000)) {
+    baseSize = normalizedUsd / price
+  }
+
+  const size = isSplit ? baseSize * 2 : baseSize
+
+  const derivedTotal = size > 0 && price > 0 ? size * price : 0
+  let totalUsd = normalizedUsd > 0 ? normalizedUsd : 0
+  if (derivedTotal > 0 && (totalUsd === 0 || derivedTotal < totalUsd * 10)) {
+    totalUsd = derivedTotal
+  }
+  else if (totalUsd === 0) {
+    totalUsd = derivedTotal
+  }
   const outcomeText = isSplit
     ? 'Yes / No'
     : (activity.outcome || 'Outcome')
   const outcomeIndex = isSplit ? undefined : activity.outcomeIndex ?? 0
+  const address = activity.proxyWallet || ''
+  const displayName = activity.pseudonym || activity.name || address || 'Trader'
+  const avatarUrl = activity.profileImageOptimized
+    || activity.profileImage
+    || (address ? `https://avatar.vercel.sh/${address}.png` : 'https://avatar.vercel.sh/trader.png')
+  const txHash = activity.transactionHash || undefined
 
   return {
     id: activity.transactionHash || `${slug}-${timestampMs}`,
     type: activity.type?.toLowerCase(),
     user: {
-      id: activity.proxyWallet || 'user',
-      username: '',
-      address: activity.proxyWallet || '',
-      image: '',
+      id: address || 'user',
+      username: displayName,
+      address,
+      image: avatarUrl,
     },
     side: activity.side?.toLowerCase() === 'sell' ? 'sell' : 'buy',
     amount: Math.round(size * 1e6).toString(),
@@ -136,9 +228,10 @@ export function mapDataApiActivityToActivityOrder(activity: DataApiActivity): Ac
         show_market_icons: Boolean(activity.icon),
       },
     },
-    total_value: Math.round(usdcValue * 1e6),
+    total_value: Math.round(totalUsd * 1e6),
     created_at: new Date(timestampMs).toISOString(),
     status: 'completed',
+    tx_hash: txHash,
   }
 }
 

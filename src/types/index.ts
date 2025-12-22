@@ -259,6 +259,7 @@ export interface ActivityOrder {
   total_value: number
   created_at: string
   status: string
+  tx_hash?: string
 }
 
 export interface TopHolder {
