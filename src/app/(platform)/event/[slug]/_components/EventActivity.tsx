@@ -231,15 +231,19 @@ export default function EventActivity({ event }: EventActivityProps) {
               const isCurrentUser = currentUserAddress
                 && activity.user.address
                 && activity.user.address.toLowerCase() === currentUserAddress.toLowerCase()
-              const displayUsername = isCurrentUser && currentUser?.username
-                ? currentUser.username
-                : activity.user.username
-              const displayImage = isCurrentUser && currentUser?.image
-                ? currentUser.image
-                : activity.user.image
-              const profileHref = activity.user.address
-                ? `/@${activity.user.address}`
-                : `/@${displayUsername}`
+              const displayUsername = (
+                (isCurrentUser && currentUser?.username)
+                || activity.user.username
+                || activity.user.address
+                || 'trader'
+              )
+              const displayImage = (
+                (isCurrentUser && currentUser?.image)
+                || activity.user.image
+                || `https://avatar.vercel.sh/${activity.user.address || displayUsername}.png`
+              )
+              const profileSlug = displayUsername.startsWith('@') ? displayUsername : `@${displayUsername}`
+              const profileHref: `/${string}` = `/${profileSlug}`
 
               return (
                 <div
