@@ -14,7 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { defaultNetwork } from '@/lib/appkit'
 import { fetchEventTrades } from '@/lib/data-api/trades'
 import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro } from '@/lib/formatters'
+import { getUserPublicAddress } from '@/lib/user-address'
 import { cn } from '@/lib/utils'
+import { useUser } from '@/stores/useUser'
 
 interface EventActivityProps {
   event: Event
@@ -26,6 +28,8 @@ export default function EventActivity({ event }: EventActivityProps) {
   const [minAmountFilter, setMinAmountFilter] = useState('none')
   const [scrollMargin, setScrollMargin] = useState(0)
   const [infiniteScrollError, setInfiniteScrollError] = useState<string | null>(null)
+  const currentUser = useUser()
+  const currentUserAddress = getUserPublicAddress(currentUser)
 
   useEffect(() => {
     queueMicrotask(() => setInfiniteScrollError(null))
@@ -221,10 +225,21 @@ export default function EventActivity({ event }: EventActivityProps) {
               const priceLabel = formatSharePriceLabel(Number(activity.price))
               const valueLabel = formatTotalValue(activity.total_value)
               const amountLabel = fromMicro(activity.amount)
-              const sideColorClass = activity.side === 'buy' ? 'text-yes' : 'text-no'
+              const outcomeColorClass = (activity.outcome.text || '').toLowerCase() === 'yes'
+                ? 'text-yes'
+                : 'text-no'
+              const isCurrentUser = currentUserAddress
+                && activity.user.address
+                && activity.user.address.toLowerCase() === currentUserAddress.toLowerCase()
+              const displayUsername = isCurrentUser && currentUser?.username
+                ? currentUser.username
+                : activity.user.username
+              const displayImage = isCurrentUser && currentUser?.image
+                ? currentUser.image
+                : activity.user.image
               const profileHref = activity.user.address
                 ? `/@${activity.user.address}`
-                : `/@${activity.user.username}`
+                : `/@${displayUsername}`
 
               return (
                 <div
@@ -249,8 +264,8 @@ export default function EventActivity({ event }: EventActivityProps) {
                     <div className="flex min-w-0 items-center gap-3">
                       <Link href={profileHref} className="shrink-0">
                         <Image
-                          src={activity.user.image}
-                          alt={activity.user.username}
+                          src={displayImage}
+                          alt={displayUsername}
                           width={32}
                           height={32}
                           className="size-8 rounded-full object-cover"
@@ -260,14 +275,14 @@ export default function EventActivity({ event }: EventActivityProps) {
                         <Link
                           href={profileHref}
                           className="max-w-[140px] truncate font-semibold text-foreground"
-                          title={activity.user.username}
+                          title={displayUsername}
                         >
-                          {activity.user.username}
+                          {displayUsername}
                         </Link>
                         <span className="text-foreground">
                           {activity.side === 'buy' ? 'bought' : 'sold'}
                         </span>
-                        <span className={cn('font-semibold', sideColorClass)}>
+                        <span className={cn('font-semibold', outcomeColorClass)}>
                           {amountLabel}
                           {activity.outcome.text ? ` ${activity.outcome.text}` : ''}
                         </span>
@@ -285,6 +300,9 @@ export default function EventActivity({ event }: EventActivityProps) {
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                      <span className="whitespace-nowrap">
+                        {timeAgoLabel}
+                      </span>
                       {txUrl && (
                         <a
                           href={txUrl}
@@ -296,9 +314,6 @@ export default function EventActivity({ event }: EventActivityProps) {
                           <ExternalLinkIcon className="size-3.5" />
                         </a>
                       )}
-                      <span className="whitespace-nowrap">
-                        {timeAgoLabel}
-                      </span>
                     </div>
                   </div>
                 </div>

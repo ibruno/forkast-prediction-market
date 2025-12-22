@@ -7,7 +7,7 @@ import { AlertCircleIcon, Loader2Icon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { OUTCOME_INDEX } from '@/lib/constants'
+import { defaultNetwork } from '@/lib/appkit'
 import { fetchUserActivityData, mapDataApiActivityToActivityOrder } from '@/lib/data-api/user'
 import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro, sharesFormatter } from '@/lib/formatters'
 import { getUserPublicAddress } from '@/lib/user-address'
@@ -34,8 +34,9 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
 
   useEffect(() => {
     queueMicrotask(() => {
-      if (parentRef.current) {
-        setScrollMargin(parentRef.current.offsetTop)
+      if (parentRef.current && typeof window !== 'undefined') {
+        const rect = parentRef.current.getBoundingClientRect()
+        setScrollMargin(rect.top + window.scrollY)
       }
       setHasInitialized(false)
     })
@@ -79,14 +80,17 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
   )
   const isLoadingInitial = status === 'pending'
   const hasInitialError = status === 'error'
+  const polygonscanBase = defaultNetwork.id === 80002
+    ? 'https://amoy.polygonscan.com'
+    : 'https://polygonscan.com'
 
   const virtualizer = useWindowVirtualizer({
     count: activities.length,
     estimateSize: () => {
       if (typeof window !== 'undefined') {
-        return window.innerWidth < 768 ? 72 : 60
+        return window.innerWidth < 768 ? 48 : 44
       }
-      return 60
+      return 44
     },
     scrollMargin,
     overscan: 5,
@@ -192,7 +196,9 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
             const sharesLabel = Number.isFinite(sharesValue)
               ? sharesFormatter.format(sharesValue)
               : '—'
-            const outcomeColorClass = activity.outcome.index === OUTCOME_INDEX.YES ? 'text-yes' : 'text-no'
+            const outcomeColorClass = (activity.outcome.text || '').toLowerCase() === 'yes'
+              ? 'text-yes'
+              : 'text-no'
             const actionLabel = activity.side === 'sell' ? 'Sold' : 'Bought'
             const priceLabel = formatSharePriceLabel(Number(activity.price), { fallback: '—' })
             const totalValue = Number(activity.total_value) / 1e6
@@ -208,6 +214,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
               hour: 'numeric',
               minute: '2-digit',
             })
+            const txUrl = activity.tx_hash ? `${polygonscanBase}/tx/${activity.tx_hash}` : null
 
             return (
               <div
@@ -221,8 +228,8 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
                   transform: `translateY(${virtualItem.start - (virtualizer.options.scrollMargin ?? 0)}px)`,
                 }}
               >
-                <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm leading-tight text-foreground">
-                  <div className="flex min-w-0 items-center gap-2 overflow-hidden whitespace-nowrap">
+                <div className="flex h-11 items-center justify-between gap-3 px-3 text-sm leading-none text-foreground">
+                  <div className="flex min-w-0 items-center gap-2 overflow-hidden leading-none whitespace-nowrap">
                     <span className="font-semibold">{actionLabel}</span>
                     <span className={cn('font-semibold', outcomeColorClass)}>
                       {sharesLabel}
@@ -237,9 +244,26 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
                       )
                     </span>
                   </div>
-                  <span className="text-xs whitespace-nowrap text-muted-foreground" title={fullDateLabel}>
-                    {timeAgoLabel}
-                  </span>
+                  {txUrl
+                    ? (
+                        <a
+                          href={txUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`
+                            text-xs whitespace-nowrap text-muted-foreground transition-colors
+                            hover:text-foreground
+                          `}
+                          title={fullDateLabel}
+                        >
+                          {timeAgoLabel}
+                        </a>
+                      )
+                    : (
+                        <span className="text-xs whitespace-nowrap text-muted-foreground" title={fullDateLabel}>
+                          {timeAgoLabel}
+                        </span>
+                      )}
                 </div>
               </div>
             )
