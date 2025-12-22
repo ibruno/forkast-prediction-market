@@ -1,15 +1,18 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
-import PublicActivityList from '@/app/(platform)/[username]/_components/PublicActivityList'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import PublicHistoryList from '@/app/(platform)/[username]/_components/PublicHistoryList'
+import PublicOpenOrdersList from '@/app/(platform)/[username]/_components/PublicOpenOrdersList'
 import PublicPositionsList from '@/app/(platform)/[username]/_components/PublicPositionsList'
 import { cn } from '@/lib/utils'
+import { useUser } from '@/stores/useUser'
 
-type TabType = 'positions' | 'activity'
+type TabType = 'positions' | 'openOrders' | 'history'
 
-const tabs = [
+const baseTabs = [
   { id: 'positions' as const, label: 'Positions' },
-  { id: 'activity' as const, label: 'Activity' },
+  { id: 'openOrders' as const, label: 'Open orders' },
+  { id: 'history' as const, label: 'History' },
 ]
 
 interface PublicProfileTabsProps {
@@ -17,10 +20,26 @@ interface PublicProfileTabsProps {
 }
 
 export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProps) {
+  const user = useUser()
   const [activeTab, setActiveTab] = useState<TabType>('positions')
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 })
   const [isInitialized, setIsInitialized] = useState(false)
+  const canShowOpenOrders = Boolean(
+    user?.proxy_wallet_address
+    && userAddress
+    && user.proxy_wallet_address.toLowerCase() === userAddress.toLowerCase(),
+  )
+  const tabs = useMemo(
+    () => (canShowOpenOrders ? baseTabs : baseTabs.filter(tab => tab.id !== 'openOrders')),
+    [canShowOpenOrders],
+  )
+
+  useEffect(() => {
+    if (!canShowOpenOrders && activeTab === 'openOrders') {
+      setActiveTab('positions')
+    }
+  }, [activeTab, canShowOpenOrders])
 
   useLayoutEffect(() => {
     const activeTabIndex = tabs.findIndex(tab => tab.id === activeTab)
@@ -39,13 +58,12 @@ export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProp
         setIsInitialized(prev => prev || true)
       })
     }
-  }, [activeTab])
+  }, [activeTab, tabs])
 
   return (
-    <div className="space-y-8">
-
+    <div className="overflow-hidden rounded-2xl border border-border/80">
       <div className="relative">
-        <div className="relative flex space-x-8 border-b border-border">
+        <div className="flex items-center gap-6 px-4 pt-4 sm:px-6">
           {tabs.map((tab, index) => (
             <button
               key={tab.id}
@@ -55,7 +73,7 @@ export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProp
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                'relative py-3 text-sm font-medium transition-colors',
+                'relative pb-3 text-sm font-semibold transition-colors',
                 activeTab === tab.id
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground',
@@ -64,23 +82,25 @@ export default function PublicProfileTabs({ userAddress }: PublicProfileTabsProp
               {tab.label}
             </button>
           ))}
-
-          <div
-            className={cn(
-              'absolute bottom-0 h-0.5 bg-primary',
-              isInitialized && 'transition-all duration-300 ease-out',
-            )}
-            style={{
-              left: `${indicatorStyle.left}px`,
-              width: `${indicatorStyle.width}px`,
-            }}
-          />
         </div>
+
+        <div className="pointer-events-none absolute right-0 bottom-0 left-0 h-px bg-border/80" />
+        <div
+          className={cn(
+            'pointer-events-none absolute bottom-0 h-0.5 bg-primary',
+            isInitialized && 'transition-all duration-300 ease-out',
+          )}
+          style={{
+            left: `${indicatorStyle.left}px`,
+            width: `${indicatorStyle.width}px`,
+          }}
+        />
       </div>
 
-      <div className="min-h-[400px]">
+      <div className="space-y-4 px-0 pt-4 pb-0 sm:px-0">
         {activeTab === 'positions' && <PublicPositionsList userAddress={userAddress} />}
-        {activeTab === 'activity' && <PublicActivityList userAddress={userAddress} />}
+        {activeTab === 'openOrders' && <PublicOpenOrdersList userAddress={userAddress} />}
+        {activeTab === 'history' && <PublicHistoryList userAddress={userAddress} />}
       </div>
     </div>
   )
