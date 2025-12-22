@@ -519,12 +519,10 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
             })}
           </div>
 
-          {(isFetchingNextPage || isLoadingMore) && (
-            <PublicPositionsInfiniteScrollSkeleton skeletonCount={3} />
-          )}
+          {(isFetchingNextPage || isLoadingMore) && <PublicPositionsInfiniteScrollSkeleton skeletonCount={3} />}
 
           {!hasNextPage && positions.length > 0 && !isFetchingNextPage && !isLoadingMore && (
-            <div className="border-t bg-muted/20 p-6 text-center">
+            <div className="mt-4 border-t bg-muted/20 p-6 text-center">
               <div className="space-y-3">
                 <div className="text-sm font-medium text-foreground">
                   You've reached the end

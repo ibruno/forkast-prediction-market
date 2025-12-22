@@ -189,9 +189,7 @@ export default function PublicActivityList({ userAddress }: PublicActivityListPr
         </div>
       )}
 
-      {!loading && activities.length === 0 && (
-        <PublicActivityEmpty />
-      )}
+      {!loading && activities.length === 0 && <PublicActivityEmpty />}
 
       {!loading && activities.length > 0 && (
         <div className="overflow-hidden rounded-lg border border-border">

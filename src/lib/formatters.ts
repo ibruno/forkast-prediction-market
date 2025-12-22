@@ -103,8 +103,41 @@ export function formatDate(date: Date): string {
   })
 }
 
-export function formatTimeAgo(dateString: string) {
-  const date = new Date(dateString)
+function normalizeDateString(value: string) {
+  const trimmed = value.trim()
+  if (/^\d{4}-\d{2}-\d{2} /.test(trimmed)) {
+    return trimmed.replace(' ', 'T')
+  }
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(trimmed)) {
+    return `${trimmed}Z`
+  }
+  return trimmed
+}
+
+export function formatTimeAgo(dateInput: string | number | Date) {
+  let date: Date
+
+  if (dateInput instanceof Date) {
+    date = dateInput
+  }
+  else if (typeof dateInput === 'number') {
+    date = new Date(dateInput)
+  }
+  else {
+    const normalized = normalizeDateString(dateInput)
+    date = new Date(normalized)
+    if (Number.isNaN(date.getTime())) {
+      const numeric = Number(dateInput)
+      if (Number.isFinite(numeric)) {
+        date = new Date(numeric < 1e12 ? numeric * 1000 : numeric)
+      }
+    }
+  }
+
+  if (Number.isNaN(date.getTime())) {
+    return '—'
+  }
+
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
