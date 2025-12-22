@@ -7,12 +7,9 @@ export const supabaseAdmin = createClient(
 )
 
 export function getSupabaseImageUrl(iconPath: string | null): string {
-  if (!iconPath) {
-    return 'https://avatar.vercel.sh/creator.png'
-  }
-
   const supabaseUrl = process.env.SUPABASE_URL
-  if (!supabaseUrl) {
+
+  if (!iconPath || !supabaseUrl) {
     return 'https://avatar.vercel.sh/creator.png'
   }
 
