@@ -142,8 +142,12 @@ function clampPrice(value: number) {
 
 export function buildNormalizedHistory(historyByMarket: PriceHistoryByMarket): NormalizedHistoryResult {
   const timeline = new Map<number, Map<string, number>>()
+  const marketsWithData = new Set<string>()
 
   Object.entries(historyByMarket).forEach(([conditionId, history]) => {
+    if (history.length > 0) {
+      marketsWithData.add(conditionId)
+    }
     history.forEach((point) => {
       const timestampMs = Math.floor(point.t) * 1000
       if (!timeline.has(timestampMs)) {
@@ -157,6 +161,7 @@ export function buildNormalizedHistory(historyByMarket: PriceHistoryByMarket): N
   const lastKnownPrice = new Map<string, number>()
   const points: NormalizedHistoryResult['points'] = []
   const latestRawPrices: Record<string, number> = {}
+  const isSingleMarketMode = marketsWithData.size === 1
 
   sortedTimestamps.forEach((timestamp) => {
     const updates = timeline.get(timestamp)
@@ -178,6 +183,15 @@ export function buildNormalizedHistory(historyByMarket: PriceHistoryByMarket): N
     }
 
     const point: Record<string, number | Date> & { date: Date } = { date: new Date(timestamp) }
+
+    if (isSingleMarketMode && lastKnownPrice.size === 1) {
+      const [marketKey, price] = Array.from(lastKnownPrice.entries())[0]
+      latestRawPrices[marketKey] = price
+      point[marketKey] = price * 100
+      points.push(point)
+      return
+    }
+
     lastKnownPrice.forEach((price, marketKey) => {
       latestRawPrices[marketKey] = price
       point[marketKey] = (price / total) * 100
