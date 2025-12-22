@@ -11,7 +11,7 @@ import ProfileLinkSkeleton from '@/components/ProfileLinkSkeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { defaultNetwork } from '@/lib/appkit'
+import { POLYGON_SCAN_BASE } from '@/lib/constants'
 import { fetchEventTrades } from '@/lib/data-api/trades'
 import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro } from '@/lib/formatters'
 import { getUserPublicAddress } from '@/lib/user-address'
@@ -78,9 +78,6 @@ export default function EventActivity({ event }: EventActivityProps) {
   const activities: ActivityOrder[] = data?.pages.flat() ?? []
   const loading = hasMarkets && status === 'pending'
   const hasInitialError = hasMarkets && status === 'error'
-  const polygonscanBase = defaultNetwork.id === 80002
-    ? 'https://amoy.polygonscan.com'
-    : 'https://polygonscan.com'
 
   const virtualizer = useWindowVirtualizer({
     count: activities.length,
@@ -221,7 +218,7 @@ export default function EventActivity({ event }: EventActivityProps) {
               }
 
               const timeAgoLabel = formatTimeAgo(activity.created_at)
-              const txUrl = activity.tx_hash ? `${polygonscanBase}/tx/${activity.tx_hash}` : null
+              const txUrl = activity.tx_hash ? `${POLYGON_SCAN_BASE}/tx/${activity.tx_hash}` : null
               const priceLabel = formatSharePriceLabel(Number(activity.price))
               const valueLabel = formatTotalValue(activity.total_value)
               const amountLabel = fromMicro(activity.amount)
@@ -278,7 +275,7 @@ export default function EventActivity({ event }: EventActivityProps) {
                       <div className="flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
                         <Link
                           href={profileHref}
-                          className="max-w-[140px] truncate font-semibold text-foreground"
+                          className="max-w-35 truncate font-semibold text-foreground"
                           title={displayUsername}
                         >
                           {displayUsername}

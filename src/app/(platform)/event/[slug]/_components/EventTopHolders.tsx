@@ -98,51 +98,43 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
   if (isLoading) {
     return (
       <div className="mt-6">
-        <Skeleton className="mb-4 h-8 w-32" />
+        <Skeleton className="mb-4 h-4 w-32" />
         <div className="grid grid-cols-2 gap-6">
           <div>
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-3 w-12" />
-            </div>
             <div className="mt-1 divide-y divide-border border-t">
               <ProfileLinkSkeleton
                 showChildren={false}
                 showTrailing={true}
-                usernameMaxWidthClassName="max-w-[140px]"
+                usernameMaxWidthClassName="max-w-35"
               />
               <ProfileLinkSkeleton
                 showChildren={false}
                 showTrailing={true}
-                usernameMaxWidthClassName="max-w-[140px]"
+                usernameMaxWidthClassName="max-w-35"
               />
               <ProfileLinkSkeleton
                 showChildren={false}
                 showTrailing={true}
-                usernameMaxWidthClassName="max-w-[140px]"
+                usernameMaxWidthClassName="max-w-35"
               />
             </div>
           </div>
           <div>
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-3 w-12" />
-            </div>
             <div className="mt-1 divide-y divide-border border-t">
               <ProfileLinkSkeleton
                 showChildren={false}
                 showTrailing={true}
-                usernameMaxWidthClassName="max-w-[140px]"
+                usernameMaxWidthClassName="max-w-35"
               />
               <ProfileLinkSkeleton
                 showChildren={false}
                 showTrailing={true}
-                usernameMaxWidthClassName="max-w-[140px]"
+                usernameMaxWidthClassName="max-w-35"
               />
               <ProfileLinkSkeleton
                 showChildren={false}
                 showTrailing={true}
-                usernameMaxWidthClassName="max-w-[140px]"
+                usernameMaxWidthClassName="max-w-35"
               />
             </div>
           </div>
@@ -185,7 +177,7 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
         <div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold">Yes holders</span>
-            <span className="text-[11px] leading-none font-semibold tracking-wide text-muted-foreground">
+            <span className="text-2xs leading-none font-semibold tracking-wide text-muted-foreground">
               SHARES
             </span>
           </div>
@@ -198,7 +190,7 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
                       key={holder.user.proxy_wallet_address!}
                       user={holder.user}
                       usernameClassName="font-semibold text-foreground"
-                      usernameMaxWidthClassName="max-w-[140px]"
+                      usernameMaxWidthClassName="max-w-35"
                       trailing={(
                         <span className="text-sm font-semibold text-yes tabular-nums">
                           {formatHolderShares(holder.net_position)}
@@ -213,7 +205,7 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
         <div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-semibold">No holders</span>
-            <span className="text-[11px] leading-none font-semibold tracking-wide text-muted-foreground">
+            <span className="text-2xs leading-none font-semibold tracking-wide text-muted-foreground">
               SHARES
             </span>
           </div>
@@ -226,7 +218,7 @@ export default function EventTopHolders({ event }: EventTopHoldersProps) {
                       key={holder.user.proxy_wallet_address!}
                       user={holder.user}
                       usernameClassName="font-semibold text-foreground"
-                      usernameMaxWidthClassName="max-w-[140px]"
+                      usernameMaxWidthClassName="max-w-35"
                       trailing={(
                         <span className="text-sm font-semibold text-no tabular-nums">
                           {formatHolderShares(holder.net_position)}

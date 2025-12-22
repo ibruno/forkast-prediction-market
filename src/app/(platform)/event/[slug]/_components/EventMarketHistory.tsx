@@ -7,7 +7,7 @@ import { AlertCircleIcon, Loader2Icon } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { defaultNetwork } from '@/lib/appkit'
+import { POLYGON_SCAN_BASE } from '@/lib/constants'
 import { fetchUserActivityData, mapDataApiActivityToActivityOrder } from '@/lib/data-api/user'
 import { formatCurrency, formatSharePriceLabel, formatTimeAgo, fromMicro, sharesFormatter } from '@/lib/formatters'
 import { getUserPublicAddress } from '@/lib/user-address'
@@ -80,9 +80,6 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
   )
   const isLoadingInitial = status === 'pending'
   const hasInitialError = status === 'error'
-  const polygonscanBase = defaultNetwork.id === 80002
-    ? 'https://amoy.polygonscan.com'
-    : 'https://polygonscan.com'
 
   const virtualizer = useWindowVirtualizer({
     count: activities.length,
@@ -214,7 +211,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
               hour: 'numeric',
               minute: '2-digit',
             })
-            const txUrl = activity.tx_hash ? `${polygonscanBase}/tx/${activity.tx_hash}` : null
+            const txUrl = activity.tx_hash ? `${POLYGON_SCAN_BASE}/tx/${activity.tx_hash}` : null
 
             return (
               <div

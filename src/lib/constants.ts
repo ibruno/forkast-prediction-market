@@ -1,5 +1,6 @@
 import { defaultNetwork } from '@/lib/appkit'
 import { CTF_EXCHANGE_ADDRESS, NEG_RISK_CTF_EXCHANGE_ADDRESS } from '@/lib/contracts'
+import { IS_TEST_MODE } from '@/lib/network'
 
 export const DEFAULT_ERROR_MESSAGE = 'Internal server error. Try again in a few moments.'
 
@@ -63,6 +64,10 @@ export const EIP712_TYPES = {
     { name: 'affiliatePercentage', type: 'uint256' },
   ],
 }
+
+export const POLYGON_SCAN_BASE = IS_TEST_MODE
+  ? 'https://amoy.polygonscan.com'
+  : 'https://polygonscan.com'
 
 export function getExchangeEip712Domain(isNegRisk?: boolean) {
   return isNegRisk ? NEG_RISK_EIP712_DOMAIN : EIP712_DOMAIN
