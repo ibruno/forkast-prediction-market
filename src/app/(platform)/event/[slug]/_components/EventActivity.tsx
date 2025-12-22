@@ -83,7 +83,7 @@ export default function EventActivity({ event }: EventActivityProps) {
     count: activities.length,
     estimateSize: () => {
       if (typeof window !== 'undefined') {
-        return window.innerWidth < 768 ? 120 : 70
+        return window.innerWidth < 768 ? 80 : 70
       }
       return 70
     },
@@ -259,10 +259,10 @@ export default function EventActivity({ event }: EventActivityProps) {
                 >
                   <div
                     className={cn(`
-                      flex items-center justify-between gap-3 px-3 py-2 text-sm leading-tight text-foreground
+                      flex flex-wrap items-start justify-between gap-2 px-3 py-2 text-sm leading-tight text-foreground
                     `)}
                   >
-                    <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
                       <Link href={profileHref} className="shrink-0">
                         <Image
                           src={displayImage}
@@ -272,10 +272,14 @@ export default function EventActivity({ event }: EventActivityProps) {
                           className="size-8 rounded-full object-cover"
                         />
                       </Link>
-                      <div className="flex min-w-0 items-center gap-1 overflow-hidden text-ellipsis whitespace-nowrap">
+                      <div className={`
+                        flex min-w-0 flex-wrap items-center gap-1 text-foreground
+                        sm:flex-nowrap sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap
+                      `}
+                      >
                         <Link
                           href={profileHref}
-                          className="max-w-35 truncate font-semibold text-foreground"
+                          className="max-w-35 shrink-0 truncate font-semibold text-foreground"
                           title={displayUsername}
                         >
                           {displayUsername}
@@ -300,7 +304,11 @@ export default function EventActivity({ event }: EventActivityProps) {
                         </span>
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                    <div className={`
+                      flex w-full shrink-0 items-center justify-end gap-2 text-xs text-muted-foreground
+                      sm:w-auto
+                    `}
+                    >
                       <span className="whitespace-nowrap">
                         {timeAgoLabel}
                       </span>
