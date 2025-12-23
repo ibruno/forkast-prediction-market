@@ -340,6 +340,9 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       amount: state.amount,
       limitPrice: state.limitPrice,
       limitShares: state.limitShares,
+      marketPriceCents: state.side === ORDER_SIDE.BUY
+        ? state.outcome?.buy_price
+        : sellOrderSnapshot.priceCents,
       expirationTimestamp: state.limitExpirationEnabled
         ? (customExpirationTimestamp ?? endOfDayTimestamp)
         : undefined,

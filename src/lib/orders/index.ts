@@ -1,7 +1,7 @@
 import type { CLOB_ORDER_TYPE } from '@/lib/constants'
 import type { BlockchainOrder, OrderSide, OrderType, Outcome } from '@/types'
 import { storeOrderAction } from '@/app/(platform)/event/[slug]/_actions/store-order'
-import { CAP_MICRO, FLOOR_MICRO, MICRO_UNIT, ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
+import { MICRO_UNIT, ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
 import { ZERO_ADDRESS } from '@/lib/contracts'
 import { toMicro } from '@/lib/formatters'
 
@@ -11,6 +11,7 @@ export interface CalculateOrderAmountsArgs {
   amount: string
   limitPrice: string
   limitShares: string
+  marketPriceCents?: number
 }
 
 export interface BuildOrderPayloadArgs extends CalculateOrderAmountsArgs {
@@ -64,9 +65,19 @@ function generateOrderSalt() {
   return BigInt(fallback || Date.now())
 }
 
-export function calculateOrderAmounts({ orderType, side, amount, limitPrice, limitShares }: CalculateOrderAmountsArgs) {
+export function calculateOrderAmounts({
+  orderType,
+  side,
+  amount,
+  limitPrice,
+  limitShares,
+  marketPriceCents,
+}: CalculateOrderAmountsArgs) {
   let makerAmount: bigint
   let takerAmount: bigint
+  const normalizedMarketPrice = Number.isFinite(marketPriceCents) && (marketPriceCents ?? 0) > 0
+    ? (Number(marketPriceCents) / 100)
+    : 1
 
   if (orderType === ORDER_TYPE.LIMIT) {
     const normalizedLimitPrice = (Number.parseFloat(limitPrice) || 0) / 100
@@ -85,10 +96,12 @@ export function calculateOrderAmounts({ orderType, side, amount, limitPrice, lim
   else {
     makerAmount = BigInt(toMicro(amount))
     if (side === ORDER_SIDE.BUY) {
-      takerAmount = makerAmount * BigInt(MICRO_UNIT) / CAP_MICRO
+      const priceMicro = BigInt(toMicro(normalizedMarketPrice))
+      takerAmount = priceMicro > 0n ? (makerAmount * BigInt(MICRO_UNIT)) / priceMicro : makerAmount
     }
     else {
-      takerAmount = FLOOR_MICRO * makerAmount / BigInt(MICRO_UNIT)
+      const priceMicro = BigInt(toMicro(normalizedMarketPrice))
+      takerAmount = priceMicro > 0n ? (priceMicro * makerAmount) / BigInt(MICRO_UNIT) : makerAmount
     }
   }
 

@@ -187,6 +187,7 @@ export default function EventCard({ event }: EventCardProps) {
       amount: tradeAmount,
       limitPrice: '0',
       limitShares: '0',
+      marketPriceCents: selectedOutcome.outcome.buy_price,
       referrerAddress: affiliateMetadata.referrerAddress,
       affiliateAddress: affiliateMetadata.affiliateAddress,
       affiliateSharePercent: affiliateMetadata.affiliateSharePercent,

@@ -15,10 +15,11 @@ describe('calculateOrderAmounts', () => {
       amount: '12.34',
       limitPrice: '0',
       limitShares: '0',
+      marketPriceCents: 40,
     })
 
     expect(result.makerAmount).toBe(12340000n)
-    expect(result.takerAmount).toBeGreaterThan(0n)
+    expect(result.takerAmount).toBe(30850000n)
   })
 
   it('computes limit sell amounts using percent-based price input', () => {
@@ -58,6 +59,7 @@ describe('buildOrderPayload', () => {
       amount: '15.00',
       limitPrice: '0',
       limitShares: '0',
+      marketPriceCents: 50,
       feeRateBps: 150,
     })
 
@@ -76,6 +78,7 @@ describe('buildOrderPayload', () => {
       amount: '1',
       limitPrice: '0',
       limitShares: '0',
+      marketPriceCents: 50,
     })
 
     expect(payload.fee_rate_bps).toBe(200n)
