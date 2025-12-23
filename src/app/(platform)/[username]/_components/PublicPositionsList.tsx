@@ -4,7 +4,7 @@ import type { MergeableMarket } from './MergePositionsDialog'
 import type { PublicPosition } from './PublicPositionItem'
 import type { SafeTransactionRequestPayload } from '@/lib/safe/transactions'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDownNarrowWideIcon, ArrowRightIcon, GitMergeIcon, SearchIcon, ShareIcon, XIcon } from 'lucide-react'
+import { ArrowDownNarrowWideIcon, ArrowRightIcon, GitMergeIcon, SearchIcon, ShareIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -86,24 +86,9 @@ function PositionsFilterControls({
             type="text"
             placeholder="Search markets..."
             value={searchQuery}
-            onChange={e => handleSearchChange(e.target.value)}
-            className={`
-              w-full bg-transparent pr-10 pl-9 shadow-none ring-1 ring-border/70
-              focus-visible:ring-2 focus-visible:ring-primary/50
-            `}
+            onClick={() => handleSearchChange('')}
+            className="w-full pr-3 pl-9"
           />
-          {searchQuery && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => handleSearchChange('')}
-              className="absolute top-1/2 right-1 size-7 -translate-y-1/2 p-0 hover:bg-transparent"
-            >
-              <XIcon className="size-3" />
-              <span className="sr-only">Clear search</span>
-            </Button>
-          )}
         </div>
 
         <div className="flex items-center gap-2">

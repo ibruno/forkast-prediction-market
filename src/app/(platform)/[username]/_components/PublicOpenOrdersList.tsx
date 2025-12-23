@@ -218,7 +218,7 @@ export default function PublicOpenOrdersList({ userAddress }: PublicOpenOrdersLi
   const loading = status === 'pending'
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 pb-0">
       <div className="space-y-3 px-2 pt-2 sm:px-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
@@ -228,7 +228,7 @@ export default function PublicOpenOrdersList({ userAddress }: PublicOpenOrdersLi
               placeholder="Search open orders..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-transparent pr-3 pl-9"
+              className="w-full pr-3 pl-9"
             />
           </div>
 

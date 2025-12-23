@@ -330,7 +330,7 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
               placeholder="Search activity..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full bg-background pr-3 pl-9"
+              className="w-full pr-3 pl-9"
             />
           </div>
 

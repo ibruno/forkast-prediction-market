@@ -66,7 +66,7 @@ export default function HeaderSearch() {
         placeholder={`Search ${sitename}`}
         value={query}
         onChange={e => handleQueryChange(e.target.value)}
-        className="w-full pr-12 pl-9 text-sm"
+        className="w-full pr-12 pl-9 dark:bg-input/30"
       />
       <Kbd className="absolute top-1/2 right-3 hidden -translate-y-1/2 sm:inline-flex">/</Kbd>
       {(showResults || isLoading.events || isLoading.profiles) && (
