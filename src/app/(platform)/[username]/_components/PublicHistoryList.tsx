@@ -20,6 +20,7 @@ import Image from 'next/image'
 
 import Link from 'next/link'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { MICRO_UNIT } from '@/lib/constants'
@@ -334,7 +335,7 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
             />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
             <Select value={typeFilter} onValueChange={value => setTypeFilter(value as HistoryTypeFilter)}>
               <SelectTrigger className="w-28 justify-start gap-2 [&>svg:last-of-type]:hidden">
                 <ListFilterIcon className="size-4 text-muted-foreground" />
@@ -362,23 +363,21 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
               </SelectContent>
             </Select>
 
-            <button
+            <Button
               type="button"
-              className={`
-                inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border/80 bg-background
-                text-muted-foreground transition-colors
-                hover:bg-muted
-              `}
+              variant="outline"
+              size="icon"
+              className="rounded-lg"
             >
               <DownloadIcon className="size-4" />
-            </button>
+            </Button>
           </div>
         </div>
       </div>
 
       <div
         className={`
-          grid grid-cols-[minmax(0,0.95fr)_minmax(0,2.55fr)_minmax(0,1fr)_auto] items-center gap-1 px-2 pt-1 pb-2
+          grid grid-cols-[minmax(0,0.95fr)_minmax(0,2.55fr)_minmax(0,1fr)_auto] items-center gap-1 px-2 pt-2 pb-3
           text-xs font-semibold tracking-wide text-muted-foreground uppercase
           sm:px-3
         `}

@@ -747,7 +747,7 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
 
       <div
         className={`
-          grid grid-cols-[minmax(0,2.2fr)_repeat(4,minmax(0,1fr))_auto] items-center gap-4 px-2 pt-1 pb-2 text-xs
+          grid grid-cols-[minmax(0,2.2fr)_repeat(4,minmax(0,1fr))_auto] items-center gap-4 px-2 pt-2 pb-3 text-xs
           font-semibold tracking-wide text-muted-foreground uppercase
           sm:px-3
         `}
