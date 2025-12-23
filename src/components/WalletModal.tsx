@@ -71,12 +71,11 @@ interface WalletWithdrawModalProps {
   onChangeSendTo: ChangeEventHandler<HTMLInputElement>
   sendAmount: string
   onChangeSendAmount: ChangeEventHandler<HTMLInputElement>
-  sendError: string | null
   isSending: boolean
   onSubmitSend: FormEventHandler<HTMLFormElement>
   connectedWalletAddress?: string | null
   onUseConnectedWallet?: () => void
-  availableBalance?: string | null
+  availableBalance?: number | null
   onMax?: () => void
 }
 
@@ -159,7 +158,6 @@ function WalletSendForm({
   onChangeSendTo,
   sendAmount,
   onChangeSendAmount,
-  sendError,
   isSending,
   onSubmitSend,
   onBack,
@@ -172,13 +170,12 @@ function WalletSendForm({
   onChangeSendTo: ChangeEventHandler<HTMLInputElement>
   sendAmount: string
   onChangeSendAmount: ChangeEventHandler<HTMLInputElement>
-  sendError: string | null
   isSending: boolean
   onSubmitSend: FormEventHandler<HTMLFormElement>
   onBack?: () => void
   connectedWalletAddress?: string | null
   onUseConnectedWallet?: () => void
-  availableBalance?: string | null
+  availableBalance?: number | null
   onMax?: () => void
 }) {
   const trimmedRecipient = sendTo.trim()
@@ -192,6 +189,17 @@ function WalletSendForm({
     || parsedAmount <= 0
   )
   const showConnectedWalletButton = !sendTo?.trim()
+
+  function formatFullPrecision(value: number | null | undefined) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      return '0'
+    }
+    const asString = value.toLocaleString('en-US', {
+      useGrouping: false,
+      maximumFractionDigits: 6,
+    })
+    return asString.includes('.') ? (asString.replace(/\.?0+$/, '') || '0') : asString
+  }
 
   return (
     <div className="space-y-5">
@@ -240,7 +248,7 @@ function WalletSendForm({
               id="wallet-send-amount"
               type="number"
               min="0"
-              step="0.01"
+              step="any"
               value={sendAmount}
               onChange={onChangeSendAmount}
               placeholder="0.00"
@@ -270,15 +278,11 @@ function WalletSendForm({
                 Balance:
                 {' '}
                 $
-                {availableBalance}
+                {formatFullPrecision(availableBalance)}
               </span>
             </div>
           )}
         </div>
-
-        {sendError && (
-          <p className="text-sm text-destructive">{sendError}</p>
-        )}
 
         <Button type="submit" className="h-12 w-full gap-2 text-base" disabled={isSubmitDisabled}>
           <ArrowUpToLine className="size-4" />
@@ -528,7 +532,6 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
     onChangeSendTo,
     sendAmount,
     onChangeSendAmount,
-    sendError,
     isSending,
     onSubmitSend,
     connectedWalletAddress,
@@ -543,7 +546,6 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
       onChangeSendTo={onChangeSendTo}
       sendAmount={sendAmount}
       onChangeSendAmount={onChangeSendAmount}
-      sendError={sendError}
       isSending={isSending}
       onSubmitSend={onSubmitSend}
       connectedWalletAddress={connectedWalletAddress}

@@ -60,6 +60,7 @@ export default function PublicOpenOrdersList({ userAddress }: PublicOpenOrdersLi
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('market')
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
+  const rowGridClass = 'grid grid-cols-[minmax(0,2.2fr)_repeat(6,minmax(0,1fr))_auto] items-center gap-4'
 
   const {
     status,
@@ -101,7 +102,7 @@ export default function PublicOpenOrdersList({ userAddress }: PublicOpenOrdersLi
   }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   function renderRows() {
-    return orders.map((order, index) => {
+    return orders.map((order) => {
       const totalShares = order.side === 'buy'
         ? microToUnit(order.taker_amount)
         : microToUnit(order.maker_amount)
@@ -119,20 +120,18 @@ export default function PublicOpenOrdersList({ userAddress }: PublicOpenOrdersLi
         : new Date(order.expiration * 1000).toLocaleString()
       const marketIcon = order.market.icon_url || undefined
       const eventSlug = order.market.event_slug || order.market.slug
-      const isStriped = index % 2 === 0
-
       return (
         <div
           key={order.id}
           className={cn(
+            rowGridClass,
             `
-              grid grid-cols-[minmax(0,2.2fr)_repeat(6,minmax(0,1fr))_auto] items-center gap-4 border-b border-border/60
-              px-2 py-3 transition-colors
+              border-b border-border/60 px-2 py-3 transition-colors
+              first:border-t first:border-border/60
               hover:bg-muted/50
               sm:px-3
             `,
             'last:border-b-0',
-            isStriped && 'bg-muted/40',
           )}
         >
           <div className="flex min-w-0 items-start gap-3">
@@ -249,20 +248,21 @@ export default function PublicOpenOrdersList({ userAddress }: PublicOpenOrdersLi
       </div>
 
       <div
-        className={`
-          grid grid-cols-[minmax(0,2.2fr)_repeat(6,minmax(0,1fr))_auto] items-center gap-4 px-2 pt-2 pb-3 text-xs
-          font-semibold tracking-wide text-muted-foreground uppercase
-          sm:px-3
-        `}
+        className={cn(
+          rowGridClass,
+          `px-2 pt-2 pb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3`,
+        )}
       >
-        <div>Market</div>
+        <div className="pl-[3.75rem] text-left">Market</div>
         <div className="text-center">Side</div>
-        <div className="text-left sm:text-center">Outcome</div>
+        <div className="text-left">Outcome</div>
         <div className="text-center">Price</div>
         <div className="text-center">Filled</div>
         <div className="text-center">Total</div>
         <div className="text-left sm:text-center">Expiration</div>
-        <div className="text-right"> </div>
+        <div className="flex justify-end">
+          <div className="w-10" aria-hidden />
+        </div>
       </div>
 
       {loading && (

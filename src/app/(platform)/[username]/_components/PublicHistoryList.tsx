@@ -11,8 +11,8 @@ import {
   CircleMinusIcon,
   CirclePlusIcon,
   DownloadIcon,
-  GitMergeIcon,
   ListFilterIcon,
+  MergeIcon,
   SearchIcon,
   UnfoldHorizontalIcon,
 } from 'lucide-react'
@@ -125,7 +125,7 @@ function activityIcon(variant: ActivityVariant) {
     case 'split':
       return { Icon: UnfoldHorizontalIcon, label: 'Split', className: '' }
     case 'merge':
-      return { Icon: GitMergeIcon, label: 'Merged', className: '' }
+      return { Icon: MergeIcon, label: 'Merged', className: 'rotate-90' }
     case 'deposit':
       return { Icon: ArrowDownToLineIcon, label: 'Deposited', className: '' }
     case 'withdraw':
@@ -140,6 +140,7 @@ function activityIcon(variant: ActivityVariant) {
 }
 
 export default function PublicHistoryList({ userAddress }: PublicHistoryListProps) {
+  const rowGridClass = 'grid grid-cols-[minmax(9rem,auto)_minmax(0,2.6fr)_minmax(0,1fr)_auto] items-center gap-3'
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
   const [typeFilter, setTypeFilter] = useState<HistoryTypeFilter>('all')
@@ -211,7 +212,7 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
   }, [fetchNextPage, hasNextPage, infiniteScrollError, isFetchingNextPage, isLoadingMore])
 
   function renderRows() {
-    return activities.map((activity, index) => {
+    return activities.map((activity) => {
       const variant = resolveVariant(activity)
       const { Icon, label, className } = activityIcon(variant)
       const sharesText = formatShares(activity.amount)
@@ -228,43 +229,37 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
           )
         : null
       const isFundsFlow = variant === 'deposit' || variant === 'withdraw'
-      const isStriped = index % 2 === 0
       const valueNumber = Number(activity.total_value) / MICRO_UNIT
-      const isPositive = variant === 'deposit' || variant === 'sell' || valueNumber > 0
-      const isNegative = variant === 'withdraw' || variant === 'buy' || valueNumber < 0
-      const valueDisplay = Number.isFinite(valueNumber) ? formatCurrency(Math.abs(valueNumber)) : '—'
-      const valuePrefix = isNegative ? '-' : '+'
-
-      return (
-        <div
-          key={activity.id}
-          className={cn(
-            `
-              grid grid-cols-[minmax(0,0.95fr)_minmax(0,2.55fr)_minmax(0,1fr)_auto] items-center gap-1 border-b
-              border-border/60 px-2 py-2 transition-colors
-              hover:bg-muted/50
-              sm:px-3
-            `,
-            'last:border-b-0',
-            isStriped && 'bg-muted/40',
-          )}
-        >
-          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-            <Icon className={cn('size-4 text-muted-foreground', className)} />
-            <span>{label}</span>
-          </div>
-
-          <div className="flex min-w-0 items-start gap-2.5">
-            <Link
-              href={`/event/${eventSlug}`}
-              className={cn(
-                'relative size-12 shrink-0 overflow-hidden rounded bg-muted',
-                isFundsFlow && 'flex items-center justify-center bg-primary/10 text-primary',
-              )}
-            >
-              {isFundsFlow
-                ? <CircleDollarSignIcon className="size-5" />
-                : imageUrl
+      const hasValue = Number.isFinite(valueNumber)
+      const isCreditVariant = variant === 'merge' || variant === 'deposit' || variant === 'sell'
+      const isDebitVariant = variant === 'withdraw' || variant === 'split' || variant === 'buy'
+      const isPositive = isCreditVariant || (!isDebitVariant && hasValue && valueNumber > 0)
+      const isNegative = isDebitVariant || (!isCreditVariant && hasValue && valueNumber < 0)
+      const valueDisplay = hasValue ? formatCurrency(Math.abs(valueNumber)) : '—'
+      const valuePrefix = hasValue ? (isNegative ? '-' : '+') : ''
+      const marketContent = isFundsFlow
+        ? (
+            <div className="flex min-w-0 items-center gap-2.5 pl-1">
+              <div className={`
+                grid size-12 shrink-0 place-items-center overflow-hidden rounded bg-primary/10 text-primary
+              `}
+              >
+                <CircleDollarSignIcon className="size-5" />
+              </div>
+              <div className="min-w-0 space-y-1">
+                <div className="block max-w-[64ch] truncate text-sm leading-tight font-semibold text-foreground">
+                  {variant === 'deposit' ? 'Deposited funds' : 'Withdrew funds'}
+                </div>
+              </div>
+            </div>
+          )
+        : (
+            <div className="flex min-w-0 items-start gap-2.5 pl-1">
+              <Link
+                href={`/event/${eventSlug}`}
+                className="relative size-12 shrink-0 overflow-hidden rounded bg-muted"
+              >
+                {imageUrl
                   ? (
                       <Image
                         src={imageUrl}
@@ -279,34 +274,56 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
                         No image
                       </div>
                     )}
-            </Link>
-
-            <div className="min-w-0 space-y-1">
-              <Link
-                href={`/event/${eventSlug}`}
-                className={`
-                  block max-w-[64ch] truncate text-sm leading-tight font-semibold text-foreground no-underline
-                  hover:no-underline
-                `}
-                title={activity.market.title}
-              >
-                {activity.market.title}
               </Link>
-              <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-                {(variant === 'buy' || variant === 'sell') && (
-                  <span className={cn(`
-                    inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold
-                  `, outcomeColor)}
-                  >
-                    {outcomeText}
-                    {' '}
-                    {priceText}
-                  </span>
-                )}
-                {sharesText && <span>{sharesText}</span>}
+
+              <div className="min-w-0 space-y-1">
+                <Link
+                  href={`/event/${eventSlug}`}
+                  className={`
+                    block max-w-[64ch] truncate text-sm leading-tight font-semibold text-foreground no-underline
+                    hover:no-underline
+                  `}
+                  title={activity.market.title}
+                >
+                  {activity.market.title}
+                </Link>
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                  {(variant === 'buy' || variant === 'sell') && (
+                    <span className={cn(`
+                      inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold
+                    `, outcomeColor)}
+                    >
+                      {outcomeText}
+                      {' '}
+                      {priceText}
+                    </span>
+                  )}
+                  {sharesText && <span>{sharesText}</span>}
+                </div>
               </div>
             </div>
+          )
+
+      return (
+        <div
+          key={activity.id}
+          className={cn(
+            rowGridClass,
+            `
+              border-b border-border/60 px-2 py-2 transition-colors
+              first:border-t first:border-border/60
+              hover:bg-muted/50
+              sm:px-3
+            `,
+            'last:border-b-0',
+          )}
+        >
+          <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Icon className={cn('size-4 text-muted-foreground', className)} />
+            <span>{label}</span>
           </div>
+
+          {marketContent}
 
           <div className={cn('text-right text-sm font-semibold', isPositive ? 'text-yes' : 'text-foreground')}>
             {Number.isFinite(valueNumber) ? `${valuePrefix}${valueDisplay}` : '—'}
@@ -376,16 +393,17 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
       </div>
 
       <div
-        className={`
-          grid grid-cols-[minmax(0,0.95fr)_minmax(0,2.55fr)_minmax(0,1fr)_auto] items-center gap-1 px-2 pt-2 pb-3
-          text-xs font-semibold tracking-wide text-muted-foreground uppercase
-          sm:px-3
-        `}
+        className={cn(
+          rowGridClass,
+          `px-2 pt-2 pb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3`,
+        )}
       >
         <div>Activity</div>
         <div>Market</div>
         <div className="text-right">Value</div>
-        <div className="text-right"> </div>
+        <div className="text-right text-transparent" aria-hidden>
+          <span className="invisible">Time</span>
+        </div>
       </div>
 
       {isLoading && (
