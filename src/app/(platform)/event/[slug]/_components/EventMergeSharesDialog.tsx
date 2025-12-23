@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
 import { defaultNetwork } from '@/lib/appkit'
-import { DEFAULT_CONDITION_PARTITION, DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
+import { DEFAULT_CONDITION_PARTITION, DEFAULT_ERROR_MESSAGE, MICRO_UNIT } from '@/lib/constants'
 import { ZERO_COLLECTION_ID } from '@/lib/contracts'
 import { toMicro } from '@/lib/formatters'
 import {
@@ -54,6 +54,17 @@ export default function EventMergeSharesDialog({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  function formatFullPrecision(value: number) {
+    if (!Number.isFinite(value)) {
+      return '0'
+    }
+    const asString = value.toLocaleString('en-US', {
+      useGrouping: false,
+      maximumFractionDigits: 6,
+    })
+    return asString.replace(/\.?0+$/, '') || '0'
+  }
+
   useEffect(() => {
     if (!open) {
       setAmount('')
@@ -63,14 +74,7 @@ export default function EventMergeSharesDialog({
   }, [open])
 
   const formattedAvailableShares = useMemo(() => {
-    if (!Number.isFinite(availableShares)) {
-      return '0.0'
-    }
-
-    return availableShares.toLocaleString('en-US', {
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 4,
-    })
+    return formatFullPrecision(availableShares)
   }, [availableShares])
 
   const numericAvailableShares = Number.isFinite(availableShares) ? availableShares : 0
@@ -88,10 +92,8 @@ export default function EventMergeSharesDialog({
       return
     }
 
-    const formatted = numericAvailableShares
-      .toFixed(4)
-      .replace(/\.?0+$/, '')
-    setAmount(formatted)
+    // Use the raw value to avoid rounding up tiny remainders that would fail validation
+    setAmount(`${numericAvailableShares}`)
     setError(null)
   }
 
@@ -111,7 +113,9 @@ export default function EventMergeSharesDialog({
       return
     }
 
-    if (numericAmount > numericAvailableShares) {
+    const amountMicro = Math.floor(numericAmount * MICRO_UNIT + 1e-9)
+    const availableMicro = Math.floor(numericAvailableShares * MICRO_UNIT + 1e-9)
+    if (amountMicro > availableMicro) {
       setError('Amount exceeds available shares.')
       return
     }
