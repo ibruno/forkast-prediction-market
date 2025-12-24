@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import type { LimitExpirationOption } from '@/stores/useOrder'
 import type { OrderSide } from '@/types'
 import { TriangleAlertIcon } from 'lucide-react'
@@ -43,6 +44,8 @@ interface EventOrderPanelLimitControlsProps {
   isLimitOrder: boolean
   availableShares: number
   showLimitMinimumWarning: boolean
+  shouldShakeShares?: boolean
+  limitSharesRef?: RefObject<HTMLInputElement | null>
   onLimitPriceChange: (value: string) => void
   onLimitSharesChange: (value: string) => void
   onLimitExpirationEnabledChange: (value: boolean) => void
@@ -61,6 +64,8 @@ export default function EventOrderPanelLimitControls({
   isLimitOrder,
   availableShares,
   showLimitMinimumWarning,
+  shouldShakeShares,
+  limitSharesRef,
   onLimitPriceChange,
   onLimitSharesChange,
   onLimitExpirationEnabledChange,
@@ -98,9 +103,7 @@ export default function EventOrderPanelLimitControls({
     return Number.isFinite(total) ? total : 0
   }, [limitPriceNumber, limitSharesNumber, side])
 
-  const maxSharesForSide = side === ORDER_SIDE.SELL
-    ? Math.min(availableShares, MAX_AMOUNT_INPUT)
-    : MAX_AMOUNT_INPUT
+  const maxSharesForSide = MAX_AMOUNT_INPUT
 
   const totalValueLabel = formatCurrency(totalValue)
   const potentialWinLabel = formatCurrency(potentialWin)
@@ -149,12 +152,9 @@ export default function EventOrderPanelLimitControls({
       return
     }
 
-    if (numericValue > maxSharesForSide) {
-      return
-    }
-
-    onLimitSharesChange(cleaned)
-    syncAmount(limitPriceNumber, numericValue)
+    const clamped = Math.min(numericValue, maxSharesForSide)
+    onLimitSharesChange(formatAmountInputValue(clamped))
+    syncAmount(limitPriceNumber, clamped)
   }
 
   function updateLimitPrice(nextValue: number) {
@@ -177,7 +177,6 @@ export default function EventOrderPanelLimitControls({
     medium: 'text-base',
     small: 'text-sm',
   })
-
   useEffect(() => {
     if (limitExpirationTimestamp) {
       setDraftExpiration(new Date(limitExpirationTimestamp * 1000))
@@ -229,11 +228,17 @@ export default function EventOrderPanelLimitControls({
 
       <div>
         <div className="mb-2 flex items-center justify-between gap-3">
-          <span className="text-lg font-medium text-foreground">
+          <span
+            className={cn(
+              'text-lg font-medium text-foreground',
+              shouldShakeShares && 'animate-order-shake',
+            )}
+          >
             Shares
           </span>
           <div className="flex w-1/2 items-center justify-end gap-2">
             <Input
+              ref={limitSharesRef}
               placeholder="0"
               inputMode="decimal"
               value={formattedLimitShares}
@@ -241,6 +246,7 @@ export default function EventOrderPanelLimitControls({
               className={cn(
                 'h-10 bg-transparent! text-right font-bold',
                 limitSharesSizeClass,
+                shouldShakeShares && 'animate-order-shake',
               )}
             />
           </div>

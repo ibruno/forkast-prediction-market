@@ -3,8 +3,9 @@ import { useAppKitAccount } from '@reown/appkit/react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { TriangleAlertIcon } from 'lucide-react'
 import Form from 'next/form'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSignTypedData } from 'wagmi'
+import { useOrderBookSummaries } from '@/app/(platform)/event/[slug]/_components/EventOrderBook'
 import EventOrderPanelBuySellTabs from '@/app/(platform)/event/[slug]/_components/EventOrderPanelBuySellTabs'
 import EventOrderPanelEarnings from '@/app/(platform)/event/[slug]/_components/EventOrderPanelEarnings'
 import EventOrderPanelInput from '@/app/(platform)/event/[slug]/_components/EventOrderPanelInput'
@@ -18,6 +19,7 @@ import EventOrderPanelUserShares from '@/app/(platform)/event/[slug]/_components
 import { handleOrderCancelledFeedback, handleOrderErrorFeedback, handleOrderSuccessFeedback, handleValidationError, notifyWalletApprovalPrompt } from '@/app/(platform)/event/[slug]/_components/feedback'
 import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
 import { useUserShareBalances } from '@/app/(platform)/event/[slug]/_hooks/useUserShareBalances'
+import { Button } from '@/components/ui/button'
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit } from '@/hooks/useAppKit'
 import { SAFE_BALANCE_QUERY_KEY, useBalance } from '@/hooks/useBalance'
@@ -47,6 +49,118 @@ function normalizeShares(value?: number) {
   return value > 100_000 ? value / MICRO_UNIT : value
 }
 
+interface NormalizedBookLevel {
+  priceCents: number
+  priceDollars: number
+  size: number
+}
+
+const MAX_LIMIT_PRICE = 99.9
+const PRICE_EPSILON = 1e-8
+
+function getRoundedCents(rawPrice: number, side: 'ask' | 'bid') {
+  const cents = rawPrice * 100
+  if (!Number.isFinite(cents)) {
+    return 0
+  }
+
+  const scaled = cents * 10
+  const roundedScaled = side === 'bid'
+    ? Math.floor(scaled + PRICE_EPSILON)
+    : Math.ceil(scaled - PRICE_EPSILON)
+
+  const normalized = Math.max(0, Math.min(roundedScaled / 10, MAX_LIMIT_PRICE))
+  return Number(normalized.toFixed(1))
+}
+
+function normalizeBookLevels(levels: { price?: string, size?: string }[] | undefined, side: 'ask' | 'bid'): NormalizedBookLevel[] {
+  if (!levels?.length) {
+    return []
+  }
+
+  const parsed = levels
+    .map((entry) => {
+      const price = Number(entry.price)
+      const size = Number(entry.size)
+      if (!Number.isFinite(price) || !Number.isFinite(size) || price <= 0 || size <= 0) {
+        return null
+      }
+
+      const priceCents = getRoundedCents(price, side)
+      const priceDollars = priceCents / 100
+      if (priceCents <= 0 || priceDollars <= 0) {
+        return null
+      }
+
+      return {
+        priceCents,
+        priceDollars,
+        size: Number(size.toFixed(2)),
+      }
+    })
+    .filter((entry): entry is NormalizedBookLevel => entry !== null)
+
+  return parsed.sort((a, b) => (side === 'ask' ? a.priceDollars - b.priceDollars : b.priceDollars - a.priceDollars))
+}
+
+function calculateMarketFill(
+  side: typeof ORDER_SIDE.BUY | typeof ORDER_SIDE.SELL,
+  value: number,
+  bids: NormalizedBookLevel[],
+  asks: NormalizedBookLevel[],
+) {
+  const levels = side === ORDER_SIDE.SELL ? bids : asks
+  if (!levels.length || value <= 0) {
+    return { avgPriceCents: null as number | null, filledShares: 0, totalCost: 0 }
+  }
+
+  let remainingShares = side === ORDER_SIDE.SELL ? value : 0
+  let remainingBudget = side === ORDER_SIDE.BUY ? value : 0
+  let filledShares = 0
+  let totalCost = 0
+
+  for (const level of levels) {
+    if (side === ORDER_SIDE.SELL && remainingShares <= 0) {
+      break
+    }
+    if (side === ORDER_SIDE.BUY && remainingBudget <= 0) {
+      break
+    }
+
+    if (side === ORDER_SIDE.SELL) {
+      const fill = Math.min(level.size, remainingShares)
+      if (fill <= 0) {
+        continue
+      }
+      const cost = fill * level.priceDollars
+      filledShares = Number((filledShares + fill).toFixed(4))
+      totalCost = Number((totalCost + cost).toFixed(4))
+      remainingShares = Math.max(0, Number((remainingShares - fill).toFixed(4)))
+    }
+    else {
+      const maxSharesAtLevel = level.priceDollars > 0 ? remainingBudget / level.priceDollars : 0
+      const fill = Math.min(level.size, maxSharesAtLevel)
+      if (fill <= 0) {
+        continue
+      }
+      const cost = fill * level.priceDollars
+      filledShares = Number((filledShares + fill).toFixed(4))
+      totalCost = Number((totalCost + cost).toFixed(4))
+      remainingBudget = Math.max(0, Number((remainingBudget - cost).toFixed(4)))
+    }
+  }
+
+  const avgPriceCents = filledShares > 0
+    ? Number(((totalCost / filledShares) * 100).toFixed(1))
+    : null
+
+  return {
+    avgPriceCents,
+    filledShares: Number(filledShares.toFixed(4)),
+    totalCost: Number(totalCost.toFixed(4)),
+  }
+}
+
 export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanelFormProps) {
   const { open, close } = useAppKit()
   const { isConnected, embeddedWalletInfo } = useAppKitAccount()
@@ -61,8 +175,19 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const amountNumber = useAmountAsNumber()
   const isLimitOrder = useIsLimitOrder()
   const [showMarketMinimumWarning, setShowMarketMinimumWarning] = useState(false)
+  const [showInsufficientSharesWarning, setShowInsufficientSharesWarning] = useState(false)
+  const [showInsufficientBalanceWarning, setShowInsufficientBalanceWarning] = useState(false)
+  const [showAmountTooLowWarning, setShowAmountTooLowWarning] = useState(false)
+  const [shouldShakeInput, setShouldShakeInput] = useState(false)
+  const [shouldShakeLimitShares, setShouldShakeLimitShares] = useState(false)
+  const limitSharesInputRef = useRef<HTMLInputElement | null>(null)
   const limitSharesNumber = Number.parseFloat(state.limitShares) || 0
   const { balance } = useBalance()
+  const outcomeTokenId = state.outcome?.token_id ? String(state.outcome.token_id) : null
+  const orderBookSummaryQuery = useOrderBookSummaries(
+    outcomeTokenId ? [outcomeTokenId] : [],
+    { enabled: Boolean(outcomeTokenId && state.type === ORDER_TYPE.MARKET) },
+  )
   const validCustomExpirationTimestamp = useMemo(() => {
     const nowSeconds = Math.floor(Date.now() / 1000)
 
@@ -83,7 +208,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       : null
   }, [state.limitExpirationOption, state.limitExpirationTimestamp])
   const affiliateMetadata = useAffiliateOrderMetadata()
-  const { ensureTradingReady, openTradeRequirements } = useTradingOnboarding()
+  const { ensureTradingReady, openTradeRequirements, startDepositFlow } = useTradingOnboarding()
   const hasDeployedProxyWallet = Boolean(user?.proxy_wallet_address && user?.proxy_wallet_status === 'deployed')
   const proxyWalletAddress = hasDeployedProxyWallet ? normalizeAddress(user?.proxy_wallet_address) : null
   const userAddress = normalizeAddress(user?.address)
@@ -159,6 +284,14 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     () => openOrdersQuery.data?.pages?.flatMap(page => page) ?? [],
     [openOrdersQuery.data],
   )
+
+  const normalizedOrderBook = useMemo(() => {
+    const summary = outcomeTokenId ? orderBookSummaryQuery.data?.[outcomeTokenId] : undefined
+    return {
+      bids: normalizeBookLevels(summary?.bids, 'bid'),
+      asks: normalizeBookLevels(summary?.asks, 'ask'),
+    }
+  }, [orderBookSummaryQuery.data, outcomeTokenId])
 
   const openSellSharesByCondition = useMemo(() => {
     if (!openOrders.length) {
@@ -247,43 +380,107 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         ? 'Yes'
         : undefined)
 
+  const marketSellFill = useMemo(() => {
+    if (state.side !== ORDER_SIDE.SELL || isLimitOrder) {
+      return null
+    }
+
+    return calculateMarketFill(
+      ORDER_SIDE.SELL,
+      amountNumber,
+      normalizedOrderBook.bids,
+      normalizedOrderBook.asks,
+    )
+  }, [amountNumber, isLimitOrder, normalizedOrderBook.asks, normalizedOrderBook.bids, state.side])
+
+  const marketBuyFill = useMemo(() => {
+    if (state.side !== ORDER_SIDE.BUY || isLimitOrder) {
+      return null
+    }
+
+    return calculateMarketFill(
+      ORDER_SIDE.BUY,
+      amountNumber,
+      normalizedOrderBook.bids,
+      normalizedOrderBook.asks,
+    )
+  }, [amountNumber, isLimitOrder, normalizedOrderBook.asks, normalizedOrderBook.bids, state.side])
+
   const sellOrderSnapshot = useMemo(() => {
     if (state.side !== ORDER_SIDE.SELL) {
       return { shares: 0, priceCents: 0, totalValue: 0 }
     }
 
-    const shares = state.type === ORDER_TYPE.LIMIT
+    const isLimit = state.type === ORDER_TYPE.LIMIT
+    const sharesInput = isLimit
       ? Number.parseFloat(state.limitShares || '0') || 0
       : Number.parseFloat(state.amount || '0') || 0
 
-    const limitPrice = state.type === ORDER_TYPE.LIMIT
+    const limitPrice = isLimit
       ? Number.parseFloat(state.limitPrice || '0') || 0
       : null
 
-    const marketPriceCents = typeof state.outcome?.buy_price === 'number'
-      ? Number((state.outcome.buy_price * 100).toFixed(1))
-      : 0
+    if (isLimit) {
+      const totalValue = sharesInput > 0 && limitPrice && limitPrice > 0 ? (sharesInput * limitPrice) / 100 : 0
+      return {
+        shares: sharesInput,
+        priceCents: limitPrice ?? 0,
+        totalValue,
+      }
+    }
 
-    const priceCents = limitPrice && limitPrice > 0 ? limitPrice : marketPriceCents
-    const totalValue = shares > 0 && priceCents > 0 ? (shares * priceCents) / 100 : 0
+    const fill = marketSellFill
+    const effectivePriceCents = fill?.avgPriceCents ?? null
+    const filledShares = fill?.filledShares ?? sharesInput
+    const totalValue = fill?.totalCost ?? 0
 
     return {
-      shares,
-      priceCents,
+      shares: filledShares,
+      priceCents: effectivePriceCents ?? Number.NaN,
       totalValue,
     }
-  }, [state.amount, state.limitPrice, state.limitShares, state.outcome?.buy_price, state.side, state.type])
+  }, [marketSellFill, state.amount, state.limitPrice, state.limitShares, state.side, state.type])
 
   const sellAmountValue = state.side === ORDER_SIDE.SELL ? sellOrderSnapshot.totalValue : 0
 
   const avgSellPriceLabel = formatCentsLabel(sellOrderSnapshot.priceCents, { fallback: '—' })
-  const avgBuyPriceLabel = formatCentsLabel(state.outcome?.buy_price, { fallback: '—' })
+  const outcomeFallbackBuyPriceCents = typeof state.outcome?.buy_price === 'number'
+    ? Number((state.outcome.buy_price * 100).toFixed(1))
+    : null
+  const currentBuyPriceCents = (() => {
+    if (isLimitOrder && state.side === ORDER_SIDE.BUY) {
+      return Number.parseFloat(state.limitPrice || '0') || 0
+    }
+
+    if (!isLimitOrder && state.side === ORDER_SIDE.BUY) {
+      return marketBuyFill?.avgPriceCents ?? null
+    }
+
+    return outcomeFallbackBuyPriceCents
+  })()
+
+  const effectiveMarketBuyCost = state.side === ORDER_SIDE.BUY && state.type === ORDER_TYPE.MARKET
+    ? (marketBuyFill?.totalCost ?? amountNumber)
+    : 0
+  const shouldShowDepositCta = state.side === ORDER_SIDE.BUY
+    && state.type === ORDER_TYPE.MARKET
+    && Math.max(effectiveMarketBuyCost, amountNumber) > balance.raw
+
+  const avgBuyPriceLabel = formatCentsLabel(currentBuyPriceCents ?? undefined, { fallback: '—' })
   const sellAmountLabel = formatCurrency(sellAmountValue)
   useEffect(() => {
     if (!isLimitOrder || limitSharesNumber >= MIN_LIMIT_ORDER_SHARES) {
       setShowLimitMinimumWarning(false)
     }
   }, [isLimitOrder, limitSharesNumber])
+
+  useEffect(() => {
+    setShowInsufficientSharesWarning(false)
+    setShowInsufficientBalanceWarning(false)
+    setShowAmountTooLowWarning(false)
+    setShouldShakeInput(false)
+    setShouldShakeLimitShares(false)
+  }, [state.amount, state.side, selectedShares])
 
   useEffect(() => {
     if (
@@ -298,6 +495,18 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
 
   function focusInput() {
     state.inputRef?.current?.focus()
+  }
+
+  function triggerLimitSharesShake() {
+    setShouldShakeLimitShares(true)
+    limitSharesInputRef.current?.focus()
+    setTimeout(() => setShouldShakeLimitShares(false), 320)
+  }
+
+  function triggerInputShake() {
+    setShouldShakeInput(true)
+    state.inputRef?.current?.focus()
+    setTimeout(() => setShouldShakeInput(false), 320)
   }
 
   async function onSubmit() {
@@ -324,17 +533,55 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     })
 
     if (!validation.ok) {
-      if (validation.reason === 'LIMIT_SHARES_TOO_LOW') {
-        setShowLimitMinimumWarning(true)
-        return
-      }
-      else if (validation.reason === 'MARKET_MIN_AMOUNT') {
-        setShowMarketMinimumWarning(true)
-        return
-      }
-      else {
-        setShowLimitMinimumWarning(false)
-        setShowMarketMinimumWarning(false)
+      switch (validation.reason) {
+        case 'LIMIT_SHARES_TOO_LOW': {
+          setShowLimitMinimumWarning(true)
+          triggerLimitSharesShake()
+          return
+        }
+        case 'MARKET_MIN_AMOUNT': {
+          setShowMarketMinimumWarning(true)
+          return
+        }
+        case 'INVALID_AMOUNT':
+        case 'INVALID_LIMIT_SHARES': {
+          setShowAmountTooLowWarning(true)
+          if (isLimitOrder) {
+            triggerLimitSharesShake()
+          }
+          else {
+            triggerInputShake()
+          }
+          return
+        }
+        case 'INSUFFICIENT_SHARES': {
+          setShowInsufficientSharesWarning(true)
+          if (isLimitOrder) {
+            triggerLimitSharesShake()
+          }
+          else {
+            triggerInputShake()
+          }
+          return
+        }
+        case 'INSUFFICIENT_BALANCE': {
+          setShowInsufficientBalanceWarning(true)
+          if (isLimitOrder) {
+            triggerLimitSharesShake()
+          }
+          else {
+            triggerInputShake()
+          }
+          return
+        }
+        default:
+          setShowLimitMinimumWarning(false)
+          setShowMarketMinimumWarning(false)
+          setShowInsufficientSharesWarning(false)
+          setShowInsufficientBalanceWarning(false)
+          setShowAmountTooLowWarning(false)
+          setShouldShakeInput(false)
+          setShouldShakeLimitShares(false)
       }
       handleValidationError(validation.reason, {
         openWalletModal: open,
@@ -343,6 +590,11 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       return
     }
     setShowLimitMinimumWarning(false)
+    setShowInsufficientSharesWarning(false)
+    setShowInsufficientBalanceWarning(false)
+    setShowAmountTooLowWarning(false)
+    setShouldShakeInput(false)
+    setShouldShakeLimitShares(false)
 
     if (!state.market || !state.outcome || !user || !userAddress || !makerAddress) {
       return
@@ -352,6 +604,32 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       ? validCustomExpirationTimestamp
       : null
 
+    const effectiveAmountForOrder = (() => {
+      if (state.type === ORDER_TYPE.MARKET) {
+        if (state.side === ORDER_SIDE.SELL) {
+          const requestedShares = Number.parseFloat(state.amount || '0') || 0
+          return requestedShares.toString()
+        }
+
+        const cost = marketBuyFill?.totalCost ?? amountNumber
+        return cost.toString()
+      }
+
+      if (state.side === ORDER_SIDE.SELL) {
+        return state.limitShares
+      }
+
+      return state.amount
+    })()
+
+    const marketPriceCents = (() => {
+      const value = state.side === ORDER_SIDE.SELL
+        ? sellOrderSnapshot.priceCents
+        : currentBuyPriceCents
+
+      return Number.isFinite(value) && value && value > 0 ? value : undefined
+    })()
+
     const payload = buildOrderPayload({
       userAddress,
       makerAddress,
@@ -359,12 +637,10 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       outcome: state.outcome,
       side: state.side,
       orderType: state.type,
-      amount: state.amount,
+      amount: effectiveAmountForOrder,
       limitPrice: state.limitPrice,
       limitShares: state.limitShares,
-      marketPriceCents: state.side === ORDER_SIDE.BUY
-        ? (typeof state.outcome?.buy_price === 'number' ? state.outcome.buy_price * 100 : undefined)
-        : sellOrderSnapshot.priceCents,
+      marketPriceCents,
       expirationTimestamp: state.limitExpirationEnabled
         ? (customExpirationTimestamp ?? endOfDayTimestamp)
         : undefined,
@@ -432,7 +708,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         marketTitle: state.market?.short_title || state.market?.title,
         sellAmountValue,
         avgSellPrice: avgSellPriceLabel,
-        buyPrice: state.outcome.buy_price,
+        buyPrice: marketPriceCents,
         queryClient,
         outcomeIndex: state.outcome.outcome_index,
         lastMouseEvent: state.lastMouseEvent,
@@ -561,6 +837,8 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 isLimitOrder={isLimitOrder}
                 availableShares={selectedShares}
                 showLimitMinimumWarning={showLimitMinimumWarning}
+                shouldShakeShares={shouldShakeLimitShares}
+                limitSharesRef={limitSharesInputRef}
                 onLimitPriceChange={state.setLimitPrice}
                 onLimitSharesChange={state.setLimitShares}
                 onLimitExpirationEnabledChange={state.setLimitExpirationEnabled}
@@ -590,6 +868,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 balance={balance}
                 inputRef={state.inputRef}
                 onAmountChange={state.setAmount}
+                shouldShake={shouldShakeInput}
               />
               {amountNumber > 0 && (
                 <EventOrderPanelEarnings
@@ -602,7 +881,12 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 />
               )}
               {showMarketMinimumWarning && (
-                <div className="mt-3 flex items-center justify-center gap-2 pb-1 text-sm font-semibold text-orange-500">
+                <div
+                  className={`
+                    mt-3 flex animate-order-shake items-center justify-center gap-2 pb-1 text-sm font-semibold
+                    text-orange-500
+                  `}
+                >
                   <TriangleAlertIcon className="size-4" />
                   Market buys must be at least $1
                 </div>
@@ -610,11 +894,44 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
             </>
           )}
 
-      <EventOrderPanelSubmitButton
-        isLoading={state.isLoading}
-        isDisabled={state.isLoading}
-        onClick={event => state.setLastMouseEvent(event)}
-      />
+      {(showInsufficientSharesWarning || showInsufficientBalanceWarning || showAmountTooLowWarning) && (
+        <div
+          className={`
+            mt-2 mb-3 flex animate-order-shake items-center justify-center gap-2 text-sm font-semibold text-orange-500
+          `}
+        >
+          <TriangleAlertIcon className="size-4" />
+          {showAmountTooLowWarning
+            ? 'Amount too low'
+            : showInsufficientBalanceWarning
+              ? 'Insufficient USDC balance'
+              : 'Insufficient shares for this order'}
+        </div>
+      )}
+
+      {shouldShowDepositCta
+        ? (
+            <Button
+              type="button"
+              size="outcome"
+              disabled={state.isLoading}
+              aria-disabled={state.isLoading}
+              onClick={() => {
+                focusInput()
+                startDepositFlow()
+              }}
+              className="w-full text-base font-bold"
+            >
+              Deposit
+            </Button>
+          )
+        : (
+            <EventOrderPanelSubmitButton
+              isLoading={state.isLoading}
+              isDisabled={state.isLoading}
+              onClick={event => state.setLastMouseEvent(event)}
+            />
+          )}
       <EventOrderPanelTermsDisclaimer />
     </Form>
   )
