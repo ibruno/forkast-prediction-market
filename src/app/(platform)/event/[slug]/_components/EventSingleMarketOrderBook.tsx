@@ -1,6 +1,7 @@
 'use client'
 
 import type { Market, Outcome } from '@/types'
+import { RefreshCwIcon } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import EventOrderBook, {
   useOrderBookSummaries,
@@ -56,6 +57,8 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
   const {
     data: orderBookSummaries,
     isLoading: isOrderBookLoading,
+    refetch: refetchOrderBook,
+    isRefetching: isOrderBookRefetching,
   } = useOrderBookSummaries(tokenIds, { enabled: isExpanded })
 
   const selectedOutcome: Outcome | undefined = market.outcomes[selectedOutcomeIndex] ?? market.outcomes[0]
@@ -127,17 +130,43 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
 
       {isExpanded && (
         <div className="border-t border-border/30">
-          <div className="flex flex-wrap gap-3 px-6 py-3 text-sm font-semibold">
-            <OutcomeToggle
-              label="Trade Yes"
-              selected={selectedOutcomeIndex === OUTCOME_INDEX.YES}
-              onClick={() => handleOutcomeSelection(OUTCOME_INDEX.YES)}
-            />
-            <OutcomeToggle
-              label="Trade No"
-              selected={selectedOutcomeIndex === OUTCOME_INDEX.NO}
-              onClick={() => handleOutcomeSelection(OUTCOME_INDEX.NO)}
-            />
+          <div
+            className={`
+              flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-6 pt-3 pb-0 text-sm
+              font-semibold
+            `}
+          >
+            <div className="flex flex-wrap gap-4">
+              <OutcomeToggle
+                label="Trade Yes"
+                selected={selectedOutcomeIndex === OUTCOME_INDEX.YES}
+                onClick={() => handleOutcomeSelection(OUTCOME_INDEX.YES)}
+              />
+              <OutcomeToggle
+                label="Trade No"
+                selected={selectedOutcomeIndex === OUTCOME_INDEX.NO}
+                onClick={() => handleOutcomeSelection(OUTCOME_INDEX.NO)}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => { void refetchOrderBook() }}
+              className={cn(
+                `inline-flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground transition-colors`,
+                'hover:bg-muted/70 hover:text-foreground',
+                'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none',
+              )}
+              aria-label="Refresh order book"
+              title="Refresh order book"
+              disabled={isOrderBookLoading || isOrderBookRefetching}
+            >
+              <RefreshCwIcon
+                className={cn(
+                  'size-3',
+                  (isOrderBookLoading || isOrderBookRefetching) && 'animate-spin',
+                )}
+              />
+            </button>
           </div>
           <EventOrderBook
             market={market}
@@ -165,8 +194,10 @@ function OutcomeToggle({ label, selected, onClick }: OutcomeToggleProps) {
       type="button"
       onClick={onClick}
       className={cn(
-        'text-sm font-semibold transition-colors',
-        selected ? 'text-foreground' : 'text-muted-foreground hover:text-foreground',
+        `-mb-[2px] border-b-2 border-transparent pt-1 pb-2 text-sm font-semibold transition-colors`,
+        selected
+          ? 'border-primary text-foreground'
+          : 'text-muted-foreground hover:text-foreground',
       )}
     >
       {label}

@@ -77,10 +77,9 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
     return Array.from(ids)
   }, [event.markets])
   const shouldEnableOrderBookPolling = !isSingleMarket && orderBookPollingEnabled
-  const {
-    data: orderBookSummaries,
-    isLoading: isOrderBookLoading,
-  } = useOrderBookSummaries(eventTokenIds, { enabled: shouldEnableOrderBookPolling })
+  const orderBookQuery = useOrderBookSummaries(eventTokenIds, { enabled: shouldEnableOrderBookPolling })
+  const orderBookSummaries = orderBookQuery.data
+  const isOrderBookLoading = orderBookQuery.isLoading
   const shouldShowOrderBookLoader = !shouldEnableOrderBookPolling || (isOrderBookLoading && !orderBookSummaries)
   const ownerAddress = useMemo(() => {
     if (user && user.proxy_wallet_address && user.proxy_wallet_status === 'deployed') {
@@ -233,6 +232,8 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                     summaries: orderBookSummaries,
                     isLoading: shouldShowOrderBookLoader,
                     lastPriceOverrideCents,
+                    refetch: orderBookQuery.refetch,
+                    isRefetching: orderBookQuery.isRefetching,
                   }}
                   sharesByCondition={sharesByCondition}
                 />
@@ -261,6 +262,8 @@ interface MarketDetailTabsProps {
     summaries: OrderBookSummariesResponse | undefined
     isLoading: boolean
     lastPriceOverrideCents: number | null
+    refetch: () => Promise<unknown>
+    isRefetching: boolean
   }
   sharesByCondition: SharesByCondition
 }
@@ -344,28 +347,53 @@ function MarketDetailTabs({
   return (
     <div className="pt-2">
       <div className="px-4">
-        <div className="scrollbar-hide flex gap-4 overflow-x-auto border-b border-border/60">
-          {visibleTabs.map((tab) => {
-            const isActive = selectedTab === tab.id
-            return (
-              <button
-                key={`${market.condition_id}-${tab.id}`}
-                type="button"
-                className={cn(
-                  `border-b-2 border-transparent pt-1 pb-2 text-sm font-semibold whitespace-nowrap transition-colors`,
-                  isActive
-                    ? 'border-primary text-foreground'
-                    : 'text-muted-foreground hover:text-foreground',
-                )}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  select(tab.id)
-                }}
-              >
-                {tab.label}
-              </button>
-            )
-          })}
+        <div className="flex items-center gap-2 border-b border-border/60">
+          <div className="scrollbar-hide flex flex-1 gap-4 overflow-x-auto">
+            {visibleTabs.map((tab) => {
+              const isActive = selectedTab === tab.id
+              return (
+                <button
+                  key={`${market.condition_id}-${tab.id}`}
+                  type="button"
+                  className={cn(
+                    `border-b-2 border-transparent pt-1 pb-2 text-sm font-semibold whitespace-nowrap transition-colors`,
+                    isActive
+                      ? 'border-primary text-foreground'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    select(tab.id)
+                  }}
+                >
+                  {tab.label}
+                </button>
+              )
+            })}
+          </div>
+
+          <button
+            type="button"
+            className={cn(
+              `
+                ml-auto inline-flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground
+                transition-colors
+              `,
+              'hover:bg-muted/70 hover:text-foreground',
+              'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none',
+            )}
+            aria-label="Refresh order book"
+            title="Refresh order book"
+            onClick={() => { void orderBookData.refetch() }}
+            disabled={orderBookData.isLoading || orderBookData.isRefetching}
+          >
+            <RefreshCwIcon
+              className={cn(
+                'size-3',
+                (orderBookData.isLoading || orderBookData.isRefetching) && 'animate-spin',
+              )}
+            />
+          </button>
         </div>
       </div>
 
