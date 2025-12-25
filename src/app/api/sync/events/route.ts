@@ -487,7 +487,7 @@ async function processEvent(eventData: any, creatorAddress: string) {
     throw new Error(`Invalid event data: ${JSON.stringify(eventData)}`)
   }
 
-  const normalizedEndDate = normalizeEventEndDate(eventData.end_date ?? eventData.endDate)
+  const normalizedEndDate = normalizeEventEndDate(eventData.end_time)
   const enableNegRiskFlag = normalizeBooleanField(eventData.enable_neg_risk)
   const negRiskAugmentedFlag = normalizeBooleanField(eventData.neg_risk_augmented)
   const eventNegRiskFlag = normalizeBooleanField(eventData.neg_risk)
