@@ -30,7 +30,6 @@ interface SubgraphCondition {
 interface SyncStats {
   fetchedCount: number
   processedCount: number
-  skippedExistingCount: number
   skippedCreatorCount: number
   errors: { conditionId: string, error: string }[]
   timeLimitReached: boolean
@@ -96,7 +95,6 @@ export async function GET(request: Request) {
       success: true,
       processed: syncResult.processedCount,
       fetched: syncResult.fetchedCount,
-      skippedExisting: syncResult.skippedExistingCount,
       skippedCreators: syncResult.skippedCreatorCount,
       errors: syncResult.errors.length,
       errorDetails: syncResult.errors,
@@ -152,7 +150,6 @@ async function syncMarkets(): Promise<SyncStats> {
 
   let fetchedCount = 0
   let processedCount = 0
-  let skippedExistingCount = 0
   let skippedCreatorCount = 0
   const errors: { conditionId: string, error: string }[] = []
   let timeLimitReached = false
@@ -168,8 +165,6 @@ async function syncMarkets(): Promise<SyncStats> {
 
     fetchedCount += page.conditions.length
     console.log(`📑 Processing ${page.conditions.length} conditions (running total fetched: ${fetchedCount})`)
-
-    const existingIds = await getExistingConditionIds(page.conditions.map(condition => condition.id))
 
     for (const condition of page.conditions) {
       const updatedAt = Number(condition.updatedAt)
@@ -192,12 +187,6 @@ async function syncMarkets(): Promise<SyncStats> {
       if (!allowedCreators.has(condition.creator)) {
         skippedCreatorCount++
         console.log(`🚫 Skipping market ${condition.id} - creator ${condition.creator} not in allowed list`)
-        cursor = conditionCursor
-        continue
-      }
-
-      if (existingIds.has(condition.id)) {
-        skippedExistingCount++
         cursor = conditionCursor
         continue
       }
@@ -250,39 +239,10 @@ async function syncMarkets(): Promise<SyncStats> {
   return {
     fetchedCount,
     processedCount,
-    skippedExistingCount,
     skippedCreatorCount,
     errors,
     timeLimitReached,
   }
-}
-
-async function getExistingConditionIds(conditionIds: string[]): Promise<Set<string>> {
-  const uniqueIds = Array.from(new Set(conditionIds))
-  if (uniqueIds.length === 0) {
-    return new Set()
-  }
-
-  const existingIds = new Set<string>()
-  const chunkSize = 200
-
-  for (let start = 0; start < uniqueIds.length; start += chunkSize) {
-    const chunk = uniqueIds.slice(start, start + chunkSize)
-    const { data, error } = await supabaseAdmin
-      .from('conditions')
-      .select('id')
-      .in('id', chunk)
-
-    if (error) {
-      throw new Error(`Failed to check existing conditions: ${error.message}`)
-    }
-
-    for (const row of data ?? []) {
-      existingIds.add(row.id)
-    }
-  }
-
-  return existingIds
 }
 
 async function getLastProcessedConditionCursor(): Promise<SyncCursor | null> {
