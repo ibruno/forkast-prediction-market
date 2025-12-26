@@ -23,7 +23,7 @@ import { useAppKit } from '@/hooks/useAppKit'
 import { useBalance } from '@/hooks/useBalance'
 import { formatDisplayAmount, MAX_AMOUNT_INPUT, sanitizeNumericInput } from '@/lib/amount-input'
 import { getExchangeEip712Domain, ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
-import { formatVolume } from '@/lib/formatters'
+import { formatCurrency, formatVolume } from '@/lib/formatters'
 import { buildOrderPayload, submitOrder } from '@/lib/orders'
 import { signOrderPayload } from '@/lib/orders/signing'
 import { validateOrder } from '@/lib/orders/validation'
@@ -40,6 +40,157 @@ interface SelectedOutcome {
   market: Market
   outcome: Outcome
   variant: 'yes' | 'no'
+}
+
+interface OrderbookLevelSummary {
+  price?: string
+  size?: string
+}
+
+interface OrderBookSummaryResponse {
+  bids?: OrderbookLevelSummary[]
+  asks?: OrderbookLevelSummary[]
+}
+
+interface NormalizedBookLevel {
+  priceCents: number
+  priceDollars: number
+  size: number
+}
+
+const PRICE_EPSILON = 1e-8
+const MAX_LIMIT_PRICE = 99.9
+const CLOB_BASE_URL = process.env.CLOB_URL
+
+async function fetchClobJson<T>(path: string, body: unknown): Promise<T> {
+  if (!CLOB_BASE_URL) {
+    throw new Error('CLOB URL is not configured.')
+  }
+
+  const response = await fetch(`${CLOB_BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    cache: 'no-store',
+  })
+
+  const text = await response.text()
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${path}: ${response.status} ${text}`)
+  }
+
+  try {
+    return JSON.parse(text) as T
+  }
+  catch (error) {
+    console.error(`Failed to parse response from ${path}`, error)
+    throw new Error(`Failed to parse response from ${path}`)
+  }
+}
+
+async function fetchOrderBookSummary(tokenId: string): Promise<OrderBookSummaryResponse> {
+  const payload = [{ token_id: tokenId }]
+  const orderBooks = await fetchClobJson<Array<OrderBookSummaryResponse & { asset_id?: string, token_id?: string }>>('/books', payload)
+
+  const entry = Array.isArray(orderBooks)
+    ? orderBooks.find(item => item && (item.asset_id === tokenId || (item as any).token_id === tokenId))
+    : null
+
+  if (!entry) {
+    return {}
+  }
+
+  return {
+    bids: entry.bids ?? [],
+    asks: entry.asks ?? [],
+  }
+}
+
+function getRoundedCents(rawPrice: number, side: 'ask' | 'bid') {
+  const cents = rawPrice * 100
+  if (!Number.isFinite(cents)) {
+    return 0
+  }
+
+  const scaled = cents * 10
+  const roundedScaled = side === 'bid'
+    ? Math.floor(scaled + PRICE_EPSILON)
+    : Math.ceil(scaled - PRICE_EPSILON)
+
+  const normalized = Math.max(0, Math.min(roundedScaled / 10, MAX_LIMIT_PRICE))
+  return Number(normalized.toFixed(1))
+}
+
+function normalizeBookLevels(levels: OrderbookLevelSummary[] | undefined, side: 'ask' | 'bid'): NormalizedBookLevel[] {
+  if (!levels?.length) {
+    return []
+  }
+
+  return levels
+    .map((entry) => {
+      const price = Number(entry.price)
+      const size = Number(entry.size)
+      if (!Number.isFinite(price) || !Number.isFinite(size) || price <= 0 || size <= 0) {
+        return null
+      }
+
+      const priceCents = getRoundedCents(price, side)
+      const priceDollars = priceCents / 100
+      if (priceCents <= 0 || priceDollars <= 0) {
+        return null
+      }
+
+      return {
+        priceCents,
+        priceDollars,
+        size: Number(size.toFixed(2)),
+      }
+    })
+    .filter((entry): entry is NormalizedBookLevel => entry !== null)
+    .sort((a, b) => (side === 'ask' ? a.priceDollars - b.priceDollars : b.priceDollars - a.priceDollars))
+}
+
+function calculateMarketFill(value: number, asks: NormalizedBookLevel[]) {
+  if (!asks.length || value <= 0) {
+    return {
+      avgPriceCents: null as number | null,
+      filledShares: 0,
+      totalCost: 0,
+    }
+  }
+
+  let remainingBudget = value
+  let filledShares = 0
+  let totalCost = 0
+
+  for (const level of asks) {
+    if (remainingBudget <= 0) {
+      break
+    }
+
+    const maxSharesAtLevel = level.priceDollars > 0 ? remainingBudget / level.priceDollars : 0
+    const fill = Math.min(level.size, maxSharesAtLevel)
+    if (fill <= 0) {
+      continue
+    }
+    const cost = fill * level.priceDollars
+    filledShares = Number((filledShares + fill).toFixed(4))
+    totalCost = Number((totalCost + cost).toFixed(4))
+    remainingBudget = Math.max(0, Number((remainingBudget - cost).toFixed(4)))
+  }
+
+  const avgPriceCents = filledShares > 0
+    ? Number(((totalCost / filledShares) * 100).toFixed(1))
+    : null
+
+  return {
+    avgPriceCents,
+    filledShares: Number(filledShares.toFixed(4)),
+    totalCost: Number(totalCost.toFixed(4)),
+  }
 }
 
 export default function EventCard({ event }: EventCardProps) {
@@ -76,6 +227,8 @@ export default function EventCard({ event }: EventCardProps) {
   const hasRecentMarket = event.markets.some(market => isMarketNew(market.created_at))
   const isNegRiskEnabled = Boolean(event.enable_neg_risk)
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
+  const availableBalance = balance.raw
+  const selectedTokenId = selectedOutcome?.outcome.token_id ?? null
 
   const marketTargets = useMemo(() => buildMarketTargets(event.markets), [event.markets])
   const { latestSnapshot } = useEventPriceHistory({
@@ -133,68 +286,51 @@ export default function EventCard({ event }: EventCardProps) {
   const primaryDisplayChance = primaryMarket ? getDisplayChance(primaryMarket.condition_id) : 0
   const roundedPrimaryDisplayChance = Math.round(primaryDisplayChance)
 
-  const volumeRequestPayload = useMemo(() => {
-    const conditions = event.markets
-      .map((market) => {
-        const tokenIds = (market.outcomes ?? [])
-          .map(outcome => outcome.token_id)
-          .filter(Boolean)
-          .slice(0, 2)
-        if (!market.condition_id || tokenIds.length < 2) {
-          return null
-        }
-        return {
-          condition_id: market.condition_id,
-          token_ids: tokenIds as [string, string],
-        }
-      })
-      .filter((item): item is { condition_id: string, token_ids: [string, string] } => item !== null)
+  const resolvedVolume = useMemo(() => event.volume ?? 0, [event.volume])
 
-    const signature = conditions
-      .map(condition => `${condition.condition_id}:${condition.token_ids.join(':')}`)
-      .join('|')
-
-    return { conditions, signature }
-  }, [event.markets])
-
-  const { data: volumeFromApi } = useQuery({
-    queryKey: ['trade-volumes', event.id, volumeRequestPayload.signature],
-    enabled: volumeRequestPayload.conditions.length > 0,
+  const orderBookQuery = useQuery({
+    queryKey: ['card-orderbook', selectedTokenId],
+    enabled: Boolean(selectedTokenId && isInTradingMode),
+    queryFn: () => fetchOrderBookSummary(selectedTokenId!),
     staleTime: 60_000,
-    refetchInterval: 60_000,
-    queryFn: async () => {
-      const response = await fetch(`${process.env.CLOB_URL}/data/volumes`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          include_24h: false,
-          conditions: volumeRequestPayload.conditions,
-        }),
-      })
-
-      const payload = await response.json() as Array<{
-        condition_id: string
-        status: number
-        volume?: string
-      }>
-
-      return payload
-        .filter(entry => entry?.status === 200)
-        .reduce((total, entry) => {
-          const numeric = Number(entry.volume ?? 0)
-          return Number.isFinite(numeric) ? total + numeric : total
-        }, 0)
-    },
+    gcTime: 60_000,
+    refetchOnWindowFocus: false,
   })
 
-  const resolvedVolume = useMemo(() => {
-    if (typeof volumeFromApi === 'number' && Number.isFinite(volumeFromApi)) {
-      return volumeFromApi
+  const normalizedAsks = useMemo(
+    () => normalizeBookLevels(orderBookQuery.data?.asks, 'ask'),
+    [orderBookQuery.data?.asks],
+  )
+
+  const marketBuyFill = useMemo(() => {
+    if (!isInTradingMode || !selectedOutcome || amountNumber <= 0) {
+      return null
     }
-    return event.volume
-  }, [event.volume, volumeFromApi])
+    return calculateMarketFill(amountNumber, normalizedAsks)
+  }, [amountNumber, isInTradingMode, normalizedAsks, selectedOutcome])
+
+  const toWinAmount = useMemo(() => {
+    if (!selectedOutcome || amountNumber <= 0) {
+      return 0
+    }
+
+    if (marketBuyFill?.filledShares && marketBuyFill.filledShares > 0) {
+      return marketBuyFill.filledShares
+    }
+
+    const fallbackPrice = typeof selectedOutcome.outcome.buy_price === 'number'
+      ? selectedOutcome.outcome.buy_price
+      : selectedOutcome.market?.probability
+        ? selectedOutcome.market.probability / 100
+        : 0
+
+    return fallbackPrice > 0 ? amountNumber / fallbackPrice : 0
+  }, [amountNumber, marketBuyFill?.filledShares, selectedOutcome])
+
+  const toWinLabel = useMemo(
+    () => formatCurrency(Math.max(0, toWinAmount), { includeSymbol: false }),
+    [toWinAmount],
+  )
 
   function handleTrade(outcome: Outcome, market: Market, variant: 'yes' | 'no') {
     setSelectedOutcome({
@@ -358,17 +494,6 @@ export default function EventCard({ event }: EventCardProps) {
 
   const formattedTradeAmount = formatDisplayAmount(tradeAmount)
 
-  function calculateWinnings(amount: string) {
-    if (!amount || !selectedOutcome) {
-      return '0.00'
-    }
-    const amountNum = Number.parseFloat(amount)
-    const probability = selectedOutcome.market.probability / 100
-    const odds = selectedOutcome.variant === 'yes' ? 1 / probability : 1 / (1 - probability)
-    const winnings = amountNum * odds
-    return winnings.toFixed(2)
-  }
-
   return (
     <Card
       className={`
@@ -502,7 +627,8 @@ export default function EventCard({ event }: EventCardProps) {
                       className={`
                         w-full
                         [appearance:textfield]
-                        rounded border-0 bg-slate-100 py-2 pr-3 pl-10 text-sm text-slate-900 transition-colors
+                        rounded border ${amountNumber > availableBalance ? 'border-red-500' : 'border-transparent'}
+                        bg-slate-100 py-2 pr-3 pl-10 text-sm text-slate-900 transition-colors
                         placeholder:text-slate-500
                         focus:bg-slate-200 focus:outline-none
                         dark:bg-slate-500 dark:text-slate-100 dark:placeholder:text-slate-400 dark:focus:bg-slate-600
@@ -524,6 +650,7 @@ export default function EventCard({ event }: EventCardProps) {
                       isLoading
                       || !activeOutcome
                       || amountNumber <= 0
+                      || amountNumber > availableBalance
                     }
                     size="outcome"
                     variant={activeOutcome.variant}
@@ -550,7 +677,7 @@ export default function EventCard({ event }: EventCardProps) {
                             </div>
                             <div className="text-xs opacity-90">
                               to win $
-                              {calculateWinnings(tradeAmount)}
+                              {toWinLabel}
                             </div>
                           </div>
                         )}
