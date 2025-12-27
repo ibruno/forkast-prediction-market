@@ -17,11 +17,8 @@ export default function EventOrderPanelSubmitButton({
   type = 'submit',
 }: EventOrderPanelSubmitButtonProps) {
   return (
-    <div className="relative w-full pb-[5px]">
-      <div className={`
-        pointer-events-none absolute inset-x-0 bottom-0 h-[10px] rounded-b-md bg-[oklch(0.50_0.11_237.323)]
-      `}
-      />
+    <div className="relative w-full pb-1.25">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2.5 rounded-b-md bg-[oklch(0.50_0.11_237.323)]" />
       <Button
         type={type}
         size="outcome"
@@ -30,8 +27,8 @@ export default function EventOrderPanelSubmitButton({
         onClick={onClick}
         className={`
           relative w-full translate-y-0 rounded-md text-base font-bold transition-transform duration-150 ease-out
-          hover:translate-y-[1px]
-          active:translate-y-[2px]
+          hover:translate-y-px hover:bg-primary
+          active:translate-y-0.5
         `}
 
       >
