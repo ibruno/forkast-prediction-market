@@ -182,6 +182,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const isSingleMarket = useIsSingleMarket()
   const amountNumber = useAmountAsNumber()
   const isLimitOrder = useIsLimitOrder()
+  const shouldShowEarnings = amountNumber > 0
   const [showMarketMinimumWarning, setShowMarketMinimumWarning] = useState(false)
   const [showInsufficientSharesWarning, setShowInsufficientSharesWarning] = useState(false)
   const [showInsufficientBalanceWarning, setShowInsufficientBalanceWarning] = useState(false)
@@ -727,7 +728,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     const marketLimitPriceCents = (() => {
       if (state.side === ORDER_SIDE.SELL) {
         const value = marketSellFill?.limitPriceCents ?? sellOrderSnapshot.priceCents
-        return typeof value === 'number' && Number.isFinite(value) && value > 0 ? value : undefined
+        return Number.isFinite(value) && value > 0 ? value : undefined
       }
 
       const value = marketBuyFill?.limitPriceCents
@@ -980,7 +981,15 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 onAmountChange={state.setAmount}
                 shouldShake={shouldShakeInput}
               />
-              {amountNumber > 0 && (
+              <div
+                className={cn(
+                  'overflow-hidden transition-all duration-500 ease-in-out',
+                  shouldShowEarnings
+                    ? 'max-h-96 translate-y-0 opacity-100'
+                    : 'pointer-events-none max-h-0 -translate-y-2 opacity-0',
+                )}
+                aria-hidden={!shouldShowEarnings}
+              >
                 <EventOrderPanelEarnings
                   isMobile={isMobile}
                   side={state.side}
@@ -994,7 +1003,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                   buyChangePct={buyPayoutSummary.changePct}
                   buyMultiplier={buyPayoutSummary.multiplier}
                 />
-              )}
+              </div>
               {showMarketMinimumWarning && (
                 <div
                   className={`
@@ -1030,7 +1039,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         isDisabled={state.isLoading}
         onClick={(event) => {
           if (!isConnected) {
-            open()
+            void open()
             return
           }
           if (shouldShowDepositCta) {
