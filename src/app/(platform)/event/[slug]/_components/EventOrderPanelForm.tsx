@@ -187,6 +187,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const [showInsufficientSharesWarning, setShowInsufficientSharesWarning] = useState(false)
   const [showInsufficientBalanceWarning, setShowInsufficientBalanceWarning] = useState(false)
   const [showAmountTooLowWarning, setShowAmountTooLowWarning] = useState(false)
+  const [showNoLiquidityWarning, setShowNoLiquidityWarning] = useState(false)
   const [shouldShakeInput, setShouldShakeInput] = useState(false)
   const [shouldShakeLimitShares, setShouldShakeLimitShares] = useState(false)
   const limitSharesInputRef = useRef<HTMLInputElement | null>(null)
@@ -581,9 +582,26 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     setShowInsufficientSharesWarning(false)
     setShowInsufficientBalanceWarning(false)
     setShowAmountTooLowWarning(false)
+    setShowNoLiquidityWarning(false)
     setShouldShakeInput(false)
     setShouldShakeLimitShares(false)
   }, [state.amount, state.side, selectedShares])
+
+  useEffect(() => {
+    const filledShares = state.side === ORDER_SIDE.BUY
+      ? (marketBuyFill?.filledShares ?? 0)
+      : (marketSellFill?.filledShares ?? 0)
+
+    if (isLimitOrder || amountNumber <= 0 || filledShares > 0) {
+      setShowNoLiquidityWarning(false)
+    }
+  }, [
+    amountNumber,
+    isLimitOrder,
+    marketBuyFill?.filledShares,
+    marketSellFill?.filledShares,
+    state.side,
+  ])
 
   useEffect(() => {
     if (
@@ -614,6 +632,24 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
 
   async function onSubmit() {
     if (!ensureTradingReady()) {
+      return
+    }
+
+    if (
+      !isLimitOrder
+      && amountNumber > 0
+      && (
+        (state.side === ORDER_SIDE.SELL && (marketSellFill?.filledShares ?? 0) <= 0)
+        || (state.side === ORDER_SIDE.BUY && (marketBuyFill?.filledShares ?? 0) <= 0)
+      )
+    ) {
+      setShowLimitMinimumWarning(false)
+      setShowMarketMinimumWarning(false)
+      setShowInsufficientSharesWarning(false)
+      setShowInsufficientBalanceWarning(false)
+      setShowAmountTooLowWarning(false)
+      setShowNoLiquidityWarning(true)
+      triggerInputShake()
       return
     }
 
@@ -696,6 +732,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     setShowInsufficientSharesWarning(false)
     setShowInsufficientBalanceWarning(false)
     setShowAmountTooLowWarning(false)
+    setShowNoLiquidityWarning(false)
     setShouldShakeInput(false)
     setShouldShakeLimitShares(false)
 
@@ -714,8 +751,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
           return requestedShares.toString()
         }
 
-        const cost = marketBuyFill?.totalCost ?? amountNumber
-        return cost.toString()
+        return (state.amount || amountNumber.toString())
       }
 
       if (state.side === ORDER_SIDE.SELL) {
@@ -1013,6 +1049,17 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 >
                   <TriangleAlertIcon className="size-4" />
                   Market buys must be at least $1
+                </div>
+              )}
+              {showNoLiquidityWarning && (
+                <div
+                  className={`
+                    mt-3 flex animate-order-shake items-center justify-center gap-2 pb-1 text-sm font-semibold
+                    text-orange-500
+                  `}
+                >
+                  <TriangleAlertIcon className="size-4" />
+                  No liquidity for this market order
                 </div>
               )}
             </>
