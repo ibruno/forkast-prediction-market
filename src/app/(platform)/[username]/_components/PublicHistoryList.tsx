@@ -36,22 +36,63 @@ type HistorySort = 'newest' | 'oldest' | 'value' | 'shares'
 
 const DATA_API_URL = process.env.DATA_URL!
 
+function resolveHistorySort(sortFilter: HistorySort) {
+  if (sortFilter === 'oldest') {
+    return { sortBy: 'TIMESTAMP', sortDirection: 'ASC' as const }
+  }
+  if (sortFilter === 'value') {
+    return { sortBy: 'CASH', sortDirection: 'DESC' as const }
+  }
+  if (sortFilter === 'shares') {
+    return { sortBy: 'TOKENS', sortDirection: 'DESC' as const }
+  }
+  return { sortBy: 'TIMESTAMP', sortDirection: 'DESC' as const }
+}
+
+function resolveHistoryTypeParams(typeFilter: HistoryTypeFilter) {
+  switch (typeFilter) {
+    case 'trades':
+      return { type: 'TRADE' }
+    case 'buy':
+      return { type: 'TRADE', side: 'BUY' }
+    case 'merge':
+      return { type: 'MERGE' }
+    case 'redeem':
+      return { type: 'REDEEM' }
+    default:
+      return {}
+  }
+}
+
 async function fetchUserHistory({
   pageParam,
   userAddress,
+  typeFilter,
+  sortFilter,
   signal,
 }: {
   pageParam: number
   userAddress: string
+  typeFilter: HistoryTypeFilter
+  sortFilter: HistorySort
   signal?: AbortSignal
 }): Promise<ActivityOrder[]> {
+  const { sortBy, sortDirection } = resolveHistorySort(sortFilter)
+  const { type, side } = resolveHistoryTypeParams(typeFilter)
+
   const params = new URLSearchParams({
     user: userAddress,
     limit: '100',
     offset: pageParam.toString(),
-    sortBy: 'TIMESTAMP',
-    sortDirection: 'DESC',
+    sortBy,
+    sortDirection,
   })
+  if (type) {
+    params.set('type', type)
+  }
+  if (side) {
+    params.set('side', side)
+  }
 
   const response = await fetch(`${DATA_API_URL}/activity?${params.toString()}`, { signal })
 
@@ -88,7 +129,7 @@ function formatPriceCents(price?: string | number) {
   return `${Math.round(numeric * 100)}¢`
 }
 
-type ActivityVariant = 'split' | 'merge' | 'deposit' | 'withdraw' | 'sell' | 'buy' | 'trade'
+type ActivityVariant = 'split' | 'merge' | 'redeem' | 'deposit' | 'withdraw' | 'sell' | 'buy' | 'trade'
 
 function resolveVariant(activity: ActivityOrder): ActivityVariant {
   const type = activity.type?.toLowerCase()
@@ -97,6 +138,9 @@ function resolveVariant(activity: ActivityOrder): ActivityVariant {
   }
   if (type === 'merge' || type === 'merged') {
     return 'merge'
+  }
+  if (type === 'redeem' || type === 'redeemed' || type === 'redemption') {
+    return 'redeem'
   }
   if (type === 'deposit' || type === 'deposit_funds') {
     return 'deposit'
@@ -125,6 +169,8 @@ function activityIcon(variant: ActivityVariant) {
       return { Icon: UnfoldHorizontalIcon, label: 'Split', className: '' }
     case 'merge':
       return { Icon: MergeIcon, label: 'Merged', className: 'rotate-90' }
+    case 'redeem':
+      return { Icon: CircleDollarSignIcon, label: 'Redeemed', className: '' }
     case 'deposit':
       return { Icon: ArrowDownToLineIcon, label: 'Deposited', className: '' }
     case 'withdraw':
@@ -148,6 +194,49 @@ function formatCsvNumber(value: number) {
 function formatCsvValue(value: string | number | null | undefined) {
   const text = value == null ? '' : String(value)
   return `"${text.replace(/"/g, '""')}"`
+}
+
+function toNumeric(value: string | number | null | undefined) {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric : 0
+}
+
+function getActivityTimestampMs(activity: ActivityOrder) {
+  const parsed = Date.parse(activity.created_at)
+  return Number.isFinite(parsed) ? parsed : 0
+}
+
+function matchesTypeFilter(activity: ActivityOrder, typeFilter: HistoryTypeFilter) {
+  if (typeFilter === 'all') {
+    return true
+  }
+
+  const variant = resolveVariant(activity)
+
+  switch (typeFilter) {
+    case 'trades':
+      return variant === 'buy' || variant === 'sell' || variant === 'trade'
+    case 'buy':
+      return variant === 'buy'
+    case 'merge':
+      return variant === 'merge'
+    case 'redeem':
+      return variant === 'redeem'
+    default:
+      return true
+  }
+}
+
+function matchesSearchQuery(activity: ActivityOrder, searchQuery: string) {
+  const trimmed = searchQuery.trim().toLowerCase()
+  if (!trimmed) {
+    return true
+  }
+
+  const marketTitle = activity.market.title?.toLowerCase() ?? ''
+  const outcomeText = activity.outcome?.text?.toLowerCase() ?? ''
+  const txHash = activity.tx_hash?.toLowerCase() ?? ''
+  return marketTitle.includes(trimmed) || outcomeText.includes(trimmed) || txHash.includes(trimmed)
 }
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
@@ -186,10 +275,12 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
     isFetchingNextPage,
     refetch,
   } = useInfiniteQuery<ActivityOrder[]>({
-    queryKey: ['user-history', userAddress],
+    queryKey: ['user-history', userAddress, typeFilter, sortFilter],
     queryFn: ({ pageParam = 0, signal }) => fetchUserHistory({
       pageParam: pageParam as number,
       userAddress,
+      typeFilter,
+      sortFilter,
       signal,
     }),
     getNextPageParam: (lastPage, allPages) => {
@@ -208,11 +299,31 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
     () => data?.pages.flat() ?? [],
     [data?.pages],
   )
-  const visibleActivities = activities
+  const visibleActivities = useMemo(() => {
+    const filtered = activities
+      .filter(activity => matchesSearchQuery(activity, searchQuery))
+      .filter(activity => matchesTypeFilter(activity, typeFilter))
+
+    const sorted = [...filtered]
+    sorted.sort((a, b) => {
+      if (sortFilter === 'oldest') {
+        return getActivityTimestampMs(a) - getActivityTimestampMs(b)
+      }
+      if (sortFilter === 'value') {
+        return Math.abs(toNumeric(b.total_value)) - Math.abs(toNumeric(a.total_value))
+      }
+      if (sortFilter === 'shares') {
+        return Math.abs(toNumeric(b.amount)) - Math.abs(toNumeric(a.amount))
+      }
+      return getActivityTimestampMs(b) - getActivityTimestampMs(a)
+    })
+
+    return sorted
+  }, [activities, searchQuery, sortFilter, typeFilter])
 
   const isLoading = status === 'pending'
   const hasError = status === 'error'
-  const hasNoData = !isLoading && activities.length === 0
+  const hasNoData = !isLoading && visibleActivities.length === 0
 
   function handleExportCsv() {
     if (visibleActivities.length === 0) {
@@ -298,8 +409,13 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
     return () => observer.disconnect()
   }, [fetchNextPage, hasNextPage, infiniteScrollError, isFetchingNextPage, isLoadingMore])
 
+  useEffect(() => {
+    setInfiniteScrollError(null)
+    setIsLoadingMore(false)
+  }, [searchQuery, sortFilter, typeFilter, userAddress])
+
   function renderRows() {
-    return activities.map((activity) => {
+    return visibleActivities.map((activity) => {
       const variant = resolveVariant(activity)
       const { Icon, label, className } = activityIcon(variant)
       const sharesText = formatShares(activity.amount)
@@ -318,7 +434,7 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
       const isFundsFlow = variant === 'deposit' || variant === 'withdraw'
       const valueNumber = Number(activity.total_value) / MICRO_UNIT
       const hasValue = Number.isFinite(valueNumber)
-      const isCreditVariant = variant === 'merge' || variant === 'deposit' || variant === 'sell'
+      const isCreditVariant = variant === 'merge' || variant === 'redeem' || variant === 'deposit' || variant === 'sell'
       const isDebitVariant = variant === 'withdraw' || variant === 'split' || variant === 'buy'
       const isPositive = isCreditVariant || (!isDebitVariant && hasValue && valueNumber > 0)
       const isNegative = isDebitVariant || (!isCreditVariant && hasValue && valueNumber < 0)
@@ -525,7 +641,7 @@ export default function PublicHistoryList({ userAddress }: PublicHistoryListProp
             </div>
           )}
 
-          {!isLoading && !hasError && activities.length > 0 && (
+          {!isLoading && !hasError && visibleActivities.length > 0 && (
             <div>
               {renderRows()}
               {(isFetchingNextPage || isLoadingMore) && (
