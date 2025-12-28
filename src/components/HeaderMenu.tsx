@@ -1,5 +1,6 @@
 'use client'
 
+import type { User } from '@/types'
 import { useAppKitAccount } from '@reown/appkit/react'
 import { createAuthClient } from 'better-auth/react'
 import { useEffect } from 'react'
@@ -27,7 +28,22 @@ export default function HeaderMenu() {
 
   useEffect(() => {
     if (session?.user) {
-      useUser.setState({ ...session.user, image: session.user.image! })
+      const sessionSettings = (session.user as Partial<User>).settings
+      useUser.setState((previous) => {
+        if (!previous) {
+          return { ...session.user, image: session.user.image ?? '' }
+        }
+
+        return {
+          ...previous,
+          ...session.user,
+          image: session.user.image ?? previous.image ?? '',
+          settings: {
+            ...(previous.settings ?? {}),
+            ...(sessionSettings ?? {}),
+          },
+        }
+      })
     }
     else {
       useUser.setState(null)
