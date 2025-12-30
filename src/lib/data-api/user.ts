@@ -122,6 +122,56 @@ function sanitizePrice(value?: number | null): number {
   return numeric
 }
 
+function buildActivityId(activity: DataApiActivity, slugFallback: string): string {
+  type BaseSource = 'transactionHash' | 'conditionId' | 'asset' | 'slug' | 'fallback'
+
+  let baseSource: BaseSource = 'fallback'
+  let base = activity.transactionHash
+  if (base) {
+    baseSource = 'transactionHash'
+  }
+  else if (activity.conditionId) {
+    base = activity.conditionId
+    baseSource = 'conditionId'
+  }
+  else if (activity.asset) {
+    base = activity.asset
+    baseSource = 'asset'
+  }
+  else if (slugFallback) {
+    base = slugFallback
+    baseSource = 'slug'
+  }
+  else {
+    base = 'activity'
+  }
+
+  const parts = [base]
+  function append(value?: string | number | null, source?: BaseSource) {
+    if (source && source === baseSource) {
+      return
+    }
+    if (value === null || value === undefined) {
+      return
+    }
+    const text = String(value).trim()
+    if (!text) {
+      return
+    }
+    parts.push(text)
+  }
+
+  append(activity.conditionId, 'conditionId')
+  append(activity.asset, 'asset')
+  append(activity.outcomeIndex ?? activity.outcome)
+  append(activity.side)
+  append(activity.price)
+  append(activity.size)
+  append(activity.timestamp)
+
+  return parts.join(':')
+}
+
 export function mapDataApiActivityToPublicActivity(activity: DataApiActivity): PublicActivity {
   const slug = activity.slug || activity.conditionId || 'unknown-market'
   const eventSlug = activity.eventSlug || slug
@@ -135,7 +185,7 @@ export function mapDataApiActivityToPublicActivity(activity: DataApiActivity): P
     : baseShares
 
   return {
-    id: activity.transactionHash || `${slug}-${timestampMs}`,
+    id: buildActivityId(activity, slug),
     title: activity.title || 'Untitled market',
     slug,
     eventSlug,
@@ -201,7 +251,7 @@ export function mapDataApiActivityToActivityOrder(activity: DataApiActivity): Ac
   const txHash = activity.transactionHash || undefined
 
   return {
-    id: activity.transactionHash || `${slug}-${timestampMs}`,
+    id: buildActivityId(activity, slug),
     type: activity.type?.toLowerCase(),
     user: {
       id: address || 'user',
