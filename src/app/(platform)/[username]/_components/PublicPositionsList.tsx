@@ -1,21 +1,21 @@
 'use client'
 
+import type { PublicPosition } from './PublicPositionItem'
 import type { SortOption } from '@/app/(platform)/[username]/_types/PublicPositionsTypes'
 import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useSignMessage } from 'wagmi'
 import { useMergePositionsAction } from '@/app/(platform)/[username]/_hooks/useMergePositionsAction'
 import { usePublicPositionsQuery } from '@/app/(platform)/[username]/_hooks/usePublicPositionsQuery'
-import { usePublicPositionsShare } from '@/app/(platform)/[username]/_hooks/usePublicPositionsShare'
 import { buildMergeableMarkets, calculatePositionsTotals, matchesPositionsSearchQuery, sortPositions } from '@/app/(platform)/[username]/_utils/PublicPositionsUtils'
+import { PositionShareDialog } from '@/components/PositionShareDialog'
 import { useDebounce } from '@/hooks/useDebounce'
-import { useIsMobile } from '@/hooks/useIsMobile'
 import { OUTCOME_INDEX } from '@/lib/constants'
+import { buildShareCardPayload } from '@/lib/share-card'
 import { useTradingOnboarding } from '@/providers/TradingOnboardingProvider'
 import { useUser } from '@/stores/useUser'
 import { MergePositionsDialog } from './MergePositionsDialog'
 import PublicPositionsFilters from './PublicPositionsFilters'
-import PublicPositionsShareDialog from './PublicPositionsShareDialog'
 import PublicPositionsTable from './PublicPositionsTable'
 
 interface PublicPositionsListProps {
@@ -28,7 +28,6 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
   const { ensureTradingReady } = useTradingOnboarding()
   const user = useUser()
   const { signMessageAsync } = useSignMessage()
-  const isMobile = useIsMobile()
 
   const marketStatusFilter: 'active' | 'closed' = 'active'
   const [searchQuery, setSearchQuery] = useState('')
@@ -39,6 +38,8 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false)
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false)
+  const [sharePosition, setSharePosition] = useState<PublicPosition | null>(null)
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   const handleSearchChange = useCallback((query: string) => {
@@ -132,23 +133,28 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
     onSuccess: () => setIsMergeDialogOpen(false),
   })
 
-  const {
-    isShareDialogOpen,
-    shareCardUrl,
-    shareCardPayload,
-    shareCardStatus,
-    isCopyingShareImage,
-    isSharingOnX,
-    handleShareOpenChange,
-    handleShareClick,
-    handleShareCardLoaded,
-    handleShareCardError,
-    handleCopyShareImage,
-    handleShareOnX,
-  } = usePublicPositionsShare({
-    userName: user?.username,
-    userImage: user?.image,
-  })
+  const shareCardPayload = useMemo(() => {
+    if (!sharePosition) {
+      return null
+    }
+
+    return buildShareCardPayload(sharePosition, {
+      userName: user?.username || undefined,
+      userImage: user?.image || undefined,
+    })
+  }, [sharePosition, user?.image, user?.username])
+
+  const handleShareOpenChange = useCallback((open: boolean) => {
+    setIsShareDialogOpen(open)
+    if (!open) {
+      setSharePosition(null)
+    }
+  }, [])
+
+  const handleShareClick = useCallback((position: PublicPosition) => {
+    setSharePosition(position)
+    setIsShareDialogOpen(true)
+  }, [])
 
   useEffect(() => {
     setInfiniteScrollError(null)
@@ -254,19 +260,10 @@ export default function PublicPositionsList({ userAddress }: PublicPositionsList
         onConfirm={handleMergeAll}
       />
 
-      <PublicPositionsShareDialog
-        isMobile={isMobile}
-        isOpen={isShareDialogOpen}
+      <PositionShareDialog
+        open={isShareDialogOpen}
         onOpenChange={handleShareOpenChange}
-        shareCardUrl={shareCardUrl}
-        shareCardPayload={shareCardPayload}
-        shareCardStatus={shareCardStatus}
-        isCopying={isCopyingShareImage}
-        isSharing={isSharingOnX}
-        onCardLoaded={handleShareCardLoaded}
-        onCardError={handleShareCardError}
-        onCopyImage={handleCopyShareImage}
-        onShareOnX={handleShareOnX}
+        payload={shareCardPayload}
       />
     </div>
   )
