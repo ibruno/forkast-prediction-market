@@ -3,6 +3,9 @@
 -- Fees are now sourced from data-api aggregates.
 -- ===========================================
 
+DROP FUNCTION IF EXISTS get_affiliate_stats(CHAR(26));
+DROP FUNCTION IF EXISTS get_affiliate_overview();
+
 CREATE OR REPLACE FUNCTION get_affiliate_stats(target_user_id CHAR(26))
   RETURNS TABLE
           (
