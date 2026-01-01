@@ -77,7 +77,10 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
     Boolean(user?.proxy_wallet_address && proxyWalletStatus === 'deployed')
   ), [proxyWalletStatus, user?.proxy_wallet_address])
   const isProxyWalletDeploying = useMemo(() => (
-    Boolean(user?.proxy_wallet_address && proxyWalletStatus === 'deploying')
+    Boolean(
+      user?.proxy_wallet_address
+      && (proxyWalletStatus === 'deploying' || proxyWalletStatus === 'signed'),
+    )
   ), [proxyWalletStatus, user?.proxy_wallet_address])
   const tradingAuthSettings = user?.settings?.tradingAuth ?? null
   const hasTradingAuth = Boolean(
@@ -249,7 +252,7 @@ export function TradingOnboardingProvider({ children }: { children: ReactNode })
       if (nextStatus === 'deployed') {
         setProxyStep('completed')
       }
-      else if (nextStatus === 'deploying') {
+      else if (nextStatus === 'deploying' || nextStatus === 'signed') {
         setProxyStep('deploying')
       }
       else {

@@ -154,6 +154,7 @@ function TradingStepsList({
   onApprovalsAction,
 }: TradingStepsProps) {
   const tradingAuthSatisfied = hasTradingAuth || tradingAuthStep === 'completed'
+  const proxyReadyForTrading = hasDeployedProxyWallet || proxyStep === 'deploying' || proxyStep === 'completed'
 
   return (
     <div className="mt-6 space-y-6 text-left">
@@ -175,7 +176,7 @@ function TradingStepsList({
         description="You need to sign this each time you trade on a new browser."
         actionLabel={tradingAuthStep === 'signing' ? 'Signing…' : 'Sign'}
         isLoading={tradingAuthStep === 'signing'}
-        disabled={!hasDeployedProxyWallet || tradingAuthStep === 'completed' || tradingAuthStep === 'signing'}
+        disabled={!proxyReadyForTrading || tradingAuthStep === 'completed' || tradingAuthStep === 'signing'}
         isComplete={tradingAuthStep === 'completed'}
         error={tradingAuthError}
         onAction={onTradingAuthAction}
