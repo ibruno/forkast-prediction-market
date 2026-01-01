@@ -3,7 +3,7 @@ import { createPublicClient, http } from 'viem'
 import { defaultNetwork } from '@/lib/appkit'
 import { SAFE_PROXY_FACTORY_ADDRESS, ZERO_ADDRESS } from '@/lib/contracts'
 
-export const SAFE_PROXY_DOMAIN_NAME = 'Forkast Contract Proxy Factory'
+export const SAFE_PROXY_DOMAIN_NAME = 'Contract Proxy Factory'
 export const SAFE_PROXY_PRIMARY_TYPE = 'CreateProxy'
 
 export const SAFE_PROXY_TYPES = {
