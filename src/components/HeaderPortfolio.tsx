@@ -20,6 +20,9 @@ export default function HeaderPortfolio() {
   const formattedPortfolioValue = Number.isFinite(totalPortfolioValue)
     ? totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '0.00'
+  const formattedCashValue = Number.isFinite(balance?.raw)
+    ? (balance?.raw ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0.00'
 
   if (isLoadingValue) {
     return (
@@ -55,7 +58,7 @@ export default function HeaderPortfolio() {
           <div className="text-xs font-medium text-muted-foreground">Cash</div>
           <div className="text-sm font-semibold text-yes">
             $
-            {balance.text}
+            {formattedCashValue}
           </div>
         </Link>
       </Button>
