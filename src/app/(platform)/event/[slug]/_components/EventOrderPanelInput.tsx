@@ -141,6 +141,9 @@ export default function EventOrderPanelInput({
   }
 
   const amountSizeClass = getAmountSizeClass(amount)
+  const formattedBalanceText = Number.isFinite(balance.raw)
+    ? balance.raw.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0.00'
 
   const formattedAmount = formatDisplayAmount(amount)
   const inputValue = side === ORDER_SIDE.SELL
@@ -203,7 +206,7 @@ export default function EventOrderPanelInput({
                   {side === ORDER_SIDE.SELL ? 'Shares' : 'Amount'}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {side === ORDER_SIDE.SELL ? '' : `Balance $${balance.text || '0.00'}`}
+                  {side === ORDER_SIDE.SELL ? '' : `Balance $${formattedBalanceText}`}
                 </div>
               </div>
               <div className="relative flex-1">

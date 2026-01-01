@@ -53,19 +53,14 @@ export default function EventSplitSharesDialog({
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function formatFullPrecision(value: number) {
+  function formatBalanceLabel(value: number) {
     if (!Number.isFinite(value)) {
-      return '0'
+      return '0.00'
     }
-    const asString = value.toLocaleString('en-US', {
-      useGrouping: false,
-      maximumFractionDigits: 6,
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
-    if (!asString.includes('.')) {
-      return asString
-    }
-    const trimmed = asString.replace(/0+$/, '').replace(/\.$/, '')
-    return trimmed || '0'
   }
 
   useEffect(() => {
@@ -78,9 +73,9 @@ export default function EventSplitSharesDialog({
 
   const formattedUsdcBalance = useMemo(() => {
     if (!Number.isFinite(availableUsdc)) {
-      return '$0'
+      return '$0.00'
     }
-    const formatted = formatFullPrecision(availableUsdc)
+    const formatted = formatBalanceLabel(availableUsdc)
     return `$${formatted}`
   }, [availableUsdc])
 

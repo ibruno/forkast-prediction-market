@@ -191,15 +191,14 @@ function WalletSendForm({
   const showConnectedWalletButton = !sendTo?.trim()
   const hasAvailableBalance = typeof availableBalance === 'number' && Number.isFinite(availableBalance)
 
-  function formatFullPrecision(value: number | null | undefined) {
+  function formatBalanceLabel(value: number | null | undefined) {
     if (typeof value !== 'number' || !Number.isFinite(value)) {
-      return '0'
+      return '0.00'
     }
-    const asString = value.toLocaleString('en-US', {
-      useGrouping: false,
-      maximumFractionDigits: 6,
+    return value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
     })
-    return asString.replace(/\.?0+$/, '') || '0'
   }
 
   return (
@@ -279,7 +278,7 @@ function WalletSendForm({
                 Balance:
                 {' '}
                 $
-                {formatFullPrecision(availableBalance)}
+                {formatBalanceLabel(availableBalance)}
               </span>
             </div>
           )}

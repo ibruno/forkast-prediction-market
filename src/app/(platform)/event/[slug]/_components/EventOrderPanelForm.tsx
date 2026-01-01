@@ -127,6 +127,9 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   }, [orderBookSummaryQuery.data, outcomeTokenId])
 
   const availableBalanceForOrders = Math.max(0, balance.raw)
+  const formattedBalanceText = Number.isFinite(balance.raw)
+    ? balance.raw.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0.00'
 
   const mergedSharesByCondition = useMemo(() => {
     const merged: Record<string, Record<typeof OUTCOME_INDEX.YES | typeof OUTCOME_INDEX.NO, number>> = {}
@@ -678,7 +681,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
           event={event}
           market={state.market}
           isSingleMarket={isSingleMarket}
-          balanceText={balance.text}
+          balanceText={formattedBalanceText}
         />
       )}
 

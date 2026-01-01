@@ -58,6 +58,9 @@ function ProfileOverviewCard({
   const isReady = hasLoaded
   const totalPortfolioValue = (positionsValue ?? 0) + (balance?.raw ?? 0)
   const formattedTotalValue = formatCurrency(totalPortfolioValue)
+  const formattedCashValue = Number.isFinite(balance?.raw)
+    ? (balance?.raw ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    : '0.00'
   const joinedText = useMemo(() => {
     if (!profile.joinedAt) {
       return null
@@ -126,7 +129,7 @@ function ProfileOverviewCard({
                           <div className="flex flex-col">
                             <span className="text-sm font-extrabold text-foreground">
                               $
-                              {balance?.text ?? '0.00'}
+                              {formattedCashValue}
                             </span>
                           </div>
                         </div>
