@@ -57,7 +57,7 @@ export function useBalance() {
     [client],
   )
 
-  const proxyWalletAddress: Address | null = user?.proxy_wallet_status === 'deployed' && user?.proxy_wallet_address
+  const proxyWalletAddress: Address | null = user?.proxy_wallet_address
     ? normalizeAddress(user.proxy_wallet_address) as Address | null
     : null
 
