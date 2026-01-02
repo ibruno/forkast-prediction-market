@@ -187,23 +187,12 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
 
       {marketRows
         .map((row, index, orderedMarkets) => {
-          const { market, yesPriceCentsOverride } = row
+          const { market } = row
           const isExpanded = expandedMarketId === market.condition_id
           const activeOutcomeForMarket = selectedOutcome && selectedOutcome.condition_id === market.condition_id
             ? selectedOutcome
             : market.outcomes[0]
           const chanceHighlightKey = `${market.condition_id}-${chancePulseToken}`
-          const lastPriceOverrideCents = (() => {
-            if (yesPriceCentsOverride === null) {
-              return null
-            }
-            if (!activeOutcomeForMarket) {
-              return yesPriceCentsOverride
-            }
-            return activeOutcomeForMarket.outcome_index === OUTCOME_INDEX.YES
-              ? yesPriceCentsOverride
-              : Math.max(0, Number((100 - yesPriceCentsOverride).toFixed(1)))
-          })()
           const activeOutcomeIndex = selectedOutcome && selectedOutcome.condition_id === market.condition_id
             ? selectedOutcome.outcome_index
             : null
@@ -234,7 +223,6 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                   orderBookData={{
                     summaries: orderBookSummaries,
                     isLoading: shouldShowOrderBookLoader,
-                    lastPriceOverrideCents,
                     refetch: orderBookQuery.refetch,
                     isRefetching: orderBookQuery.isRefetching,
                   }}
@@ -264,7 +252,6 @@ interface MarketDetailTabsProps {
   orderBookData: {
     summaries: OrderBookSummariesResponse | undefined
     isLoading: boolean
-    lastPriceOverrideCents: number | null
     refetch: () => Promise<unknown>
     isRefetching: boolean
   }
@@ -407,7 +394,6 @@ function MarketDetailTabs({
             outcome={activeOutcomeForMarket}
             summaries={orderBookData.summaries}
             isLoadingSummaries={orderBookData.isLoading}
-            lastPriceOverrideCents={orderBookData.lastPriceOverrideCents}
             eventSlug={event.slug}
           />
         )}

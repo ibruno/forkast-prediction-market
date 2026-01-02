@@ -36,7 +36,6 @@ export default function EventOrderBook({
   outcome,
   summaries,
   isLoadingSummaries,
-  lastPriceOverrideCents,
   eventSlug,
 }: EventOrderBookProps) {
   const user = useUser()
@@ -182,8 +181,8 @@ export default function EventOrderBook({
     maxTotal,
     outcomeLabel,
   } = useMemo(
-    () => buildOrderBookSnapshot(summary, market, outcome, lastPriceOverrideCents),
-    [summary, market, outcome, lastPriceOverrideCents],
+    () => buildOrderBookSnapshot(summary, market, outcome),
+    [summary, market, outcome],
   )
 
   const renderedAsks = useMemo(

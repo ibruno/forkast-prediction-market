@@ -6,9 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import EventOrderBook, {
   useOrderBookSummaries,
 } from '@/app/(platform)/event/[slug]/_components/EventOrderBook'
-import { useMarketYesPrices } from '@/app/(platform)/event/[slug]/_components/EventOutcomeChanceProvider'
 import { OUTCOME_INDEX } from '@/lib/constants'
-import { toCents } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import { useOrder } from '@/stores/useOrder'
 
@@ -47,12 +45,6 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
       .filter((id): id is string => Boolean(id)),
     [market.outcomes],
   )
-  const yesPriceMap = useMarketYesPrices()
-  const yesPriceOverride = yesPriceMap[market.condition_id]
-  const normalizedYesPrice = typeof yesPriceOverride === 'number'
-    ? Math.max(0, Math.min(1, yesPriceOverride))
-    : null
-  const yesPriceCentsOverride = normalizedYesPrice != null ? toCents(normalizedYesPrice) : null
 
   const {
     data: orderBookSummaries,
@@ -63,11 +55,6 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
 
   const selectedOutcome: Outcome | undefined = market.outcomes[selectedOutcomeIndex] ?? market.outcomes[0]
   const isLoadingSummaries = isExpanded && isOrderBookLoading && !orderBookSummaries
-  const lastPriceOverrideCents = yesPriceCentsOverride === null
-    ? null
-    : selectedOutcomeIndex === OUTCOME_INDEX.YES
-      ? yesPriceCentsOverride
-      : Math.max(0, Number((100 - yesPriceCentsOverride).toFixed(1)))
 
   function handleOutcomeSelection(outcomeIndex: OutcomeToggleIndex) {
     setSelectedOutcomeIndex(outcomeIndex)
@@ -173,7 +160,6 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
             outcome={selectedOutcome}
             summaries={orderBookSummaries}
             isLoadingSummaries={isLoadingSummaries}
-            lastPriceOverrideCents={lastPriceOverrideCents}
             eventSlug={eventSlug}
           />
         </div>

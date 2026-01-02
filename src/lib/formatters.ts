@@ -241,8 +241,9 @@ export function toCents(value?: string | number | null) {
     return null
   }
 
-  const normalized = typeof value === 'number' && Number.isFinite(value)
-    ? Math.min(Math.max(value, 0), 1)
+  const numeric = typeof value === 'string' ? Number(value) : value
+  const normalized = Number.isFinite(numeric)
+    ? Math.min(Math.max(numeric, 0), 1)
     : 0.5
 
   return Number((normalized * 100).toFixed(1))

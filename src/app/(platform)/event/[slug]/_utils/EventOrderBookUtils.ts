@@ -101,7 +101,6 @@ export function buildOrderBookSnapshot(
   summary: OrderBookSummaryResponse | null,
   market: Market,
   outcome: Outcome | undefined,
-  lastPriceOverrideCents?: number | null,
 ): OrderBookSnapshot {
   const outcomeToUse = outcome ?? market.outcomes[0]
   const normalizedAsks = normalizeLevels(summary?.asks, 'ask')
@@ -114,12 +113,9 @@ export function buildOrderBookSnapshot(
 
   const bestAsk = normalizedAsks[0]?.priceCents
   const bestBid = normalizedBids[0]?.priceCents
-  const lastPriceHistoryOverride = typeof lastPriceOverrideCents === 'number' && Number.isFinite(lastPriceOverrideCents)
-    ? Math.max(0, Math.min(100, Number(lastPriceOverrideCents.toFixed(1))))
-    : null
   const lastTradeOverride = toCents(summary?.last_trade_price)
 
-  let lastPrice: number | null = lastPriceHistoryOverride ?? lastTradeOverride ?? null
+  let lastPrice: number | null = lastTradeOverride ?? null
   if (lastPrice === null) {
     if (typeof bestBid === 'number') {
       lastPrice = bestBid

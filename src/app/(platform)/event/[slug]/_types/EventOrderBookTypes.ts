@@ -14,7 +14,6 @@ export interface EventOrderBookProps {
   outcome?: Outcome
   summaries?: OrderBookSummariesResponse
   isLoadingSummaries: boolean
-  lastPriceOverrideCents?: number | null
   eventSlug: string
 }
 
