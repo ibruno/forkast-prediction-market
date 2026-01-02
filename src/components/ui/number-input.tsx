@@ -16,6 +16,8 @@ export function NumberInput({
   const initialString = value === 0 ? '' : value.toFixed(1).replace(/\.0$/, '')
   const [inputValue, setInputValue] = useState<string>(initialString)
   const inputRef = useRef<HTMLInputElement>(null)
+  const hasValue = inputValue.trim() !== ''
+  const inputSize = inputValue.trim() ? Math.max(inputValue.length, 1) : 3
 
   useEffect(() => {
     const newVal = value === 0 ? '' : value.toFixed(1).replace(/\.0$/, '')
@@ -117,7 +119,7 @@ export function NumberInput({
         <MinusIcon className="size-4" />
       </Button>
 
-      <div className="relative flex-1">
+      <div className="flex flex-1 items-center justify-center">
         <Input
           ref={inputRef}
           type="text"
@@ -128,11 +130,14 @@ export function NumberInput({
           maxLength={5}
           placeholder="0.0"
           className={`
-            h-10 rounded-none border-none !bg-transparent text-center !text-lg font-bold shadow-none
+            h-10 w-auto rounded-none border-none !bg-transparent px-0 text-right !text-lg font-bold shadow-none
             focus-visible:ring-0 focus-visible:ring-offset-0
           `}
+          style={{ width: `${inputSize}ch` }}
         />
-        <span className="absolute top-1/2 right-2 -translate-y-1/2 text-sm text-muted-foreground">
+        <span
+          className={`text-lg font-bold ${hasValue ? 'text-foreground' : 'text-muted-foreground'}`}
+        >
           ¢
         </span>
       </div>
