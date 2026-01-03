@@ -12,7 +12,7 @@ interface EventChartControlsProps {
   timeRangeContainerRef: RefObject<HTMLDivElement | null>
   timeRangeIndicator: { width: number, left: number }
   timeRangeIndicatorReady: boolean
-  isSingleMarket: boolean
+  showOutcomeSwitch: boolean
   oppositeOutcomeLabel: string
   onShuffle: () => void
 }
@@ -25,7 +25,7 @@ export default function EventChartControls({
   timeRangeContainerRef,
   timeRangeIndicator,
   timeRangeIndicatorReady,
-  isSingleMarket,
+  showOutcomeSwitch,
   oppositeOutcomeLabel,
   onShuffle,
 }: EventChartControlsProps) {
@@ -37,7 +37,7 @@ export default function EventChartControls({
     <div className="relative mt-3 flex flex-wrap items-center justify-between gap-3">
       <div
         ref={timeRangeContainerRef}
-        className="relative flex flex-wrap items-center gap-2 text-xs font-semibold"
+        className="relative flex flex-wrap items-center justify-start gap-2 text-xs font-semibold"
       >
         <div
           className={cn(
@@ -55,10 +55,10 @@ export default function EventChartControls({
             key={range}
             type="button"
             className={cn(
-              'relative z-10 rounded-md px-3 py-2 transition-colors',
+              'relative rounded-md px-3 py-2 transition-colors',
               activeTimeRange === range
-                ? 'bg-muted text-foreground'
-                : 'text-muted-foreground hover:text-foreground',
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:bg-muted/70 hover:text-foreground',
             )}
             data-range={range}
             onClick={() => onTimeRangeChange(range)}
@@ -68,7 +68,7 @@ export default function EventChartControls({
         ))}
       </div>
 
-      {isSingleMarket && (
+      {showOutcomeSwitch && (
         <Tooltip>
           <TooltipTrigger asChild>
             <button

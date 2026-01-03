@@ -37,6 +37,7 @@ import { buildChanceByMarket } from '@/lib/market-chance'
 import { useIsSingleMarket } from '@/stores/useOrder'
 import EventChartControls from './EventChartControls'
 import EventChartHeader from './EventChartHeader'
+import EventChartLayout from './EventChartLayout'
 
 function EventChartComponent({ event, isMobile }: EventChartProps) {
   const isSingleMarket = useIsSingleMarket()
@@ -97,8 +98,8 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
     [event.markets, midPricesByMarket],
   )
   const chanceChangeByMarket = useMemo(
-    () => computeChanceChanges(yesPriceHistory.normalizedHistory, midChanceByMarket),
-    [yesPriceHistory.normalizedHistory, midChanceByMarket],
+    () => computeChanceChanges(yesPriceHistory.normalizedHistory),
+    [yesPriceHistory.normalizedHistory],
   )
 
   const chartHistory = isSingleMarket && activeOutcomeIndex === OUTCOME_INDEX.NO
@@ -107,19 +108,14 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
   const normalizedHistory = chartHistory.normalizedHistory
   const latestSnapshot = chartHistory.latestSnapshot
 
-  const hasCompleteChanceData = useMemo(
-    () => event.markets.every(market => Number.isFinite(latestSnapshot[market.condition_id])),
-    [event.markets, latestSnapshot],
-  )
-
   useEffect(() => {
-    if (Object.keys(midChanceByMarket).length > 0) {
-      if (areNumberMapsEqual(midChanceByMarket, currentOutcomeChances)) {
+    if (Object.keys(yesPriceHistory.latestSnapshot).length > 0) {
+      if (areNumberMapsEqual(yesPriceHistory.latestSnapshot, currentOutcomeChances)) {
         return
       }
-      updateOutcomeChances(midChanceByMarket)
+      updateOutcomeChances(yesPriceHistory.latestSnapshot)
     }
-  }, [currentOutcomeChances, midChanceByMarket, updateOutcomeChances])
+  }, [currentOutcomeChances, yesPriceHistory.latestSnapshot, updateOutcomeChances])
 
   useEffect(() => {
     if (Object.keys(yesPriceHistory.latestRawPrices).length > 0) {
@@ -266,8 +262,12 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
             ? latestYesChance
             : null))
   const yesChanceValue = typeof resolvedYesChance === 'number' ? resolvedYesChance : null
-  const showLegendValues = hasCompleteChanceData && chartSeries.length > 0
-  const shouldRenderLegendEntries = showLegendValues && legendEntries.length > 0
+  const legendEntriesWithValues = useMemo(
+    () => legendEntries.filter(entry => typeof entry.value === 'number' && Number.isFinite(entry.value)),
+    [legendEntries],
+  )
+  const showLegendValues = chartSeries.length > 0 && legendEntriesWithValues.length > 0
+  const shouldRenderLegendEntries = showLegendValues
   const cursorYesChance = typeof hoveredYesChance === 'number' && Number.isFinite(hoveredYesChance)
     ? hoveredYesChance
     : null
@@ -323,9 +323,8 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
   const legendContent = shouldRenderLegendEntries
     ? (
         <div className="flex min-h-5 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
-          {legendEntries.map((entry) => {
-            const resolvedValue = typeof entry.value === 'number' ? entry.value : 0
-
+          {legendEntriesWithValues.map((entry) => {
+            const resolvedValue = entry.value as number
             return (
               <div key={entry.key} className="flex items-center gap-2">
                 <div
@@ -334,9 +333,9 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
                 />
                 <span className="inline-flex w-fit items-center gap-0.5 text-xs font-medium text-muted-foreground">
                   <span>{entry.name}</span>
-                  <span className="font-semibold">
-                    {resolvedValue.toFixed(1)}
-                    %
+                  <span className="inline-flex w-6 items-baseline justify-end font-semibold tabular-nums">
+                    {resolvedValue.toFixed(0)}
+                    <span className="text-2xs">%</span>
                   </span>
                 </span>
               </div>
@@ -350,19 +349,20 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
     return null
   }
   return (
-    <div className="grid gap-4">
-      <EventChartHeader
-        isSingleMarket={isSingleMarket}
-        activeOutcomeIndex={activeOutcomeIndex}
-        activeOutcomeLabel={activeOutcomeLabel}
-        primarySeriesColor={primarySeriesColor}
-        yesChanceValue={yesChanceValue}
-        effectiveBaselineYesChance={effectiveBaselineYesChance}
-        effectiveCurrentYesChance={effectiveCurrentYesChance}
-        watermark={watermark}
-      />
-
-      <div>
+    <EventChartLayout
+      header={(
+        <EventChartHeader
+          isSingleMarket={isSingleMarket}
+          activeOutcomeIndex={activeOutcomeIndex}
+          activeOutcomeLabel={activeOutcomeLabel}
+          primarySeriesColor={primarySeriesColor}
+          yesChanceValue={yesChanceValue}
+          effectiveBaselineYesChance={effectiveBaselineYesChance}
+          effectiveCurrentYesChance={effectiveCurrentYesChance}
+          watermark={watermark}
+        />
+      )}
+      chart={(
         <PredictionChart
           data={chartData}
           series={legendSeries}
@@ -376,6 +376,8 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
           showLegend={!isSingleMarket}
           watermark={isSingleMarket ? undefined : watermark}
         />
+      )}
+      controls={(
         <EventChartControls
           hasChartData={hasChartData}
           timeRanges={TIME_RANGES}
@@ -384,15 +386,15 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
           timeRangeContainerRef={timeRangeContainerRef}
           timeRangeIndicator={timeRangeIndicator}
           timeRangeIndicatorReady={timeRangeIndicatorReady}
-          isSingleMarket={isSingleMarket}
+          showOutcomeSwitch={isSingleMarket}
           oppositeOutcomeLabel={oppositeOutcomeLabel}
           onShuffle={() => {
             setActiveOutcomeIndex(oppositeOutcomeIndex)
             setCursorSnapshot(null)
           }}
         />
-      </div>
-    </div>
+      )}
+    />
   )
 }
 

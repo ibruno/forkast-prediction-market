@@ -515,6 +515,8 @@ export const EventRepository = {
     slug: string
     is_active: boolean
     is_resolved: boolean
+    neg_risk: boolean
+    event_enable_neg_risk: boolean
     outcomes: Array<{
       token_id: string
       outcome_text: string
@@ -528,6 +530,7 @@ export const EventRepository = {
         slug: string
         is_active: boolean | null
         is_resolved: boolean | null
+        neg_risk: boolean | null
         condition: {
           outcomes: Array<{
             token_id: string
@@ -536,10 +539,17 @@ export const EventRepository = {
           }>
         } | null
       }
+      interface EventMarketMetadataRow {
+        enable_neg_risk: boolean | null
+        markets?: MarketMetadataRow[]
+      }
 
       const eventResult = await db.query.events.findFirst({
         where: eq(events.slug, slug),
-        columns: { id: true },
+        columns: {
+          id: true,
+          enable_neg_risk: true,
+        },
         with: {
           markets: {
             columns: {
@@ -548,6 +558,7 @@ export const EventRepository = {
               slug: true,
               is_active: true,
               is_resolved: true,
+              neg_risk: true,
             },
             with: {
               condition: {
@@ -565,7 +576,7 @@ export const EventRepository = {
             },
           },
         },
-      }) as { markets?: MarketMetadataRow[] } | undefined
+      }) as EventMarketMetadataRow | undefined
 
       if (!eventResult) {
         throw new Error('Event not found')
@@ -577,6 +588,8 @@ export const EventRepository = {
         slug: market.slug,
         is_active: Boolean(market.is_active),
         is_resolved: Boolean(market.is_resolved),
+        neg_risk: Boolean(market.neg_risk),
+        event_enable_neg_risk: Boolean(eventResult.enable_neg_risk),
         outcomes: (market.condition?.outcomes ?? []).map(outcome => ({
           token_id: outcome.token_id,
           outcome_text: outcome.outcome_text || '',
