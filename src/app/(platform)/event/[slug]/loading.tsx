@@ -1,5 +1,3 @@
-'use cache'
-
 import { Teleport } from '@/components/Teleport'
 import { Skeleton } from '@/components/ui/skeleton'
 

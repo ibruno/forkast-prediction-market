@@ -1,5 +1,3 @@
-'use cache'
-
 import Header from '@/components/Header'
 import NavigationTabs from '@/components/NavigationTabs'
 import { FilterProvider } from '@/providers/FilterProvider'
