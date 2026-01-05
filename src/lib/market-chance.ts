@@ -39,11 +39,9 @@ export function resolveDisplayPrice({
     return hasLastTrade ? clampPrice(lastTrade as number) : clampPrice(mid)
   }
 
-  if (hasAsk) {
-    return clampPrice(ask as number)
-  }
-  if (hasBid) {
-    return clampPrice(bid as number)
+  if (hasAsk || hasBid) {
+    const fallback = hasAsk ? (ask as number) : (bid as number)
+    return clampPrice(fallback)
   }
 
   return hasLastTrade ? clampPrice(lastTrade as number) : null
