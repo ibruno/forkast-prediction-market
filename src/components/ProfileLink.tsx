@@ -214,7 +214,7 @@ export default function ProfileLink({
         align="start"
         sideOffset={8}
         hideArrow
-        className="max-w-80 border-none bg-transparent p-0 text-popover-foreground shadow-none"
+        className="max-w-[90vw] border-none bg-transparent p-0 text-popover-foreground shadow-none md:max-w-96"
       >
         <ProfileOverviewCard
           profile={tooltipProfile}
