@@ -85,7 +85,7 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
         )}
         aria-expanded={isExpanded}
       >
-        <span className="text-lg font-medium">Order Book</span>
+        <h3 className="text-lg font-semibold">Order Book</h3>
         <span
           aria-hidden="true"
           className={cn(

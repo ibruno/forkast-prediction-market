@@ -66,7 +66,7 @@ export default function EventRules({ event }: EventRulesProps) {
         `}
         aria-expanded={rulesExpanded}
       >
-        <span className="text-lg font-medium">Rules</span>
+        <h3 className="text-lg font-semibold">Rules</h3>
         <span
           aria-hidden="true"
           className={`

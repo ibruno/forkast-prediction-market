@@ -90,7 +90,7 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
 
         <div className="rounded-lg border p-6">
           <div className="grid gap-4">
-            <h3 className="text-lg font-medium">Email</h3>
+            <h3 className="text-lg font-semibold">Email</h3>
 
             <div className="flex items-center justify-between">
               <div className="grid gap-1">
@@ -112,7 +112,7 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
 
         <div className="rounded-lg border p-6">
           <div className="grid gap-4">
-            <h3 className="text-lg font-medium">In-app</h3>
+            <h3 className="text-lg font-semibold">In-app</h3>
 
             <div className="grid gap-4">
               <div className="flex items-center justify-between">

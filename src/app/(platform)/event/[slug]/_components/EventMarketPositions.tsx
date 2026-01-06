@@ -424,7 +424,7 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
     <>
       {isSingleMarket && (
         <div className="p-4">
-          <h3 className="text-lg font-semibold text-foreground">Positions</h3>
+          <h3 className="text-lg font-semibold">Positions</h3>
         </div>
       )}
       <div className="overflow-x-auto">

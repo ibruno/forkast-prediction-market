@@ -191,7 +191,7 @@ export default function SettingsTwoFactorAuthContent({ user }: { user: User }) {
     >
       <div className="rounded-lg border p-6">
         <div className="grid gap-4">
-          <h3 className="text-lg font-medium">Status</h3>
+          <h3 className="text-lg font-semibold">Status</h3>
 
           <div className="grid gap-4">
             {!state.isEnabled && !state.setupData

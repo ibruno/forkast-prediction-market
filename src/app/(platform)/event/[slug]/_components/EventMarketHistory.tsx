@@ -111,7 +111,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
       <>
         {isSingleMarket && (
           <div className="px-4 py-4">
-            <h3 className="text-lg font-semibold text-foreground">History</h3>
+            <h3 className="text-lg font-semibold">History</h3>
           </div>
         )}
         <div className={cn(isSingleMarket ? 'border-t border-border/60' : '', 'px-4 py-4')}>
@@ -163,7 +163,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
     <>
       {isSingleMarket && (
         <div className="px-4 py-4">
-          <h3 className="text-lg font-semibold text-foreground">History</h3>
+          <h3 className="text-lg font-semibold">History</h3>
         </div>
       )}
       <div className="divide-y divide-border">

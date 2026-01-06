@@ -30,7 +30,7 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
       <div className="rounded-lg border p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1 space-y-1">
-            <h3 className="text-lg font-medium">Referral link</h3>
+            <h3 className="text-lg font-semibold">Referral link</h3>
             <div className="flex items-center gap-2">
               <span className="min-w-0 truncate text-sm text-muted-foreground" title={affiliateData.referralUrl}>
                 {affiliateData.referralUrl}
@@ -75,7 +75,7 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
 
       <div className="rounded-lg border">
         <div className="border-b px-4 py-4 sm:px-6">
-          <h3 className="text-lg font-medium">Recent referrals</h3>
+          <h3 className="text-lg font-semibold">Recent referrals</h3>
           <p className="text-sm text-muted-foreground">Latest users who joined through your link.</p>
         </div>
         <div className="divide-y">

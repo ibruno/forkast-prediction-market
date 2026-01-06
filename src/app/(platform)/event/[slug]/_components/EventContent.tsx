@@ -240,7 +240,12 @@ export default function EventContent({ event, user, marketContextEnabled }: Even
         )}
         {marketContextEnabled && <EventMarketContext event={event} />}
         <EventRules event={event} />
-        {isMobile && <EventRelated event={event} />}
+        {isMobile && (
+          <>
+            <h3 className="text-lg font-semibold">Related</h3>
+            <EventRelated event={event} />
+          </>
+        )}
         <EventTabs event={event} user={currentUser} />
       </div>
 
