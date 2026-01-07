@@ -54,6 +54,7 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
   const signatureType = proxyWalletAddress ? 2 : 0
   const isOpen = openCardId === `${event.id}`
   const amountNumber = Number.parseFloat(tradeAmount) || 0
+  const canValidateBalance = Boolean(isConnected && user)
 
   function onToggle() {
     setOpenCardId(isOpen ? null : `${event.id}`)
@@ -283,6 +284,7 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
                   amountNumber={amountNumber}
                   availableBalance={availableBalance}
                   isLoading={isLoading}
+                  canValidateBalance={canValidateBalance}
                   isSingleMarket={isSingleMarket}
                   toWinLabel={toWinLabel}
                   onAmountChange={setTradeAmount}

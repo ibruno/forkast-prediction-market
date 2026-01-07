@@ -9,6 +9,7 @@ interface EventCardTradePanelProps {
   amountNumber: number
   availableBalance: number
   isLoading: boolean
+  canValidateBalance: boolean
   isSingleMarket: boolean
   toWinLabel: string
   onAmountChange: (value: string) => void
@@ -22,6 +23,7 @@ export default function EventCardTradePanel({
   amountNumber,
   availableBalance,
   isLoading,
+  canValidateBalance,
   isSingleMarket,
   toWinLabel,
   onAmountChange,
@@ -97,7 +99,7 @@ export default function EventCardTradePanel({
         disabled={
           isLoading
           || amountNumber <= 0
-          || amountNumber > availableBalance
+          || (canValidateBalance && amountNumber > availableBalance)
         }
         size="outcome"
         variant={activeOutcome.variant}
