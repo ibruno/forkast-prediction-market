@@ -264,7 +264,7 @@ export default function EventsGrid({
                 }px)`,
               }}
             >
-              <div className={cn('grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4', { 'opacity-80': isFetching })}>
+              <div className={cn('grid gap-3 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4', { 'opacity-80': isFetching })}>
                 {rowEvents.map(event => (
                   <EventCard
                     key={event.id}
