@@ -5,6 +5,10 @@ import type { ActivityOrder, Event } from '@/types'
 import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircleIcon, ExternalLinkIcon, Loader2Icon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  useMarketChannelStatus,
+  useMarketChannelSubscription,
+} from '@/app/(platform)/event/[slug]/_components/EventMarketChannelProvider'
 import ProfileLink from '@/components/ProfileLink'
 import ProfileLinkSkeleton from '@/components/ProfileLinkSkeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -19,12 +23,29 @@ interface EventActivityProps {
   event: Event
 }
 
+function getEventTokenIds(event: Event) {
+  const tokenIds = new Set<string>()
+
+  for (const market of event.markets) {
+    for (const outcome of market.outcomes) {
+      if (outcome.token_id) {
+        tokenIds.add(String(outcome.token_id))
+      }
+    }
+  }
+
+  return Array.from(tokenIds)
+}
+
 export default function EventActivity({ event }: EventActivityProps) {
   const [minAmountFilter, setMinAmountFilter] = useState('none')
   const [infiniteScrollError, setInfiniteScrollError] = useState<string | null>(null)
+  const wsStatus = useMarketChannelStatus()
   const queryClient = useQueryClient()
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const isPollingRef = useRef(false)
+  const lastWsRefreshAtRef = useRef(0)
+  const wsRefreshThrottleMs = 2000
 
   useEffect(() => {
     queueMicrotask(() => setInfiniteScrollError(null))
@@ -36,6 +57,12 @@ export default function EventActivity({ event }: EventActivityProps) {
   )
   const marketKey = useMemo(() => marketIds.join(','), [marketIds])
   const hasMarkets = marketIds.length > 0
+  const tokenIds = useMemo(
+    () => {
+      return getEventTokenIds(event)
+    },
+    [event],
+  )
 
   const queryKey = useMemo(
     () => ['event-activity', event.slug, marketKey, minAmountFilter],
@@ -172,6 +199,30 @@ export default function EventActivity({ event }: EventActivityProps) {
     return () => window.clearInterval(interval)
   }, [hasMarkets, refreshLatestActivity])
 
+  const handleMarketChannelMessage = useCallback((payload: any) => {
+    if (!hasMarkets || tokenIds.length === 0) {
+      return
+    }
+    if (payload?.event_type !== 'last_trade_price') {
+      return
+    }
+    const assetId = payload?.asset_id
+    if (!tokenIds.includes(String(assetId))) {
+      return
+    }
+    if (document.hidden) {
+      return
+    }
+    const now = Date.now()
+    if (now - lastWsRefreshAtRef.current < wsRefreshThrottleMs) {
+      return
+    }
+    lastWsRefreshAtRef.current = now
+    void refreshLatestActivity()
+  }, [hasMarkets, refreshLatestActivity, tokenIds])
+
+  useMarketChannelSubscription(handleMarketChannelMessage)
+
   function formatTotalValue(totalValueMicro: number) {
     const totalValue = totalValueMicro / MICRO_UNIT
     return formatSharePriceLabel(totalValue, { fallback: '0¢' })
@@ -219,7 +270,7 @@ export default function EventActivity({ event }: EventActivityProps) {
 
   return (
     <div className="mt-6 grid gap-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-2">
         <Select value={minAmountFilter} onValueChange={setMinAmountFilter}>
           <SelectTrigger className="w-32">
             <SelectValue placeholder="Min Amount:" />
@@ -233,6 +284,24 @@ export default function EventActivity({ event }: EventActivityProps) {
             <SelectItem value="100000">$100,000</SelectItem>
           </SelectContent>
         </Select>
+        <div className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground">
+          <span>
+            {wsStatus === 'live' ? 'Live' : wsStatus === 'connecting' ? 'Connecting' : 'Offline'}
+          </span>
+          <span className="relative flex size-2">
+            {wsStatus === 'live' && (
+              <span className="absolute inline-flex size-2 animate-ping rounded-full bg-yes opacity-75" />
+            )}
+            <span
+              className={cn(
+                'relative inline-flex size-2 rounded-full',
+                wsStatus === 'live' && 'bg-yes',
+                wsStatus === 'connecting' && 'bg-amber-500',
+                wsStatus === 'offline' && 'bg-muted-foreground/40',
+              )}
+            />
+          </span>
+        </div>
       </div>
 
       {loading && (
