@@ -71,7 +71,7 @@ export default function PortfolioOpenOrdersRow({ order, rowGridClass }: Portfoli
         <div className="min-w-0 space-y-1">
           <Link
             href={`/event/${eventSlug}`}
-            className="line-clamp-2 block text-sm font-semibold text-foreground no-underline hover:no-underline"
+            className="line-clamp-2 block text-sm font-semibold no-underline hover:no-underline"
             title={order.market.title}
           >
             {order.market.title}
@@ -79,7 +79,7 @@ export default function PortfolioOpenOrdersRow({ order, rowGridClass }: Portfoli
         </div>
       </div>
 
-      <div className="text-center text-sm font-semibold text-foreground">
+      <div className="text-center text-sm font-semibold">
         {order.side === 'buy' ? 'Buy' : 'Sell'}
       </div>
 
@@ -89,15 +89,15 @@ export default function PortfolioOpenOrdersRow({ order, rowGridClass }: Portfoli
         </span>
       </div>
 
-      <div className="text-center text-sm font-semibold text-foreground">
+      <div className="text-center text-sm font-semibold">
         {priceLabel}
       </div>
 
-      <div className="text-center text-sm font-semibold text-foreground">
+      <div className="text-center text-sm font-semibold">
         {filledLabel}
       </div>
 
-      <div className="text-center text-sm font-semibold text-foreground">
+      <div className="text-center text-sm font-semibold">
         {formatCurrency(totalValue)}
       </div>
 

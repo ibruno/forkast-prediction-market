@@ -162,10 +162,10 @@ function MarketPositionRow({
           {outcomeButtonLabel}
         </span>
       </td>
-      <td className="p-2 text-center text-2xs font-semibold sm:px-3 sm:text-sm">
+      <td className="p-2 text-center text-xs font-semibold sm:px-3 sm:text-sm">
         {formattedQuantity}
       </td>
-      <td className="p-2 text-center text-2xs font-semibold sm:px-3 sm:text-sm">
+      <td className="p-2 text-center text-xs font-semibold sm:px-3 sm:text-sm">
         {averageLabel}
       </td>
       <td className="p-2 sm:px-3">
@@ -176,7 +176,7 @@ function MarketPositionRow({
           </span>
         </div>
       </td>
-      <td className="p-2 text-2xs font-semibold sm:px-3 sm:text-sm">
+      <td className="p-2 pr-6 text-2xs font-semibold sm:px-3 sm:pr-6 sm:text-sm">
         <Tooltip delayDuration={0}>
           <TooltipTrigger asChild>
             <span className="inline-flex flex-wrap items-center gap-1">
@@ -228,7 +228,7 @@ function MarketPositionRow({
           </TooltipContent>
         </Tooltip>
       </td>
-      <td className="p-2 sm:px-3">
+      <td className="w-28 p-2 pl-6 text-right sm:px-3 sm:pl-6">
         <div className="flex items-center justify-end gap-2 sm:flex-nowrap">
           <Button
             type="button"
@@ -433,14 +433,6 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
       )}
       <div className="max-w-full min-w-0 overflow-x-auto">
         <table className="w-full table-fixed border-collapse max-sm:min-w-[115%] sm:min-w-full sm:table-auto">
-          <colgroup>
-            <col style={{ width: '18%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '22%' }} />
-            <col style={{ width: '22%' }} />
-            <col style={{ width: '18%' }} />
-          </colgroup>
           <thead>
             <tr
               className={`
@@ -453,7 +445,7 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
               <th className="px-2 py-2.5 text-center sm:px-3">Avg</th>
               <th className="px-2 py-2.5 text-left sm:px-3">Value</th>
               <th className="px-2 py-2.5 text-left sm:px-3">Return</th>
-              <th className="px-2 py-2.5 text-right sm:px-3">
+              <th className="w-28 px-2 py-2.5 text-right sm:px-3">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>

@@ -114,10 +114,7 @@ function SortHeaderButton({
     <button
       type="button"
       className={cn(
-        `
-          group flex w-full items-center gap-2 text-2xs font-semibold tracking-wide whitespace-nowrap
-          text-muted-foreground uppercase transition-colors
-        `,
+        'group flex w-full items-center gap-2 whitespace-nowrap uppercase transition-colors',
         alignment === 'center' && 'justify-center',
         alignment === 'right' && 'justify-end',
         alignment === 'left' && 'justify-start',
@@ -191,10 +188,10 @@ function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
 
   return (
     <tr className="text-2xs leading-tight text-foreground sm:text-xs">
-      <td className="px-2 py-1.5 text-xs font-semibold text-muted-foreground sm:px-3 sm:text-sm">
+      <td className="p-2 text-xs font-semibold text-muted-foreground sm:px-3 sm:text-sm">
         {sideLabel}
       </td>
-      <td className="px-2 py-1.5 sm:px-3">
+      <td className="p-2 sm:px-3">
         <span
           className={cn(
             `
@@ -207,13 +204,13 @@ function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
           {outcomeLabel}
         </span>
       </td>
-      <td className="px-2 py-1.5 text-center text-xs font-semibold sm:px-3 sm:text-sm">{priceLabel}</td>
-      <td className="px-2 py-1.5 text-center text-xs font-semibold sm:px-3 sm:text-sm">{filledLabel}</td>
-      <td className="px-2 py-1.5 text-center text-xs font-semibold sm:px-3 sm:text-sm">{totalValueLabel}</td>
-      <td className="px-2 py-1.5 text-2xs font-medium text-muted-foreground sm:px-3 sm:text-xs">
+      <td className="p-2 text-center text-xs font-semibold sm:px-3 sm:text-sm">{priceLabel}</td>
+      <td className="p-2 text-center text-xs font-semibold sm:px-3 sm:text-sm">{filledLabel}</td>
+      <td className="p-2 text-center text-xs font-semibold sm:px-3 sm:text-sm">{totalValueLabel}</td>
+      <td className="p-2 text-2xs font-medium text-muted-foreground sm:px-3 sm:text-xs">
         {expirationLabel}
       </td>
-      <td className="px-2 py-1.5 sm:px-3">
+      <td className="p-2 sm:px-3">
         <div className="flex justify-end">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -469,47 +466,37 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         </div>
       )}
 
-      <div className="max-w-full min-w-0 overflow-x-auto px-2">
+      <div className="max-w-full min-w-0 overflow-x-auto">
         <table className="w-full max-w-full table-fixed border-collapse max-sm:min-w-[140%] sm:min-w-full">
-          <colgroup>
-            <col style={{ width: '10%' }} />
-            <col style={{ width: '20%' }} />
-            <col style={{ width: '12%' }} />
-            <col style={{ width: '13%' }} />
-            <col style={{ width: '13%' }} />
-            <col style={{ width: '24%' }} />
-            <col style={{ width: '8%' }} />
-          </colgroup>
           <thead>
             <tr
               className={`
                 border-b border-border/60 bg-background text-2xs font-semibold tracking-wide text-muted-foreground
-                uppercase
               `}
             >
-              <th className="px-2 py-3 text-left sm:px-3">
+              <th className="px-2 py-2.5 text-left sm:px-3">
                 <SortHeaderButton column="side" label="Side" sortState={sortState} onSort={handleSort} />
               </th>
-              <th className="px-2 py-3 text-left sm:px-3">
+              <th className="px-2 py-2.5 text-left sm:px-3">
                 <SortHeaderButton column="outcome" label="Outcome" sortState={sortState} onSort={handleSort} />
               </th>
-              <th className="px-2 py-3 text-center sm:px-3">
+              <th className="px-2 py-2.5 text-center sm:px-3">
                 <SortHeaderButton column="price" label="Price" alignment="center" sortState={sortState} onSort={handleSort} />
               </th>
-              <th className="px-2 py-3 text-center sm:px-3">
+              <th className="px-2 py-2.5 text-center sm:px-3">
                 <SortHeaderButton column="filled" label="Filled" alignment="center" sortState={sortState} onSort={handleSort} />
               </th>
-              <th className="px-2 py-3 text-center sm:px-3">
+              <th className="px-2 py-2.5 text-center sm:px-3">
                 <SortHeaderButton column="total" label="Total" alignment="center" sortState={sortState} onSort={handleSort} />
               </th>
-              <th className="px-2 py-3 text-left sm:px-3">
+              <th className="px-2 py-2.5 text-left sm:px-3">
                 <SortHeaderButton column="expiration" label="Expiration" sortState={sortState} onSort={handleSort} />
               </th>
-              <th className="px-2 py-3 text-right sm:px-3">
+              <th className="px-2 py-2.5 text-right sm:px-3">
                 <button
                   type="button"
                   className={`
-                    text-2xs font-semibold tracking-wide whitespace-nowrap text-destructive transition-opacity
+                    text-2xs font-semibold tracking-wide whitespace-nowrap text-destructive uppercase transition-opacity
                     disabled:opacity-40
                   `}
                   onClick={handleCancelAll}

@@ -240,7 +240,8 @@ export default function EventOrderBook({
           className={
             `
               sticky top-0 z-1 grid h-9 grid-cols-[40%_20%_20%_20%] items-center border-b border-border/60 bg-background
-              px-4 text-2xs font-semibold tracking-wide text-muted-foreground uppercase
+              px-2 text-2xs font-semibold tracking-wide text-muted-foreground uppercase
+              sm:px-3
             `
           }
         >
@@ -282,8 +283,9 @@ export default function EventOrderBook({
           className={
             `
               sticky top-9 bottom-0 z-1 grid h-9 cursor-pointer grid-cols-[40%_20%_20%_20%] items-center border-y
-              border-border/60 bg-background px-4 text-xs font-medium text-muted-foreground transition-colors
+              border-border/60 bg-background px-2 text-xs font-medium text-muted-foreground transition-colors
               hover:bg-muted/60
+              sm:px-3
               dark:hover:bg-white/10
             `
           }
