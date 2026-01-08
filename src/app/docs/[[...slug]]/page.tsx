@@ -3,11 +3,11 @@ import type { Metadata } from 'next'
 import { DocsBody, DocsDescription, DocsPage, DocsTitle } from 'fumadocs-ui/layouts/docs/page'
 import defaultMdxComponents from 'fumadocs-ui/mdx'
 import { notFound, redirect } from 'next/navigation'
+import { AffiliateShareDisplay } from '@/app/docs/_components/AffiliateShareDisplay'
+import { FeeCalculationExample } from '@/app/docs/_components/FeeCalculationExample'
+import { PlatformShareDisplay } from '@/app/docs/_components/PlatformShareDisplay'
+import { TradingFeeDisplay } from '@/app/docs/_components/TradingFeeDisplay'
 import { source } from '@/lib/source'
-import { AffiliateShareDisplay } from '../_components/AffiliateShareDisplay'
-import { FeeCalculationExample } from '../_components/FeeCalculationExample'
-import { PlatformShareDisplay } from '../_components/PlatformShareDisplay'
-import { TradingFeeDisplay } from '../_components/TradingFeeDisplay'
 
 function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {

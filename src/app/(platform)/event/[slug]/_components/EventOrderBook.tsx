@@ -8,14 +8,8 @@ import { Loader2Icon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cancelOrderAction } from '@/app/(platform)/event/[slug]/_actions/cancel-order'
+import { useOrderBookSummaries } from '@/app/(platform)/event/[slug]/_hooks/useOrderBookSummaries'
 import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
-import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
-import { ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
-import { isTradingAuthRequiredError } from '@/lib/trading-auth/errors'
-import { useTradingOnboarding } from '@/providers/TradingOnboardingProvider'
-import { useOrder } from '@/stores/useOrder'
-import { useUser } from '@/stores/useUser'
-import { useOrderBookSummaries } from '../_hooks/useOrderBookSummaries'
 import {
   buildOrderBookSnapshot,
   calculateLimitAmount,
@@ -25,7 +19,13 @@ import {
   getOrderBookUserKey,
   getRoundedCents,
   microToUnit,
-} from '../_utils/EventOrderBookUtils'
+} from '@/app/(platform)/event/[slug]/_utils/EventOrderBookUtils'
+import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
+import { ORDER_SIDE, ORDER_TYPE } from '@/lib/constants'
+import { isTradingAuthRequiredError } from '@/lib/trading-auth/errors'
+import { useTradingOnboarding } from '@/providers/TradingOnboardingProvider'
+import { useOrder } from '@/stores/useOrder'
+import { useUser } from '@/stores/useUser'
 import EventOrderBookEmptyRow from './EventOrderBookEmptyRow'
 import EventOrderBookRow from './EventOrderBookRow'
 

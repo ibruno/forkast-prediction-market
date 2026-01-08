@@ -2,17 +2,17 @@ import type { PortfolioUserOpenOrder } from '@/app/(platform)/portfolio/_types/P
 import { XIcon } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { formatCurrency } from '@/lib/formatters'
-import { cn } from '@/lib/utils'
 import {
   formatCents,
   formatExpirationLabel,
   getOrderFilledShares,
   getOrderTotalShares,
   microToUnit,
-} from '../_utils/PortfolioOpenOrdersUtils'
+} from '@/app/(platform)/portfolio/_utils/PortfolioOpenOrdersUtils'
+import { Button } from '@/components/ui/button'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { formatCurrency } from '@/lib/formatters'
+import { cn } from '@/lib/utils'
 
 interface PortfolioOpenOrdersRowProps {
   order: PortfolioUserOpenOrder

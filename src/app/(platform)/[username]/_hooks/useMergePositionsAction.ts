@@ -6,6 +6,7 @@ import type { User } from '@/types'
 import { useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { hashTypedData } from 'viem'
+import { fetchLockedSharesByCondition } from '@/app/(platform)/[username]/_utils/PublicPositionsUtils'
 import { getSafeNonceAction, submitSafeTransactionAction } from '@/app/(platform)/_actions/approve-tokens'
 import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
 import { defaultNetwork } from '@/lib/appkit'
@@ -13,7 +14,6 @@ import { DEFAULT_CONDITION_PARTITION, DEFAULT_ERROR_MESSAGE } from '@/lib/consta
 import { ZERO_COLLECTION_ID } from '@/lib/contracts'
 import { toMicro } from '@/lib/formatters'
 import { aggregateSafeTransactions, buildMergePositionTransaction, getSafeTxTypedData, packSafeSignature } from '@/lib/safe/transactions'
-import { fetchLockedSharesByCondition } from '../_utils/PublicPositionsUtils'
 
 interface UseMergePositionsActionOptions {
   mergeableMarkets: MergeableMarket[]

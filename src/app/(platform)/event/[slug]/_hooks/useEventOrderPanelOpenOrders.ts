@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
+import { normalizeShares } from '@/app/(platform)/event/[slug]/_utils/EventOrderPanelUtils'
 import { OUTCOME_INDEX } from '@/lib/constants'
-import { normalizeShares } from '../_utils/EventOrderPanelUtils'
 
 export function useEventOrderPanelOpenOrders({
   userId,
