@@ -102,12 +102,15 @@ export default function EventOrderBook({
       return
     }
 
-    queryClient.setQueryData<InfiniteData<UserOpenOrder[]>>(openOrdersQueryKey, (current) => {
+    queryClient.setQueryData<InfiniteData<{ data: UserOpenOrder[], next_cursor: string }>>(openOrdersQueryKey, (current) => {
       if (!current) {
         return current
       }
 
-      const nextPages = current.pages.map(page => page.filter(order => !orderIds.includes(order.id)))
+      const nextPages = current.pages.map(page => ({
+        ...page,
+        data: page.data.filter(order => !orderIds.includes(order.id)),
+      }))
       return { ...current, pages: nextPages }
     })
   }, [openOrdersQueryKey, queryClient])
