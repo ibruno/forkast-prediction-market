@@ -39,7 +39,7 @@ async function requestApiKey(baseUrl: string, headers: Record<string, string>) {
   }
 
   if (
-    typeof payload?.key !== 'string'
+    typeof payload?.apiKey !== 'string'
     || typeof payload?.secret !== 'string'
     || typeof payload?.passphrase !== 'string'
   ) {
@@ -47,7 +47,7 @@ async function requestApiKey(baseUrl: string, headers: Record<string, string>) {
   }
 
   return {
-    key: payload.key as string,
+    key: payload.apiKey,
     secret: payload.secret as string,
     passphrase: payload.passphrase as string,
   }
