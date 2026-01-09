@@ -472,7 +472,7 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
 
   return isSingleMarket
     ? (
-        <section className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-background/80">
+        <section className="min-w-0 overflow-hidden rounded-xl border">
           {content}
         </section>
       )

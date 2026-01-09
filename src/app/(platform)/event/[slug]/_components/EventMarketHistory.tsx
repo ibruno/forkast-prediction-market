@@ -136,7 +136,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
 
     return isSingleMarket
       ? (
-          <section className="rounded-xl border border-border/60 bg-background/80">
+          <section className="rounded-xl border">
             {content}
           </section>
         )
@@ -273,7 +273,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
 
   return isSingleMarket
     ? (
-        <section className="overflow-hidden rounded-xl border border-border/60 bg-background/80">
+        <section className="overflow-hidden rounded-xl border">
           {content}
         </section>
       )

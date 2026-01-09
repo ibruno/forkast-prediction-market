@@ -72,7 +72,7 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border transition-all duration-200 ease-in-out">
+    <div className="overflow-hidden rounded-xl border transition-all duration-200 ease-in-out">
       <button
         type="button"
         onClick={() => setIsExpanded(current => !current)}

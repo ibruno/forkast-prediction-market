@@ -35,7 +35,7 @@ export default function EventOrderBookRow({
     <div
       className={
         `
-          relative grid h-9 cursor-pointer grid-cols-[40%_20%_20%_20%] items-center px-2 transition-colors sm:px-3
+          relative grid h-9 cursor-pointer grid-cols-[40%_20%_20%_20%] items-center pr-4 pl-0 transition-colors
           ${hoverClass}
         `
       }
@@ -49,7 +49,7 @@ export default function EventOrderBookRow({
           />
         </div>
       </div>
-      <div className="flex h-full items-center justify-center px-2 sm:px-3">
+      <div className="flex h-full items-center justify-center px-4">
         <div className="flex items-center gap-1">
           <div className="flex h-5 w-5 items-center justify-center">
             {userOrder && (
