@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import EventOrderBook, {
   useOrderBookSummaries,
 } from '@/app/(platform)/event/[slug]/_components/EventOrderBook'
+import MarketChannelStatusIndicator from '@/app/(platform)/event/[slug]/_components/MarketChannelStatusIndicator'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useOrder } from '@/stores/useOrder'
@@ -135,25 +136,28 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
                 onClick={() => handleOutcomeSelection(OUTCOME_INDEX.NO)}
               />
             </div>
-            <button
-              type="button"
-              onClick={() => { void refetchOrderBook() }}
-              className={cn(
-                `inline-flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground transition-colors`,
-                'hover:bg-muted/70 hover:text-foreground',
-                'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none',
-              )}
-              aria-label="Refresh order book"
-              title="Refresh order book"
-              disabled={isOrderBookLoading || isOrderBookRefetching}
-            >
-              <RefreshCwIcon
+            <div className="flex items-center gap-2">
+              <MarketChannelStatusIndicator className="flex items-center justify-end px-6 py-2" />
+              <button
+                type="button"
+                onClick={() => { void refetchOrderBook() }}
                 className={cn(
-                  'size-3',
-                  (isOrderBookLoading || isOrderBookRefetching) && 'animate-spin',
+                  `inline-flex h-7 w-7 items-center justify-center rounded-sm text-muted-foreground transition-colors`,
+                  'hover:bg-muted/70 hover:text-foreground',
+                  'focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none',
                 )}
-              />
-            </button>
+                aria-label="Refresh order book"
+                title="Refresh order book"
+                disabled={isOrderBookLoading || isOrderBookRefetching}
+              >
+                <RefreshCwIcon
+                  className={cn(
+                    'size-3',
+                    (isOrderBookLoading || isOrderBookRefetching) && 'animate-spin',
+                  )}
+                />
+              </button>
+            </div>
           </div>
           <EventOrderBook
             market={market}

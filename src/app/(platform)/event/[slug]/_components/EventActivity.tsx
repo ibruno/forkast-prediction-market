@@ -6,9 +6,9 @@ import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query'
 import { AlertCircleIcon, ExternalLinkIcon, Loader2Icon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  useMarketChannelStatus,
   useMarketChannelSubscription,
 } from '@/app/(platform)/event/[slug]/_components/EventMarketChannelProvider'
+import MarketChannelStatusIndicator from '@/app/(platform)/event/[slug]/_components/MarketChannelStatusIndicator'
 import ProfileLink from '@/components/ProfileLink'
 import ProfileLinkSkeleton from '@/components/ProfileLinkSkeleton'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -40,7 +40,6 @@ function getEventTokenIds(event: Event) {
 export default function EventActivity({ event }: EventActivityProps) {
   const [minAmountFilter, setMinAmountFilter] = useState('none')
   const [infiniteScrollError, setInfiniteScrollError] = useState<string | null>(null)
-  const wsStatus = useMarketChannelStatus()
   const queryClient = useQueryClient()
   const loadMoreRef = useRef<HTMLDivElement | null>(null)
   const isPollingRef = useRef(false)
@@ -284,24 +283,7 @@ export default function EventActivity({ event }: EventActivityProps) {
             <SelectItem value="100000">$100,000</SelectItem>
           </SelectContent>
         </Select>
-        <div className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-          <span>
-            {wsStatus === 'live' ? 'Live' : wsStatus === 'connecting' ? 'Connecting' : 'Offline'}
-          </span>
-          <span className="relative flex size-2">
-            {wsStatus === 'live' && (
-              <span className="absolute inline-flex size-2 animate-ping rounded-full bg-yes opacity-75" />
-            )}
-            <span
-              className={cn(
-                'relative inline-flex size-2 rounded-full',
-                wsStatus === 'live' && 'bg-yes',
-                wsStatus === 'connecting' && 'bg-amber-500',
-                wsStatus === 'offline' && 'bg-muted-foreground/40',
-              )}
-            />
-          </span>
-        </div>
+        <MarketChannelStatusIndicator />
       </div>
 
       {loading && (
