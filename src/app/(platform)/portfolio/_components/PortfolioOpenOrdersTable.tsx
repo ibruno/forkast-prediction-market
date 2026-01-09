@@ -3,6 +3,8 @@ import type { PortfolioUserOpenOrder } from '@/app/(platform)/portfolio/_types/P
 import { cn } from '@/lib/utils'
 import PortfolioOpenOrdersRow from './PortfolioOpenOrdersRow'
 
+const tableHeaderClass = 'px-2 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3'
+
 interface PortfolioOpenOrdersTableProps {
   rowGridClass: string
   orders: PortfolioUserOpenOrder[]
@@ -26,7 +28,7 @@ export default function PortfolioOpenOrdersTable({
         <div
           className={cn(
             rowGridClass,
-            'px-2 pt-2 pb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3',
+            tableHeaderClass,
           )}
         >
           <div className="pl-15 text-left">Market</div>

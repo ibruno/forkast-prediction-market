@@ -3,6 +3,8 @@ import type { ActivityOrder } from '@/types'
 import { cn } from '@/lib/utils'
 import PublicActivityRow from './PublicActivityRow'
 
+const tableHeaderClass = 'px-2 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3'
+
 interface PublicActivityTableProps {
   activities: ActivityOrder[]
   rowGridClass: string
@@ -36,7 +38,7 @@ export default function PublicActivityTable({
         <div
           className={cn(
             rowGridClass,
-            'px-2 pt-2 pb-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3',
+            tableHeaderClass,
           )}
         >
           <div>Activity</div>

@@ -9,6 +9,8 @@ import PublicPositionsError from './PublicPositionsError'
 import PublicPositionsLoadingState from './PublicPositionsLoadingState'
 import PublicPositionsRow from './PublicPositionsRow'
 
+const tableHeaderClass = 'px-2 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3'
+
 interface SortHeaderButtonProps {
   label: string
   sortKey: SortOption
@@ -88,8 +90,8 @@ export default function PublicPositionsTable({
     <div className="overflow-x-auto">
       <table className="w-full min-w-180 border-collapse">
         <thead>
-          <tr className="border-b border-border/80 text-xs tracking-wide text-muted-foreground uppercase">
-            <th className="px-2 pt-2 pb-3 text-left sm:px-3">
+          <tr className="border-b border-border/80">
+            <th className={cn(tableHeaderClass, 'text-left')}>
               <SortHeaderButton
                 label="Market"
                 sortKey="alpha"
@@ -98,7 +100,7 @@ export default function PublicPositionsTable({
                 onSortHeaderClick={onSortHeaderClick}
               />
             </th>
-            <th className="px-2 pt-2 pb-3 text-center sm:px-3">
+            <th className={cn(tableHeaderClass, 'text-center')}>
               <SortHeaderButton
                 label="Avg → Now"
                 sortKey="latestPrice"
@@ -107,7 +109,7 @@ export default function PublicPositionsTable({
                 onSortHeaderClick={onSortHeaderClick}
               />
             </th>
-            <th className="px-2 pt-2 pb-3 text-center sm:px-3">
+            <th className={cn(tableHeaderClass, 'text-center')}>
               <SortHeaderButton
                 label="Trade"
                 sortKey="trade"
@@ -116,7 +118,7 @@ export default function PublicPositionsTable({
                 onSortHeaderClick={onSortHeaderClick}
               />
             </th>
-            <th className="px-2 pt-2 pb-3 text-center sm:px-3">
+            <th className={cn(tableHeaderClass, 'text-center')}>
               <SortHeaderButton
                 label="To win"
                 sortKey="payout"
@@ -125,7 +127,7 @@ export default function PublicPositionsTable({
                 onSortHeaderClick={onSortHeaderClick}
               />
             </th>
-            <th className="px-2 pt-2 pb-3 text-center sm:px-3">
+            <th className={cn(tableHeaderClass, 'text-center')}>
               <SortHeaderButton
                 label="Value"
                 sortKey="currentValue"
@@ -134,7 +136,7 @@ export default function PublicPositionsTable({
                 onSortHeaderClick={onSortHeaderClick}
               />
             </th>
-            <th className="px-2 pt-2 pb-3 text-right sm:px-3">
+            <th className={cn(tableHeaderClass, 'text-right')}>
               <span className="sr-only">Actions</span>
             </th>
           </tr>
