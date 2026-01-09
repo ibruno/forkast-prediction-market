@@ -51,7 +51,7 @@ interface TradeFlowLabelItem {
 }
 
 const tradeFlowMaxItems = 6
-const tradeFlowTtlMs = 4000
+const tradeFlowTtlMs = 8000
 const tradeFlowCleanupIntervalMs = 500
 
 function getOutcomeTokenIds(market: Market | null) {
@@ -84,7 +84,7 @@ function pruneTradeFlowItems(items: TradeFlowLabelItem[], now: number) {
 }
 
 function trimTradeFlowItems(items: TradeFlowLabelItem[]) {
-  return items.slice(0, tradeFlowMaxItems)
+  return items.slice(-tradeFlowMaxItems)
 }
 
 function EventChartComponent({ event, isMobile }: EventChartProps) {
@@ -417,7 +417,7 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
     tradeFlowIdRef.current += 1
 
     setTradeFlowItems((prev) => {
-      const next = [{ id, label, outcome, createdAt }, ...prev]
+      const next = [...prev, { id, label, outcome, createdAt }]
       return trimTradeFlowItems(pruneTradeFlowItems(next, createdAt))
     })
   })
@@ -526,7 +526,7 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
                   {tradeFlowItems.map(item => (
                     <span
                       key={item.id}
-                      className={item.outcome === 'yes' ? 'text-yes' : 'text-no'}
+                      className={`${item.outcome === 'yes' ? 'text-yes' : 'text-no'} animate-trade-flow-rise`}
                     >
                       +
                       {item.label}
