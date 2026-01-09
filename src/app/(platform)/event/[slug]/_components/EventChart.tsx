@@ -76,7 +76,7 @@ function buildTradeFlowLabel(price: number, size: number) {
   if (!Number.isFinite(notional) || notional <= 0) {
     return null
   }
-  return formatSharePriceLabel(notional, { fallback: '0¢' })
+  return formatSharePriceLabel(notional / 100, { fallback: '0¢', currencyDigits: 0 })
 }
 
 function pruneTradeFlowItems(items: TradeFlowLabelItem[], now: number) {
