@@ -147,7 +147,7 @@ export async function storeOrderAction(payload: StoreOrderInput) {
         signature: validated.data.signature,
       },
       orderType: clobOrderType,
-      owner: user.address,
+      owner: auth.clob.key,
     }
 
     const method = 'POST'
