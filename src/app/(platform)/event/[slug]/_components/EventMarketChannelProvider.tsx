@@ -216,9 +216,10 @@ function EventMarketChannelProvider({
     () => buildTokenMapping(markets),
     [markets],
   )
+  const wsUrl = process.env.WS_CLOB_URL!
 
   useEffect(() => {
-    if (!tokenIds.length || !process.env.WS_CLOB_URL) {
+    if (!tokenIds.length || !wsUrl) {
       setStatus('offline')
       return
     }
@@ -303,7 +304,7 @@ function EventMarketChannelProvider({
         return
       }
       setStatus('connecting')
-      ws = new WebSocket(`${process.env.WS_CLOB_URL}/ws/market`)
+      ws = new WebSocket(`${wsUrl}/ws/market`)
       ws.addEventListener('open', handleOpen)
       ws.addEventListener('message', handleMessage)
       ws.addEventListener('error', handleError)
@@ -354,7 +355,7 @@ function EventMarketChannelProvider({
         ws.close()
       }
     }
-  }, [queryClient, tokenIds, tokenIdToConditionId])
+  }, [queryClient, tokenIds, tokenIdToConditionId, wsUrl])
 
   const contextValue = useMemo(
     () => ({
