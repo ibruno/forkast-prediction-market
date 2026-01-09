@@ -91,7 +91,7 @@ export default function SellPositionModal({
         </div>
       </div>
 
-      <div className="rounded-lg bg-muted/60 px-4 py-4">
+      <div className="rounded-lg bg-muted/60 p-4">
         <div className="text-xs font-semibold text-foreground">
           Receive
         </div>

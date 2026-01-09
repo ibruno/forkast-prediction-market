@@ -30,7 +30,7 @@ export default function AdminAffiliateOverview({ rows }: AdminAffiliateOverviewP
 
   return (
     <div className="rounded-lg border">
-      <div className="flex items-center justify-between border-b px-4 py-4 md:px-6">
+      <div className="flex items-center justify-between border-b p-4 md:px-6">
         <div>
           <h2 className="text-xl font-semibold">Affiliate performance</h2>
           <p className="text-sm text-muted-foreground">Top referring partners and their earnings.</p>

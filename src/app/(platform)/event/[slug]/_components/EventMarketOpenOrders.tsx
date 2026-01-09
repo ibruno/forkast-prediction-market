@@ -564,12 +564,12 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
 
   return isSingleMarket
     ? (
-        <section className="min-w-0 overflow-hidden rounded-xl border">
+        <section className="max-h-96 overflow-auto rounded-xl border">
           {content}
         </section>
       )
     : (
-        <div className="min-w-0">
+        <div className="max-h-96 overflow-auto">
           {content}
         </div>
       )

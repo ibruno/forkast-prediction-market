@@ -74,7 +74,7 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
       </div>
 
       <div className="rounded-lg border">
-        <div className="border-b px-4 py-4 sm:px-6">
+        <div className="border-b p-4 sm:px-6">
           <h3 className="text-lg font-semibold">Recent referrals</h3>
           <p className="text-sm text-muted-foreground">Latest users who joined through your link.</p>
         </div>
@@ -85,7 +85,7 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
             </div>
           )}
           {affiliateData.recentReferrals.map(referral => (
-            <div key={referral.user_id} className="flex items-center justify-between px-4 py-4 sm:px-6">
+            <div key={referral.user_id} className="flex items-center justify-between p-4 sm:px-6">
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">
                   {referral.username}

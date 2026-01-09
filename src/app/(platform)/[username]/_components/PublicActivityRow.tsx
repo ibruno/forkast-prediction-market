@@ -100,7 +100,7 @@ export default function PublicActivityRow({ activity, rowGridClass }: PublicActi
       className={cn(
         rowGridClass,
         `
-          border-b border-border/60 px-2 py-2 transition-colors
+          border-b border-border/60 p-2 transition-colors
           first:border-t first:border-border/60
           hover:bg-muted/50
           sm:px-3

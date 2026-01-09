@@ -110,11 +110,11 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
     const content = (
       <>
         {isSingleMarket && (
-          <div className="px-4 py-4">
+          <div className="p-4">
             <h3 className="text-lg font-semibold">History</h3>
           </div>
         )}
-        <div className={cn(isSingleMarket ? 'border-t border-border/60' : '', 'px-4 py-4')}>
+        <div className={cn(isSingleMarket ? 'border-t border-border/60' : '', 'p-4')}>
           <Alert variant="destructive">
             <AlertCircleIcon />
             <AlertTitle>Failed to load activity</AlertTitle>
@@ -162,10 +162,11 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
   const content = (
     <>
       {isSingleMarket && (
-        <div className="px-4 py-4">
+        <div className="p-4">
           <h3 className="text-lg font-semibold">History</h3>
         </div>
       )}
+
       <div className="divide-y divide-border">
         {activities.map((activity) => {
           const sharesValue = Number.parseFloat(fromMicro(activity.amount, 4))
@@ -273,12 +274,12 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
 
   return isSingleMarket
     ? (
-        <section className="overflow-hidden rounded-xl border">
+        <section className="max-h-96 overflow-auto rounded-xl border">
           {content}
         </section>
       )
     : (
-        <div>
+        <div className="max-h-96 overflow-auto">
           {content}
         </div>
       )
