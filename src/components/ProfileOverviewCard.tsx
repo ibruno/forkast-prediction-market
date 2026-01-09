@@ -92,7 +92,7 @@ export default function ProfileOverviewCard({
   ]
 
   return (
-    <Card className="relative h-full overflow-hidden border border-border bg-background">
+    <Card className="relative h-full overflow-hidden rounded-lg bg-background">
       <CardContent className="relative flex h-full flex-col gap-2 p-3 sm:p-4">
         {isReady
           ? (
@@ -131,10 +131,7 @@ export default function ProfileOverviewCard({
                         </div>
 
                         <div
-                          className={`
-                            flex shrink-0 items-center gap-2 rounded-full border border-border/60 bg-card/70 px-3 py-2
-                            shadow-sm
-                          `}
+                          className="flex shrink-0 items-center gap-2 rounded-full bg-card/70 px-3 py-2 shadow-sm"
                         >
                           <div className="relative size-6">
                             <Image src="/images/trade/money.svg" alt="Cash" fill sizes="24px" className="object-contain" />

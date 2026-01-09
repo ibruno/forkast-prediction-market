@@ -32,7 +32,10 @@ function SortHeaderButton({
       type="button"
       onClick={() => onSortHeaderClick(sortKey)}
       className={cn(
-        'inline-flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-muted/70 hover:shadow-sm',
+        `
+          inline-flex items-center gap-1 rounded-md px-2 py-1 tracking-wide uppercase transition-colors
+          hover:bg-muted/70 hover:shadow-sm
+        `,
         isActive && 'text-foreground',
       )}
     >
@@ -85,7 +88,7 @@ export default function PublicPositionsTable({
     <div className="overflow-x-auto">
       <table className="w-full min-w-180 border-collapse">
         <thead>
-          <tr className="border-b border-border/80 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          <tr className="border-b border-border/80 text-xs tracking-wide text-muted-foreground uppercase">
             <th className="px-2 pt-2 pb-3 text-left sm:px-3">
               <SortHeaderButton
                 label="Market"
@@ -150,16 +153,16 @@ export default function PublicPositionsTable({
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t border-border/80">
-                <td className="px-2 py-3 text-left text-sm font-semibold text-foreground sm:px-3">Total</td>
-                <td className="px-2 py-3 text-center text-sm text-muted-foreground sm:px-3" />
-                <td className="px-2 py-3 text-center text-sm font-semibold text-foreground tabular-nums sm:px-3">
+              <tr className="border-t border-border/80 text-sm font-semibold">
+                <td className="px-2 py-3 text-left sm:px-3">Total</td>
+                <td className="px-2 py-3 text-center text-muted-foreground sm:px-3" />
+                <td className="px-2 py-3 text-center tabular-nums sm:px-3">
                   {formatCurrencyValue(totals.trade)}
                 </td>
-                <td className="px-2 py-3 text-center text-sm font-semibold text-foreground tabular-nums sm:px-3">
+                <td className="px-2 py-3 text-center tabular-nums sm:px-3">
                   {formatCurrencyValue(totals.toWin)}
                 </td>
-                <td className="px-2 py-3 text-right text-sm font-semibold text-foreground tabular-nums sm:px-3">
+                <td className="px-2 py-3 text-right tabular-nums sm:px-3">
                   {formatCurrencyValue(totals.value)}
                   <div className={cn('text-xs', totals.diff >= 0 ? 'text-yes' : 'text-no')}>
                     {`${totals.diff >= 0 ? '+' : ''}${formatCurrency(Math.abs(totals.diff))}`}
