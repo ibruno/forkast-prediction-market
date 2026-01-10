@@ -130,7 +130,7 @@ export default function ProfileLink({
       >
         <div className="min-w-0 flex-1">
           <TooltipTrigger asChild>
-            <div className="inline-flex min-w-0 items-center gap-3">
+            <div className="flex w-full min-w-0 items-center gap-3">
               <Link href={profileHref} className="relative shrink-0">
                 <Image
                   src={user.image}
