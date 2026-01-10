@@ -435,10 +435,7 @@ export default function EventMarketPositions({ market }: EventMarketPositionsPro
         <table className="w-full table-fixed border-collapse max-sm:min-w-[115%] sm:min-w-full sm:table-auto">
           <thead>
             <tr
-              className={`
-                border-b border-border/60 bg-background text-2xs font-semibold tracking-wide text-muted-foreground
-                uppercase
-              `}
+              className="border-b bg-background text-2xs font-semibold tracking-wide text-muted-foreground uppercase"
             >
               <th className="px-2 py-2.5 text-left sm:px-3">Outcome</th>
               <th className="px-2 py-2.5 text-center sm:px-3">Qty</th>

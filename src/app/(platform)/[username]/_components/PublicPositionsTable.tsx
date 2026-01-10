@@ -90,7 +90,7 @@ export default function PublicPositionsTable({
     <div className="overflow-x-auto">
       <table className="w-full min-w-180 border-collapse">
         <thead>
-          <tr className="border-b border-border/80">
+          <tr className="border-b">
             <th className={cn(tableHeaderClass, 'text-left')}>
               <SortHeaderButton
                 label="Market"
@@ -155,7 +155,7 @@ export default function PublicPositionsTable({
               ))}
             </tbody>
             <tfoot>
-              <tr className="border-t border-border/80 text-sm font-semibold">
+              <tr className="border-t text-sm font-semibold">
                 <td className="px-2 py-3 text-left sm:px-3">Total</td>
                 <td className="px-2 py-3 text-center text-muted-foreground sm:px-3" />
                 <td className="px-2 py-3 text-center tabular-nums sm:px-3">

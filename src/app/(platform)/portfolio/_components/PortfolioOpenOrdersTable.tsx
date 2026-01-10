@@ -45,7 +45,7 @@ export default function PortfolioOpenOrdersTable({
         {isLoading && (
           <div className="space-y-3 px-2 sm:px-3">
             {Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="h-14 rounded-lg border border-border/50 bg-muted/30" />
+              <div key={idx} className="h-14 rounded-lg border bg-muted/30" />
             ))}
           </div>
         )}

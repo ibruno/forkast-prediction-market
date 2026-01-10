@@ -470,9 +470,7 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
         <table className="w-full max-w-full table-fixed border-collapse max-sm:min-w-[140%] sm:min-w-full">
           <thead>
             <tr
-              className={`
-                border-b border-border/60 bg-background text-2xs font-semibold tracking-wide text-muted-foreground
-              `}
+              className="border-b bg-background text-2xs font-semibold tracking-wide text-muted-foreground"
             >
               <th className="px-2 py-2.5 text-left sm:px-3">
                 <SortHeaderButton column="side" label="Side" sortState={sortState} onSort={handleSort} />
@@ -524,16 +522,13 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
       </div>
 
       {hasOrders && isFetchingNextPage && (
-        <div className={cn(isSingleMarket ? 'border-t border-border/60' : '', `
-          px-4 py-3 text-center text-xs text-muted-foreground
-        `)}
-        >
+        <div className={cn(isSingleMarket ? 'border-t' : '', `px-4 py-3 text-center text-xs text-muted-foreground`)}>
           Loading more open orders...
         </div>
       )}
 
       {infiniteScrollError && (
-        <div className={cn(isSingleMarket ? 'border-t border-border/60' : '', 'px-4 py-3')}>
+        <div className={cn(isSingleMarket ? 'border-t' : '', 'px-4 py-3')}>
           <Alert variant="destructive">
             <AlertCircleIcon />
             <AlertTitle>Could not load more open orders</AlertTitle>

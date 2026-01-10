@@ -543,7 +543,7 @@ function MarketDetailTabs({
   return (
     <div className="pt-2">
       <div className="px-4">
-        <div className="flex items-center gap-2 border-b border-border/60">
+        <div className="flex items-center gap-2 border-b">
           <div className="scrollbar-hide flex w-0 flex-1 gap-4 overflow-x-auto">
             {visibleTabs.map((tab) => {
               const isActive = selectedTab === tab.id

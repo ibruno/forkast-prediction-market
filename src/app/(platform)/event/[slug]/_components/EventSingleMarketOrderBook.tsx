@@ -91,8 +91,8 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
           aria-hidden="true"
           className={cn(
             `
-              pointer-events-none flex size-8 items-center justify-center rounded-md border border-border/60
-              bg-background text-muted-foreground transition
+              pointer-events-none flex size-8 items-center justify-center rounded-md border bg-background
+              text-muted-foreground transition
             `,
             isExpanded ? 'bg-muted/50' : '',
           )}
@@ -119,9 +119,7 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
       {isExpanded && (
         <div className="border-t border-border/30">
           <div
-            className={`
-              flex flex-wrap items-center justify-between gap-3 border-b border-border/60 p-3 pb-0 text-sm font-semibold
-            `}
+            className="flex flex-wrap items-center justify-between gap-3 border-b p-3 pb-0 text-sm font-semibold"
           >
             <div className="flex flex-wrap gap-4">
               <OutcomeToggle

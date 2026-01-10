@@ -53,7 +53,7 @@ export default function PublicActivityTable({
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="h-14 rounded-lg border border-border/50 bg-muted/30"
+                className="h-14 rounded-lg border bg-muted/30"
               />
             ))}
           </div>
