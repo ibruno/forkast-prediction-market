@@ -51,7 +51,7 @@ export default function EventOrderBookRow({
       </div>
       <div className="flex h-full items-center justify-center px-4">
         <div className="flex items-center gap-1">
-          <div className="flex h-5 w-5 items-center justify-center">
+          <div className="flex size-5 items-center justify-center">
             {userOrder && (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -65,7 +65,7 @@ export default function EventOrderBookRow({
                     }}
                     disabled={isCancelling}
                     className={cn(
-                      'group inline-flex h-5 w-5 items-center justify-center text-base transition-colors',
+                      'group inline-flex size-5 items-center justify-center text-base transition-colors',
                       userOrder.side === 'ask' ? 'text-no' : 'text-yes',
                       isCancelling && 'cursor-not-allowed opacity-60',
                     )}
