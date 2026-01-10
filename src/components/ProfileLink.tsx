@@ -29,6 +29,7 @@ interface ProfileLinkProps {
   containerClassName?: string
   usernameMaxWidthClassName?: string
   usernameClassName?: string
+  inlineNoTruncate?: boolean
 }
 
 export default function ProfileLink({
@@ -42,6 +43,7 @@ export default function ProfileLink({
   containerClassName,
   usernameMaxWidthClassName,
   usernameClassName,
+  inlineNoTruncate = false,
 }: ProfileLinkProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [stats, setStats] = useState<Awaited<ReturnType<typeof fetchProfileLinkStats>>>(null)
@@ -49,8 +51,7 @@ export default function ProfileLink({
   const isInline = layout === 'inline'
   const inlineBody = inlineContent ?? children
   const inlineRowClassName = `
-    flex min-w-0 flex-wrap items-center gap-1 text-foreground
-    sm:flex-nowrap sm:overflow-hidden sm:text-ellipsis sm:whitespace-nowrap
+    flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-foreground
   `
 
   const medalColor = {
@@ -117,6 +118,35 @@ export default function ProfileLink({
     predictions: stats?.positions ?? 0,
     biggestWin: stats?.biggestWin ?? 0,
   }), [stats?.positions, stats?.positionsValue, stats?.profitLoss, stats?.biggestWin])
+  const avatarLink = (
+    <Link href={profileHref} className="relative shrink-0">
+      <Image
+        src={user.image}
+        alt={user.username}
+        width={32}
+        height={32}
+        className="rounded-full"
+      />
+      {position && (
+        <Badge
+          variant="secondary"
+          style={{ backgroundColor: medalColor, color: medalTextColor }}
+          className="absolute top-0 -right-2 size-5 rounded-full px-1 font-mono text-muted-foreground tabular-nums"
+        >
+          {position}
+        </Badge>
+      )}
+    </Link>
+  )
+  const usernameInlineLink = (
+    <Link
+      href={profileHref}
+      title={user.username}
+      className={cn('text-sm font-medium', usernameClassName)}
+    >
+      {user.username}
+    </Link>
+  )
 
   return (
     <Tooltip onOpenChange={setIsOpen}>
@@ -129,74 +159,73 @@ export default function ProfileLink({
         )}
       >
         <div className="min-w-0 flex-1">
-          <TooltipTrigger asChild>
-            <div className="flex w-full min-w-0 items-center gap-3">
-              <Link href={profileHref} className="relative shrink-0">
-                <Image
-                  src={user.image}
-                  alt={user.username}
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
-                {position && (
-                  <Badge
-                    variant="secondary"
-                    style={{ backgroundColor: medalColor, color: medalTextColor }}
-                    className={`
-                      absolute top-0 -right-2 size-5 rounded-full px-1 font-mono text-muted-foreground tabular-nums
-                    `}
-                  >
-                    {position}
-                  </Badge>
-                )}
-              </Link>
-              <div className="min-w-0">
-                {isInline
-                  ? (
-                      <div className={inlineRowClassName}>
-                        <Link
-                          href={profileHref}
-                          title={user.username}
-                          className={cn(
-                            'shrink-0 truncate text-sm font-medium',
-                            usernameClassName,
-                            usernameMaxWidthClassName ?? 'max-w-32 lg:max-w-64',
-                          )}
-                        >
-                          {user.username}
-                        </Link>
-                        {date && (
-                          <span className="text-xs whitespace-nowrap text-muted-foreground">
-                            {formatTimeAgo(date)}
-                          </span>
-                        )}
-                        {inlineBody ?? null}
-                      </div>
-                    )
-                  : (
-                      <div
+          {isInline && inlineNoTruncate
+            ? (
+                <div className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-start gap-3">
+                  <TooltipTrigger asChild>
+                    {avatarLink}
+                  </TooltipTrigger>
+                  <div className="min-w-0 text-foreground">
+                    <TooltipTrigger asChild>
+                      {usernameInlineLink}
+                    </TooltipTrigger>
+                    {inlineBody ? <span className="ml-1">{inlineBody}</span> : null}
+                    {date && (
+                      <span className="ml-1 text-xs whitespace-nowrap text-muted-foreground">
+                        {formatTimeAgo(date)}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )
+            : (
+                <div className="flex w-full min-w-0 items-center gap-1">
+                  <TooltipTrigger asChild>
+                    <div className="flex min-w-0 items-center gap-3">
+                      {avatarLink}
+                      <Link
+                        href={profileHref}
+                        title={user.username}
                         className={cn(
-                          'flex min-w-0 items-center gap-1',
+                          'min-w-0 truncate text-sm font-medium',
+                          usernameClassName,
                           usernameMaxWidthClassName ?? 'max-w-32 lg:max-w-64',
                         )}
                       >
-                        <Link
-                          href={profileHref}
-                          className={cn('truncate text-sm font-medium', usernameClassName)}
-                        >
-                          {user.username}
-                        </Link>
-                        {date && (
-                          <span className="text-xs whitespace-nowrap text-muted-foreground">
-                            {formatTimeAgo(date)}
-                          </span>
+                        {user.username}
+                      </Link>
+                    </div>
+                  </TooltipTrigger>
+                  <div className="min-w-0">
+                    {isInline
+                      ? (
+                          <div className={inlineRowClassName}>
+                            {date && (
+                              <span className="shrink-0 text-xs whitespace-nowrap text-muted-foreground">
+                                {formatTimeAgo(date)}
+                              </span>
+                            )}
+                            {inlineBody
+                              ? (
+                                  <span className="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                                    {inlineBody}
+                                  </span>
+                                )
+                              : null}
+                          </div>
+                        )
+                      : (
+                          <div className="flex min-w-0 items-center gap-1">
+                            {date && (
+                              <span className="text-xs whitespace-nowrap text-muted-foreground">
+                                {formatTimeAgo(date)}
+                              </span>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    )}
-              </div>
-            </div>
-          </TooltipTrigger>
+                  </div>
+                </div>
+              )}
           {!isInline && children
             ? <div className="pl-11">{children}</div>
             : null}

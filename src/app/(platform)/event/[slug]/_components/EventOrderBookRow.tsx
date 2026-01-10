@@ -42,7 +42,7 @@ export default function EventOrderBookRow({
       onClick={() => onSelect?.(level)}
     >
       <div className="flex h-full items-center">
-        <div className="relative h-full w-full overflow-hidden">
+        <div className="relative size-full overflow-hidden">
           <div
             className={`absolute inset-0 left-0 ${backgroundClass}`}
             style={{ width: `${barWidth}%` }}
