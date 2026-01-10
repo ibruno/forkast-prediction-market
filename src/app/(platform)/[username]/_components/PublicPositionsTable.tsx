@@ -3,13 +3,12 @@ import type { PublicPosition } from './PublicPositionItem'
 import type { PositionsTotals, SortDirection, SortOption } from '@/app/(platform)/[username]/_types/PublicPositionsTypes'
 import { ChevronDownIcon, ChevronUpIcon } from 'lucide-react'
 import { formatCurrencyValue } from '@/app/(platform)/[username]/_utils/PublicPositionsUtils'
+import { tableHeaderClass } from '@/lib/constants'
 import { formatCurrency } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
 import PublicPositionsError from './PublicPositionsError'
 import PublicPositionsLoadingState from './PublicPositionsLoadingState'
 import PublicPositionsRow from './PublicPositionsRow'
-
-const tableHeaderClass = 'px-2 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3'
 
 interface SortHeaderButtonProps {
   label: string
@@ -35,7 +34,8 @@ function SortHeaderButton({
       onClick={() => onSortHeaderClick(sortKey)}
       className={cn(
         `
-          inline-flex items-center gap-1 rounded-md px-2 py-1 tracking-wide uppercase transition-colors
+          inline-flex items-center gap-1 rounded-md px-2 py-1 tracking-wide whitespace-nowrap uppercase
+          transition-colors
           hover:bg-muted/70 hover:shadow-sm
         `,
         isActive && 'text-foreground',

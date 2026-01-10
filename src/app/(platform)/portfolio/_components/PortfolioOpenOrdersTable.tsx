@@ -1,9 +1,8 @@
 import type { RefObject } from 'react'
 import type { PortfolioUserOpenOrder } from '@/app/(platform)/portfolio/_types/PortfolioOpenOrdersTypes'
+import { tableHeaderClass } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import PortfolioOpenOrdersRow from './PortfolioOpenOrdersRow'
-
-const tableHeaderClass = 'px-2 py-3 text-xs font-semibold tracking-wide text-muted-foreground uppercase sm:px-3'
 
 interface PortfolioOpenOrdersTableProps {
   rowGridClass: string
