@@ -355,9 +355,10 @@ export default function EventActivity({ event }: EventActivityProps) {
                       address: activity.user.address,
                     }}
                     layout="inline"
+                    tooltipVariant="activity"
+                    joinedAt={activity.user.created_at}
                     usernameClassName="font-semibold text-foreground"
                     usernameMaxWidthClassName="max-w-44 sm:max-w-56"
-                    inlineNoTruncate={true}
                     containerClassName="px-3 py-2.5 text-sm leading-tight text-foreground sm:px-4"
                     trailing={(
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
