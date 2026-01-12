@@ -120,7 +120,7 @@ export default function EventChartHeader({
           {watermark.iconSvg
             ? (
                 <div
-                  className="h-[1em] w-[1em] **:fill-current **:stroke-current"
+                  className="size-[1em] **:fill-current **:stroke-current"
                   dangerouslySetInnerHTML={{ __html: sanitizeSvg(watermark.iconSvg) }}
                 />
               )

@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
     )
 
     const baseProfileUrl = (() => {
-      const raw = process.env.NEXT_PUBLIC_SITE_URL!
+      const raw = process.env.SITE_URL!
       return raw.startsWith('http') ? raw : `https://${raw}`
     })()
 

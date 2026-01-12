@@ -48,8 +48,8 @@ export async function requestOpenRouterCompletion(messages: OpenRouterMessage[],
     'Authorization': `Bearer ${apiKey}`,
   }
 
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    headers['HTTP-Referer'] = process.env.NEXT_PUBLIC_SITE_URL
+  if (process.env.SITE_URL) {
+    headers['HTTP-Referer'] = process.env.SITE_URL
   }
 
   if (process.env.NEXT_PUBLIC_SITE_NAME) {
@@ -103,8 +103,8 @@ export async function fetchOpenRouterModels(apiKey: string): Promise<OpenRouterM
     'Authorization': `Bearer ${apiKey}`,
   }
 
-  if (process.env.NEXT_PUBLIC_SITE_URL) {
-    headers['HTTP-Referer'] = process.env.NEXT_PUBLIC_SITE_URL
+  if (process.env.SITE_URL) {
+    headers['HTTP-Referer'] = process.env.SITE_URL
   }
 
   if (process.env.NEXT_PUBLIC_SITE_NAME) {

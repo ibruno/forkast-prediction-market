@@ -37,7 +37,7 @@ function initializeAppKitSingleton(themeMode: 'light' | 'dark') {
       metadata: {
         name: process.env.NEXT_PUBLIC_SITE_NAME!,
         description: process.env.NEXT_PUBLIC_SITE_DESCRIPTION!,
-        url: process.env.NEXT_PUBLIC_SITE_URL!,
+        url: process.env.SITE_URL!,
         icons: ['https://avatar.vercel.sh/bitcoin.png'],
       },
       themeVariables: {
@@ -53,7 +53,7 @@ function initializeAppKitSingleton(themeMode: 'light' | 'dark') {
       siweConfig: createSIWEConfig({
         signOutOnAccountChange: true,
         getMessageParams: async () => ({
-          domain: new URL(process.env.NEXT_PUBLIC_SITE_URL!).host,
+          domain: new URL(process.env.SITE_URL!).host,
           uri: typeof window !== 'undefined' ? window.location.origin : '',
           chains: [defaultNetwork.id],
           statement: 'Please sign with your account',

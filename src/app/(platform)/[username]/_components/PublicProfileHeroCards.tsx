@@ -26,8 +26,6 @@ const PNL_TIMEFRAMES = ['1D', '1W', '1M', 'ALL'] as const
 interface PublicProfileHeroCardsProps {
   profile: ProfileForCards
   snapshot: PortfolioSnapshot
-  platformName?: string
-  platformLogoSvg?: string
   actions?: ReactNode
   variant?: 'public' | 'portfolio'
 }
@@ -35,14 +33,12 @@ interface PublicProfileHeroCardsProps {
 function ProfitLossCard({
   snapshot: _snapshot,
   portfolioAddress,
-  platformName = process.env.NEXT_PUBLIC_SITE_NAME!,
-  platformLogoSvg = process.env.NEXT_PUBLIC_SITE_LOGO_SVG,
 }: {
   snapshot: PortfolioSnapshot
   portfolioAddress?: string | null
-  platformName?: string
-  platformLogoSvg?: string
 }) {
+  const platformName = process.env.NEXT_PUBLIC_SITE_NAME ?? ''
+  const platformLogoSvg = process.env.NEXT_PUBLIC_SITE_LOGO_SVG
   const [activeTimeframe, setActiveTimeframe] = useState<(typeof PNL_TIMEFRAMES)[number]>('ALL')
   const [cursorX, setCursorX] = useState<number | null>(null)
   const [pnlSeries, setPnlSeries] = useState<PnlPoint[]>([])
@@ -567,8 +563,6 @@ function ProfitLossCard({
 export default function PublicProfileHeroCards({
   profile,
   snapshot,
-  platformLogoSvg,
-  platformName,
   actions,
   variant = 'public',
 }: PublicProfileHeroCardsProps) {
@@ -577,8 +571,6 @@ export default function PublicProfileHeroCards({
       <ProfileOverviewCard profile={profile} snapshot={snapshot} actions={actions} variant={variant} />
       <ProfitLossCard
         snapshot={snapshot}
-        platformLogoSvg={platformLogoSvg}
-        platformName={platformName}
         portfolioAddress={profile.portfolioAddress}
       />
     </div>
