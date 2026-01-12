@@ -1,13 +1,10 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import type { ProfileForCards } from '@/components/ProfileOverviewCard'
-import type { PortfolioSnapshot } from '@/lib/portfolio'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
 import ProfileActivityTooltipCard from '@/components/ProfileActivityTooltipCard'
-import ProfileOverviewCard from '@/components/ProfileOverviewCard'
 import { Badge } from '@/components/ui/badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { fetchProfileLinkStats } from '@/lib/data-api/profile-link-stats'
@@ -31,7 +28,6 @@ interface ProfileLinkProps {
   usernameMaxWidthClassName?: string
   usernameClassName?: string
   joinedAt?: string | null
-  tooltipVariant?: 'default' | 'activity'
 }
 
 export default function ProfileLink({
@@ -46,7 +42,6 @@ export default function ProfileLink({
   usernameMaxWidthClassName,
   usernameClassName,
   joinedAt,
-  tooltipVariant = 'default',
 }: ProfileLinkProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [stats, setStats] = useState<Awaited<ReturnType<typeof fetchProfileLinkStats>>>(null)
@@ -54,12 +49,12 @@ export default function ProfileLink({
   const isInline = layout === 'inline'
   const inlineBody = inlineContent ?? children
   const inlineRowClassName = `
-    flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-foreground
+    flex min-w-0 flex-wrap items-center gap-1 text-foreground
   `
-  const resolvedUsernameMaxWidth = usernameMaxWidthClassName ?? 'max-w-32 lg:max-w-64'
+  const resolvedUsernameMaxWidth = usernameMaxWidthClassName
+    ?? (isInline ? 'max-w-none' : 'max-w-32 lg:max-w-64')
   const usernameLinkClassName = cn(
-    'block truncate text-sm font-medium',
-    isInline && 'shrink-0',
+    isInline ? 'block text-sm font-medium' : 'block truncate text-sm font-medium',
     usernameClassName,
   )
   const usernameWrapperClassName = cn('min-w-0', resolvedUsernameMaxWidth)
@@ -117,40 +112,7 @@ export default function ProfileLink({
     }
   }, [hasLoaded, isOpen, statsAddress])
 
-  const tooltipProfile = useMemo<ProfileForCards>(() => ({
-    username: user.username,
-    avatarUrl: user.image,
-    portfolioAddress: statsAddress,
-  }), [statsAddress, user.image, user.username])
-  const tooltipSnapshot = useMemo<PortfolioSnapshot>(() => ({
-    positionsValue: stats?.positionsValue ?? 0,
-    profitLoss: stats?.profitLoss ?? 0,
-    predictions: stats?.positions ?? 0,
-    biggestWin: stats?.biggestWin ?? 0,
-  }), [stats?.positions, stats?.positionsValue, stats?.profitLoss, stats?.biggestWin])
   const isTooltipLoading = isOpen && !hasLoaded
-
-  const tooltipContent = tooltipVariant === 'activity'
-    ? (
-        <ProfileActivityTooltipCard
-          profile={{
-            username: user.username,
-            avatarUrl: user.image,
-            href: profileHref,
-            joinedAt,
-          }}
-          stats={stats}
-          isLoading={isTooltipLoading}
-        />
-      )
-    : (
-        <ProfileOverviewCard
-          profile={tooltipProfile}
-          snapshot={tooltipSnapshot}
-          useDefaultUserWallet={false}
-          enableLiveValue={false}
-        />
-      )
 
   const dateLabel = date
     ? (
@@ -205,12 +167,21 @@ export default function ProfileLink({
         <div className="min-w-0 flex-1">
           {isInline
             ? (
-                <div className={inlineRowClassName}>
-                  <TooltipTrigger asChild>
-                    {triggerContent}
-                  </TooltipTrigger>
-                  {dateLabel}
-                  {inlineBody ?? null}
+                <div className="flex min-w-0 items-start gap-2">
+                  <div className={inlineRowClassName}>
+                    <TooltipTrigger asChild>
+                      {triggerContent}
+                    </TooltipTrigger>
+                    {inlineBody ?? null}
+                  </div>
+                  {dateLabel || trailing
+                    ? (
+                        <div className="ml-auto flex shrink-0 items-center gap-2">
+                          {dateLabel}
+                          {trailing}
+                        </div>
+                      )
+                    : null}
                 </div>
               )
             : (
@@ -225,7 +196,7 @@ export default function ProfileLink({
             ? <div className="pl-11">{children}</div>
             : null}
         </div>
-        {trailing
+        {!isInline && trailing
           ? (
               <div className="ml-2 flex shrink-0 items-center text-right">
                 {trailing}
@@ -240,7 +211,16 @@ export default function ProfileLink({
         hideArrow
         className="max-w-[90vw] border-none bg-transparent p-0 text-popover-foreground shadow-none md:max-w-96"
       >
-        {tooltipContent}
+        <ProfileActivityTooltipCard
+          profile={{
+            username: user.username,
+            avatarUrl: user.image,
+            href: profileHref,
+            joinedAt,
+          }}
+          stats={stats}
+          isLoading={isTooltipLoading}
+        />
       </TooltipContent>
     </Tooltip>
   )

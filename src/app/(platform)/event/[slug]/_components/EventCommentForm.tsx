@@ -1,79 +1,85 @@
 'use client'
 
 import type { Comment, User } from '@/types'
-import Form from 'next/form'
-import { useActionState, useEffect, useRef } from 'react'
-import { storeCommentAction } from '@/app/(platform)/event/[slug]/_actions/store-comment'
+import { useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { InputError } from '@/components/ui/input-error'
 import { useAppKit } from '@/hooks/useAppKit'
 
 interface EventCommentFormProps {
-  eventId: string
   user: User | null
   onCommentAddedAction: (comment: Comment) => void
+  createComment: (content: string) => Promise<Comment>
+  isCreatingComment: boolean
 }
 
-export default function EventCommentForm({ eventId, user, onCommentAddedAction }: EventCommentFormProps) {
+export default function EventCommentForm({
+  user,
+  onCommentAddedAction,
+  createComment,
+  isCreatingComment,
+}: EventCommentFormProps) {
   const { open } = useAppKit()
-  const formRef = useRef<HTMLFormElement>(null)
-  const [state, formAction, isPending] = useActionState(
-    (_: any, formData: any) => storeCommentAction(eventId, formData),
-    { error: '' },
-  )
+  const [content, setContent] = useState('')
 
-  useEffect(() => {
-    if (state.comment && user) {
-      const commentWithUserData: Comment = {
-        ...state.comment,
-        username: user.username!,
-        user_avatar: `${user.image}`,
-        user_address: user.proxy_wallet_address ?? 'unknown',
-        likes_count: state.comment.likes_count ?? 0,
-        replies_count: state.comment.replies_count ?? 0,
-        created_at: state.comment.created_at instanceof Date
-          ? state.comment.created_at.toISOString()
-          : state.comment.created_at,
-      }
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault()
 
-      onCommentAddedAction(commentWithUserData)
-      formRef.current?.reset()
+    if (isCreatingComment) {
+      return
     }
-  }, [state.comment, user, onCommentAddedAction])
+
+    if (!user) {
+      queueMicrotask(() => open())
+      return
+    }
+
+    const trimmed = content.trim()
+    if (!trimmed) {
+      toast.error('Comment content is required')
+      return
+    }
+    if (trimmed.length > 2000) {
+      toast.error('Comment is too long (max 2000 characters).')
+      return
+    }
+
+    try {
+      const comment = await createComment(trimmed)
+      setContent('')
+      onCommentAddedAction(comment)
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create comment.'
+      toast.error(message)
+    }
+  }
 
   return (
     <div className="mt-4 grid gap-2">
-      <Form
-        ref={formRef}
-        action={formAction}
+      <form
         className="relative"
-        onSubmit={(e) => {
-          if (!user) {
-            e.preventDefault()
-            queueMicrotask(() => open())
-          }
-        }}
+        onSubmit={handleSubmit}
       >
         <Input
           name="content"
           className="h-11 pr-16"
           placeholder="Add a comment"
           required
+          value={content}
+          onChange={e => setContent(e.target.value)}
         />
 
         <Button
           type="submit"
           size="sm"
           className="absolute top-1/2 right-2 -translate-y-1/2 text-xs font-medium"
-          disabled={isPending}
+          disabled={isCreatingComment}
         >
-          {isPending ? 'Posting...' : user ? 'Post' : 'Connect to Post'}
+          {isCreatingComment ? 'Posting...' : user ? 'Post' : 'Connect to Post'}
         </Button>
-      </Form>
-
-      {state.error && <InputError message={state.error} />}
-
+      </form>
     </div>
   )
 }

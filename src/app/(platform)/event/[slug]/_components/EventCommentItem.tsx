@@ -12,7 +12,6 @@ import EventCommentsLoadMoreReplies from './EventCommentsLoadMoreReplies'
 
 interface CommentItemProps {
   comment: Comment
-  eventId: string
   user: any
   onLikeToggle: (commentId: string) => void
   onDelete: (commentId: string) => void
@@ -24,8 +23,9 @@ interface CommentItemProps {
   onRepliesLoaded: (commentId: string) => void
   onDeleteReply: (commentId: string, replyId: string) => void
   onUpdateReply: (commentId: string, replyId: string) => void
-  createReply: (eventId: string, parentCommentId: string, content: string, user?: any) => void
+  createReply: (parentCommentId: string, content: string) => Promise<Comment>
   isCreatingComment: boolean
+  isTogglingLikeForComment: (commentId: string) => boolean
   isLoadingRepliesForComment: (commentId: string) => boolean
   loadRepliesError: Error | null
   retryLoadReplies: (commentId: string) => void
@@ -33,7 +33,6 @@ interface CommentItemProps {
 
 export default function EventCommentItem({
   comment,
-  eventId,
   user,
   onLikeToggle,
   onDelete,
@@ -47,6 +46,7 @@ export default function EventCommentItem({
   onUpdateReply,
   createReply,
   isCreatingComment,
+  isTogglingLikeForComment,
   isLoadingRepliesForComment,
   loadRepliesError,
   retryLoadReplies,
@@ -94,7 +94,6 @@ export default function EventCommentItem({
         }}
         date={comment.created_at}
         joinedAt={comment.user_created_at}
-        tooltipVariant="activity"
       >
         <div className="flex w-full flex-1 gap-3">
           <div className="flex-1">
@@ -111,6 +110,7 @@ export default function EventCommentItem({
                 comment={comment}
                 user={user}
                 onLikeToggled={handleLikeToggle}
+                isSubmitting={isTogglingLikeForComment(comment.id)}
               />
             </div>
           </div>
@@ -128,7 +128,6 @@ export default function EventCommentItem({
                 </DropdownMenuTrigger>
                 <EventCommentMenu
                   comment={comment}
-                  eventId={eventId}
                   onDelete={handleDelete}
                 />
               </DropdownMenu>
@@ -141,7 +140,6 @@ export default function EventCommentItem({
         <div className="mt-3 ml-11">
           <EventCommentReplyForm
             user={user}
-            eventId={eventId}
             parentCommentId={comment.id}
             placeholder={`Reply to ${comment.username}`}
             initialValue={replyText}
@@ -161,7 +159,6 @@ export default function EventCommentItem({
               reply={reply}
               parentUsername={comment.username}
               commentId={comment.id}
-              eventId={eventId}
               user={user}
               onLikeToggle={onUpdateReply}
               onDelete={onDeleteReply}
@@ -171,6 +168,7 @@ export default function EventCommentItem({
               onSetReplyText={onSetReplyText}
               createReply={createReply}
               isCreatingComment={isCreatingComment}
+              isTogglingLikeForComment={isTogglingLikeForComment}
 
             />
           ))}

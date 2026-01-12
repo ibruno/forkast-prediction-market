@@ -1,20 +1,30 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import LiveCommentsStatusIndicator from '@/app/(platform)/event/[slug]/_components/LiveCommentsStatusIndicator'
+import MarketChannelStatusIndicator from '@/app/(platform)/event/[slug]/_components/MarketChannelStatusIndicator'
 import { cn } from '@/lib/utils'
 
 interface EventTabSelectorProps {
   activeTab: string
   setActiveTab: (activeTab: string) => void
-  commentsCount: number
+  commentsCount: number | null
+  liveCommentsStatus: 'connecting' | 'live' | 'offline'
 }
 
-export default function EventTabSelector({ activeTab, setActiveTab, commentsCount }: EventTabSelectorProps) {
+export default function EventTabSelector({
+  activeTab,
+  setActiveTab,
+  commentsCount,
+  liveCommentsStatus,
+}: EventTabSelectorProps) {
   const formattedCommentsCount = useMemo(
-    () => Number(commentsCount ?? 0).toLocaleString('en-US'),
+    () => (commentsCount == null ? null : Number(commentsCount).toLocaleString('en-US')),
     [commentsCount],
   )
-
   const eventTabs = useMemo(() => ([
-    { key: 'comments', label: `Comments (${formattedCommentsCount})` },
+    {
+      key: 'comments',
+      label: formattedCommentsCount == null ? 'Comments' : `Comments (${formattedCommentsCount})`,
+    },
     { key: 'holders', label: 'Top Holders' },
     { key: 'activity', label: 'Activity' },
   ]), [formattedCommentsCount])
@@ -42,35 +52,43 @@ export default function EventTabSelector({ activeTab, setActiveTab, commentsCoun
   }, [activeTab, eventTabs])
 
   return (
-    <ul className="relative mt-3 flex h-8 gap-8 border-b text-sm font-semibold">
-      {eventTabs.map((tab, index) => (
-        <li
-          key={tab.key}
-          ref={(el) => {
-            tabRefs.current[index] = el
-          }}
-          className={cn(
-            'cursor-pointer transition-colors duration-200',
-            activeTab === tab.key
-              ? 'text-foreground'
-              : 'text-muted-foreground hover:text-foreground',
-          )}
-          onClick={() => setActiveTab(tab.key)}
-        >
-          {tab.label}
-        </li>
-      ))}
+    <div className="mt-3 flex items-center justify-between">
+      <ul className="relative flex h-8 gap-8 border-b text-sm font-semibold">
+        {eventTabs.map((tab, index) => (
+          <li
+            key={tab.key}
+            ref={(el) => {
+              tabRefs.current[index] = el
+            }}
+            className={cn(
+              'cursor-pointer transition-colors duration-200',
+              activeTab === tab.key
+                ? 'text-foreground'
+                : 'text-muted-foreground hover:text-foreground',
+            )}
+            onClick={() => setActiveTab(tab.key)}
+          >
+            {tab.label}
+          </li>
+        ))}
 
-      <div
-        className={cn(
-          'absolute bottom-0 h-0.5 bg-primary',
-          isInitialized && 'transition-all duration-300 ease-out',
-        )}
-        style={{
-          left: `${indicatorStyle.left}px`,
-          width: `${indicatorStyle.width}px`,
-        }}
-      />
-    </ul>
+        <div
+          className={cn(
+            'absolute bottom-0 h-0.5 bg-primary',
+            isInitialized && 'transition-all duration-300 ease-out',
+          )}
+          style={{
+            left: `${indicatorStyle.left}px`,
+            width: `${indicatorStyle.width}px`,
+          }}
+        />
+      </ul>
+      {activeTab === 'comments' && (
+        <LiveCommentsStatusIndicator className="-mt-3" status={liveCommentsStatus} />
+      )}
+      {activeTab === 'activity' && (
+        <MarketChannelStatusIndicator className="-mt-3" />
+      )}
+    </div>
   )
 }

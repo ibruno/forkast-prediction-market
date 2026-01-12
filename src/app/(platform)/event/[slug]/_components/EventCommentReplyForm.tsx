@@ -1,26 +1,25 @@
 'use client'
 
-import type { User } from '@/types'
+import type { Comment, User } from '@/types'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 interface EventCommentReplyFormProps {
   user: User | null
-  eventId: string
   parentCommentId: string
   placeholder: string
   initialValue?: string
   onCancel: () => void
   onReplyAddedAction?: () => void
-  createReply: (eventId: string, parentCommentId: string, content: string, user?: any) => void
+  createReply: (parentCommentId: string, content: string) => Promise<Comment>
   isCreatingComment: boolean
 }
 
 export default function EventCommentReplyForm({
   user,
-  eventId,
   parentCommentId,
   placeholder,
   initialValue,
@@ -35,12 +34,21 @@ export default function EventCommentReplyForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!content.trim() || !user) {
+      if (!content.trim()) {
+        toast.error('Reply content is required')
+      }
       return
     }
 
-    createReply(eventId, parentCommentId, content.trim(), user)
-    setContent('')
-    onReplyAddedAction?.()
+    try {
+      await createReply(parentCommentId, content.trim())
+      setContent('')
+      onReplyAddedAction?.()
+    }
+    catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to create reply.'
+      toast.error(message)
+    }
   }
 
   if (!user) {
