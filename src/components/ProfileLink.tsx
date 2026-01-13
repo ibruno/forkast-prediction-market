@@ -130,7 +130,7 @@ export default function ProfileLink({
           alt={user.username}
           width={32}
           height={32}
-          className="rounded-full"
+          className="aspect-square rounded-full object-cover object-center"
         />
         {position && (
           <Badge
@@ -193,7 +193,7 @@ export default function ProfileLink({
                 </div>
               )}
           {!isInline && children
-            ? <div className="pl-11">{children}</div>
+            ? <div className="pl-[3.25rem]">{children}</div>
             : null}
         </div>
         {!isInline && trailing

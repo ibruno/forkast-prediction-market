@@ -42,6 +42,7 @@ const GRID_LINE_OPACITY_DARK = 0.7
 const GRID_LINE_OPACITY_LIGHT = 0.35
 const MIDLINE_OPACITY_DARK = 0.8
 const MIDLINE_OPACITY_LIGHT = 0.45
+const CROSS_FADE_DURATION = 320
 
 export function PredictionChart({
   data: providedData,
@@ -66,11 +67,15 @@ export function PredictionChart({
       && document.documentElement.classList.contains('dark'),
   )
   const [revealProgress, setRevealProgress] = useState(0)
+  const [crossFadeProgress, setCrossFadeProgress] = useState(1)
+  const [crossFadeData, setCrossFadeData] = useState<DataPoint[] | null>(null)
   const revealAnimationFrameRef = useRef<number | null>(null)
+  const crossFadeFrameRef = useRef<number | null>(null)
   const dataSignatureRef = useRef<string | number | null>(null)
   const lastDataUpdateTypeRef = useRef<'reset' | 'append' | 'none'>('reset')
   const hasPointerInteractionRef = useRef(false)
   const lastCursorProgressRef = useRef(0)
+  const previousDataRef = useRef<DataPoint[] | null>(null)
   const normalizedSignature = dataSignature ?? '__default__'
   const clipId = useId().replace(/:/g, '')
   const leftClipId = `${clipId}-left`
@@ -114,9 +119,11 @@ export function PredictionChart({
     showTooltip,
     hideTooltip,
   } = useTooltip<DataPoint>()
+  const plotHeight = Math.max(1, height - margin.top - margin.bottom)
+  const yAxisMinTicks = Math.max(4, Math.min(7, Math.round(plotHeight / 40)))
   const { min: yAxisMin, max: yAxisMax, ticks: yAxisTicks } = useMemo(
-    () => calculateYAxisBounds(data, series),
-    [data, series],
+    () => calculateYAxisBounds(data, series, yAxisMinTicks),
+    [data, series, yAxisMinTicks],
   )
   const domainBounds = useMemo(() => {
     if (!data.length) {
@@ -171,7 +178,7 @@ export function PredictionChart({
 
       return previousPoint ?? nextPoint ?? null
     },
-    [data, series],
+    [data],
   )
 
   const handleTooltip = useCallback(
@@ -413,34 +420,65 @@ export function PredictionChart({
     [revealAnimationFrameRef],
   )
 
+  useEffect(
+    () => () => stopRevealAnimation(crossFadeFrameRef),
+    [crossFadeFrameRef],
+  )
+
   useEffect(() => {
     if (data.length === 0) {
       stopRevealAnimation(revealAnimationFrameRef)
+      stopRevealAnimation(crossFadeFrameRef)
       setRevealProgress(0)
+      setCrossFadeProgress(1)
+      setCrossFadeData(null)
       lastDataUpdateTypeRef.current = 'reset'
+      previousDataRef.current = data
       return
     }
 
     const updateType = lastDataUpdateTypeRef.current
+    const previousData = previousDataRef.current
 
-    if (updateType === 'reset') {
+    if (updateType === 'reset' && previousData && previousData.length > 0) {
       hasPointerInteractionRef.current = false
       lastCursorProgressRef.current = 0
+      stopRevealAnimation(revealAnimationFrameRef)
+      setRevealProgress(1)
+      setCrossFadeData(previousData)
       runRevealAnimation({
         from: 0,
         to: 1,
-        duration: INITIAL_REVEAL_DURATION,
-        frameRef: revealAnimationFrameRef,
-        setProgress: setRevealProgress,
+        duration: CROSS_FADE_DURATION,
+        frameRef: crossFadeFrameRef,
+        setProgress: setCrossFadeProgress,
       })
     }
     else {
-      stopRevealAnimation(revealAnimationFrameRef)
-      setRevealProgress(1)
+      stopRevealAnimation(crossFadeFrameRef)
+      setCrossFadeProgress(1)
+      setCrossFadeData(null)
+
+      if (updateType === 'reset') {
+        hasPointerInteractionRef.current = false
+        lastCursorProgressRef.current = 0
+        runRevealAnimation({
+          from: 0,
+          to: 1,
+          duration: INITIAL_REVEAL_DURATION,
+          frameRef: revealAnimationFrameRef,
+          setProgress: setRevealProgress,
+        })
+      }
+      else {
+        stopRevealAnimation(revealAnimationFrameRef)
+        setRevealProgress(1)
+      }
     }
 
     lastDataUpdateTypeRef.current = 'none'
-  }, [data, revealAnimationFrameRef])
+    previousDataRef.current = data
+  }, [data, revealAnimationFrameRef, crossFadeFrameRef])
 
   useEffect(() => {
     if (typeof document === 'undefined') {
@@ -460,6 +498,12 @@ export function PredictionChart({
 
     return () => observer.disconnect()
   }, [])
+
+  useEffect(() => {
+    if (crossFadeData && crossFadeProgress >= 0.999) {
+      setCrossFadeData(null)
+    }
+  }, [crossFadeData, crossFadeProgress])
 
   const firstFinitePointBySeries = useMemo(() => {
     const result: Record<string, DataPoint | null> = {}
@@ -570,6 +614,9 @@ export function PredictionChart({
   const showEndpointMarkers = Boolean(lastDataPoint)
     && (!tooltipActive || isTooltipAtLastPoint)
     && (mutedPoints.length === 0 || shouldSplitByCursor)
+  const crossFadeActive = Boolean(crossFadeData && crossFadeProgress < 0.999 && !shouldSplitByCursor)
+  const crossFadeIn = crossFadeActive ? crossFadeProgress : 1
+  const crossFadeOut = crossFadeActive ? 1 - crossFadeProgress : 0
   const totalDurationHours = data.length > 1
     ? (data[data.length - 1].date.valueOf() - data[0].date.valueOf()) / 36e5
     : 0
@@ -699,6 +746,8 @@ export function PredictionChart({
   const midlineOpacity = isDarkMode
     ? MIDLINE_OPACITY_DARK
     : MIDLINE_OPACITY_LIGHT
+  const axisLabelColor = gridLineColor
+  const axisLabelOpacity = Math.min(1, gridLineOpacity + 0.25)
   const leadingGapStartMs = leadingGapStart instanceof Date ? leadingGapStart.getTime() : Number.NaN
   const clipPadding = 2
 
@@ -773,6 +822,7 @@ export function PredictionChart({
                 && typeof firstPointTime === 'number'
                 && Number.isFinite(firstPointTime)
                 && leadingGapStartMs < firstPointTime
+              const ghostOpacity = crossFadeOut
               let dashedColoredPoints: DataPoint[] | null = null
               let dashedMutedPoints: DataPoint[] | null = null
 
@@ -796,6 +846,21 @@ export function PredictionChart({
 
               return (
                 <g key={seriesItem.key}>
+                  {crossFadeActive && crossFadeData && crossFadeData.length > 1 && (
+                    <LinePath<DataPoint>
+                      data={crossFadeData}
+                      x={d => xScale(getDate(d))}
+                      y={d => yScale((d[seriesItem.key] as number) || 0)}
+                      stroke={seriesColor}
+                      strokeWidth={2.2}
+                      strokeOpacity={ghostOpacity}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      curve={curveCatmullRom}
+                      fill="transparent"
+                    />
+                  )}
+
                   {dashedMutedPoints && (
                     <LinePath<DataPoint>
                       data={dashedMutedPoints}
@@ -836,11 +901,10 @@ export function PredictionChart({
                             x={d => xScale(getDate(d))}
                             y={d => yScale((d[seriesItem.key] as number) || 0)}
                             stroke={futureLineColor}
-                            strokeWidth={2.4}
-                            strokeDasharray="1 1"
+                            strokeWidth={2.2}
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            strokeOpacity={futureLineOpacity}
+                            strokeOpacity={futureLineOpacity * crossFadeIn}
                             curve={curveCatmullRom}
                             fill="transparent"
                             clipPath={`url(#${rightClipId})`}
@@ -850,9 +914,8 @@ export function PredictionChart({
                             x={d => xScale(getDate(d))}
                             y={d => yScale((d[seriesItem.key] as number) || 0)}
                             stroke={seriesColor}
-                            strokeWidth={2.4}
-                            strokeOpacity={1}
-                            strokeDasharray="1 1"
+                            strokeWidth={2.2}
+                            strokeOpacity={crossFadeIn}
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             curve={curveCatmullRom}
@@ -869,11 +932,10 @@ export function PredictionChart({
                               x={d => xScale(getDate(d))}
                               y={d => yScale((d[seriesItem.key] as number) || 0)}
                               stroke={futureLineColor}
-                              strokeWidth={2.4}
-                              strokeDasharray="1 1"
+                              strokeWidth={2.2}
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              strokeOpacity={futureLineOpacity}
+                              strokeOpacity={futureLineOpacity * crossFadeIn}
                               curve={curveCatmullRom}
                               fill="transparent"
                             />
@@ -885,9 +947,8 @@ export function PredictionChart({
                               x={d => xScale(getDate(d))}
                               y={d => yScale((d[seriesItem.key] as number) || 0)}
                               stroke={seriesColor}
-                              strokeWidth={2.4}
-                              strokeOpacity={1}
-                              strokeDasharray="1 1"
+                              strokeWidth={2.2}
+                              strokeOpacity={crossFadeIn}
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               curve={curveCatmullRom}
@@ -939,12 +1000,13 @@ export function PredictionChart({
               stroke="transparent"
               tickStroke="transparent"
               tickLabelProps={{
-                fill: 'var(--muted-foreground)',
+                fill: axisLabelColor,
                 fontSize: 11,
                 fontFamily: 'Arial, sans-serif',
                 textAnchor: 'start',
                 dy: '0.33em',
                 dx: '0.5em',
+                opacity: axisLabelOpacity,
               }}
               tickLength={0}
             />
@@ -964,11 +1026,12 @@ export function PredictionChart({
                     : 'middle'
 
                 return {
-                  fill: 'var(--muted-foreground)',
+                  fill: axisLabelColor,
                   fontSize: 11,
                   fontFamily: 'Arial, sans-serif',
                   textAnchor,
                   dy: '0.6em',
+                  opacity: axisLabelOpacity,
                 }
               }}
               numTicks={xAxisTickCount}
@@ -1016,6 +1079,7 @@ export function PredictionChart({
                   pointerEvents="none"
                 />
               ))}
+
           </Group>
         </svg>
 
