@@ -52,9 +52,9 @@ export default function ProfileLink({
     flex min-w-0 flex-wrap items-center gap-1 text-foreground
   `
   const resolvedUsernameMaxWidth = usernameMaxWidthClassName
-    ?? (isInline ? 'max-w-none' : 'max-w-32 lg:max-w-64')
+    ?? (isInline ? 'max-w-40 sm:max-w-56 lg:max-w-72' : 'max-w-32 lg:max-w-64')
   const usernameLinkClassName = cn(
-    isInline ? 'block text-sm font-medium' : 'block truncate text-sm font-medium',
+    isInline ? 'block truncate text-sm font-medium' : 'block truncate text-sm font-medium',
     usernameClassName,
   )
   const usernameWrapperClassName = cn('min-w-0', resolvedUsernameMaxWidth)
