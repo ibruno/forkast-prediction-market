@@ -18,12 +18,14 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import {
   Drawer,
   DrawerContent,
+  DrawerDescription,
   DrawerHeader,
   DrawerTitle,
 } from '@/components/ui/drawer'
@@ -220,8 +222,8 @@ function WalletSendForm({
         </button>
       )}
 
-      <form className="space-y-8" onSubmit={onSubmitSend}>
-        <div className="space-y-2">
+      <form className="grid gap-4" onSubmit={onSubmitSend}>
+        <div className="grid gap-2">
           <Label htmlFor="wallet-send-to">Recipient address</Label>
           <div className="relative">
             <Input
@@ -321,7 +323,7 @@ function WalletFundMenu({
   const transferLogos = TRANSFER_PAYMENT_METHODS.map(method => `/images/deposit/transfer/${method}_${logoVariant}.png`)
 
   return (
-    <div className="space-y-3">
+    <div className="grid gap-2">
       <button
         type="button"
         className={`
@@ -488,13 +490,13 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
         <DrawerContent className="max-h-[90vh] w-full bg-background px-0">
           <DrawerHeader className="px-4 pt-4 pb-3">
             <DrawerTitle className="text-center text-2xl font-semibold text-foreground">Deposit</DrawerTitle>
-            <p className="text-center text-sm text-muted-foreground">
+            <DrawerDescription>
               {siteLabel}
               {' '}
               Balance:
               {' '}
               {balanceDisplay}
-            </p>
+            </DrawerDescription>
           </DrawerHeader>
           <div className="border-t" />
           <div className="w-full px-4 pb-4">
@@ -515,21 +517,19 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
         onOpenChange(next)
       }}
     >
-      <DialogContent className="w-full max-w-xl border bg-background p-6">
-        <DialogHeader className="pb-3">
+      <DialogContent className="w-full max-w-xl border bg-background">
+        <DialogHeader>
           <DialogTitle className="text-center text-2xl font-semibold text-foreground">Deposit</DialogTitle>
-          <p className="text-center text-sm text-muted-foreground">
+          <DialogDescription className="text-center">
             {siteLabel}
             {' '}
             Balance:
             {' '}
             {balanceDisplay}
-          </p>
+          </DialogDescription>
         </DialogHeader>
         <div className="border-t" />
-        <div className="space-y-4 pt-4">
-          {content}
-        </div>
+        {content}
       </DialogContent>
     </Dialog>
   )
@@ -553,6 +553,21 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
     onMax,
     isBalanceLoading,
   } = props
+  const siteLabel = siteName ?? process.env.NEXT_PUBLIC_SITE_NAME!
+  const formattedBalance = typeof availableBalance === 'number' && Number.isFinite(availableBalance)
+    ? availableBalance.toLocaleString(undefined, {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    : '0.00'
+  const balanceDisplay = isBalanceLoading
+    ? <Skeleton className="inline-block h-3 w-12 align-middle" />
+    : (
+        <>
+          $
+          {formattedBalance}
+        </>
+      )
 
   const content = (
     <WalletSendForm
@@ -580,10 +595,19 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
               {' '}
               {siteName}
             </DrawerTitle>
+            <DrawerDescription>
+              {siteLabel}
+              {' '}
+              Balance:
+              {' '}
+              {balanceDisplay}
+            </DrawerDescription>
           </DrawerHeader>
           <div className="border-t" />
           <div className="w-full px-4 pb-4">
-            {content}
+            <div className="space-y-4 pt-4">
+              {content}
+            </div>
           </div>
         </DrawerContent>
       </Drawer>
@@ -592,16 +616,22 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-full max-w-xl border bg-background p-6">
-        <DialogHeader className="pb-3">
+      <DialogContent className="w-full max-w-xl border bg-background">
+        <DialogHeader>
           <DialogTitle className="text-center text-foreground">
             Withdraw from
             {' '}
             {siteName}
           </DialogTitle>
+          <DialogDescription className="text-center">
+            {siteLabel}
+            {' '}
+            Balance:
+            {' '}
+            {balanceDisplay}
+          </DialogDescription>
         </DialogHeader>
         <div className="border-t" />
-
         {content}
       </DialogContent>
     </Dialog>
