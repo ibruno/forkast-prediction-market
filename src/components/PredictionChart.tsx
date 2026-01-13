@@ -3,7 +3,7 @@
 import type { ReactElement } from 'react'
 import type { DataPoint, PredictionChartCursorSnapshot, PredictionChartProps, SeriesConfig } from '@/types/PredictionChartTypes'
 import { AxisBottom, AxisRight } from '@visx/axis'
-import { curveLinear } from '@visx/curve'
+import { curveCatmullRom } from '@visx/curve'
 import { localPoint } from '@visx/event'
 import { Group } from '@visx/group'
 import { scaleLinear, scaleTime } from '@visx/scale'
@@ -20,7 +20,6 @@ import {
   DEFAULT_X_AXIS_TICKS,
   INITIAL_REVEAL_DURATION,
   INTERACTION_BASE_REVEAL_DURATION,
-  interpolateSeriesPoint,
   runRevealAnimation,
   snapTimestampToInterval,
   stopRevealAnimation,
@@ -170,7 +169,7 @@ export function PredictionChart({
       const previousPoint = data[index - 1] ?? null
       const nextPoint = data[index] ?? null
 
-      return interpolateSeriesPoint(targetDate, previousPoint, nextPoint, series)
+      return previousPoint ?? nextPoint ?? null
     },
     [data, series],
   )
@@ -803,12 +802,12 @@ export function PredictionChart({
                       x={d => xScale(getDate(d))}
                       y={d => yScale(d[seriesItem.key] as number)}
                       stroke={futureLineColor}
-                      strokeWidth={1.4}
+                      strokeWidth={1.9}
                       strokeDasharray="2 4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeOpacity={futureLineOpacity}
-                      curve={curveLinear}
+                      curve={curveCatmullRom}
                       fill="transparent"
                     />
                   )}
@@ -819,12 +818,12 @@ export function PredictionChart({
                       x={d => xScale(getDate(d))}
                       y={d => yScale(d[seriesItem.key] as number)}
                       stroke={seriesColor}
-                      strokeWidth={1.4}
+                      strokeWidth={1.9}
                       strokeDasharray="2 4"
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeOpacity={0.9}
-                      curve={curveLinear}
+                      curve={curveCatmullRom}
                       fill="transparent"
                     />
                   )}
@@ -837,12 +836,12 @@ export function PredictionChart({
                             x={d => xScale(getDate(d))}
                             y={d => yScale((d[seriesItem.key] as number) || 0)}
                             stroke={futureLineColor}
-                            strokeWidth={1.75}
+                            strokeWidth={2.4}
                             strokeDasharray="1 1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
                             strokeOpacity={futureLineOpacity}
-                            curve={curveLinear}
+                            curve={curveCatmullRom}
                             fill="transparent"
                             clipPath={`url(#${rightClipId})`}
                           />
@@ -851,12 +850,12 @@ export function PredictionChart({
                             x={d => xScale(getDate(d))}
                             y={d => yScale((d[seriesItem.key] as number) || 0)}
                             stroke={seriesColor}
-                            strokeWidth={1.75}
+                            strokeWidth={2.4}
                             strokeOpacity={1}
                             strokeDasharray="1 1"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            curve={curveLinear}
+                            curve={curveCatmullRom}
                             fill="transparent"
                             clipPath={`url(#${leftClipId})`}
                           />
@@ -870,12 +869,12 @@ export function PredictionChart({
                               x={d => xScale(getDate(d))}
                               y={d => yScale((d[seriesItem.key] as number) || 0)}
                               stroke={futureLineColor}
-                              strokeWidth={1.75}
+                              strokeWidth={2.4}
                               strokeDasharray="1 1"
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeOpacity={futureLineOpacity}
-                              curve={curveLinear}
+                              curve={curveCatmullRom}
                               fill="transparent"
                             />
                           )}
@@ -886,12 +885,12 @@ export function PredictionChart({
                               x={d => xScale(getDate(d))}
                               y={d => yScale((d[seriesItem.key] as number) || 0)}
                               stroke={seriesColor}
-                              strokeWidth={1.75}
+                              strokeWidth={2.4}
                               strokeOpacity={1}
                               strokeDasharray="1 1"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              curve={curveLinear}
+                              curve={curveCatmullRom}
                               fill="transparent"
                             />
                           )}
