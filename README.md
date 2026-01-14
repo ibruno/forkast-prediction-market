@@ -4,7 +4,7 @@
 
 [![License: Kuest MIT+Commons](https://img.shields.io/badge/License-Kuest--MIT--Commons-blue.svg)](./LICENSE) [![CI](https://github.com/kuestcom/prediction-market/actions/workflows/ci.yml/badge.svg)](https://github.com/kuestcom/prediction-market/actions/workflows/ci.yml)
 
-[![Kuest Banner](https://i.imgur.com/G9wM4Na.png)](https://kuest.com)
+[![Kuest Banner](https://i.imgur.com/q1edYP5.png)](https://kuest.com)
 
 Open-source project to launch and monetize Web3 prediction markets, inspired by Polymarket, but with full transparency and control.
 
