@@ -2,7 +2,6 @@
 
 import type { User } from '@/types'
 import { useAppKitAccount } from '@reown/appkit/react'
-import { createAuthClient } from 'better-auth/react'
 import { useEffect } from 'react'
 import HeaderDropdownUserMenuAuth from '@/components/HeaderDropdownUserMenuAuth'
 import HeaderDropdownUserMenuGuest from '@/components/HeaderDropdownUserMenuGuest'
@@ -13,10 +12,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useAppKit } from '@/hooks/useAppKit'
 import { useClientMounted } from '@/hooks/useClientMounted'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { authClient } from '@/lib/auth-client'
 import { useTradingOnboarding } from '@/providers/TradingOnboardingProvider'
 import { useUser } from '@/stores/useUser'
 
-const { useSession } = createAuthClient()
+const { useSession } = authClient
 
 export default function HeaderMenu() {
   const isMounted = useClientMounted()
@@ -52,7 +52,8 @@ export default function HeaderMenu() {
   }, [session?.user])
 
   const isAuthenticated = Boolean(user) || isConnected
-  const showSkeleton = !user && (isPending || !isMounted || status === 'connecting' || !isReady)
+  const shouldWaitForAppKit = Boolean(session?.user) && (status === 'connecting' || !isReady)
+  const showSkeleton = !user && (isPending || !isMounted || shouldWaitForAppKit)
 
   if (showSkeleton) {
     return (
