@@ -25,8 +25,8 @@ export default function HeaderPortfolio() {
         asChild
       >
         <Link href="/portfolio">
-          <div className="translate-y-[1px] text-xs leading-tight font-medium text-muted-foreground">Portfolio</div>
-          <div className="-translate-y-[1px] text-base leading-tight font-semibold text-yes">
+          <div className="translate-y-px text-xs leading-tight font-medium text-muted-foreground">Portfolio</div>
+          <div className="-translate-y-px text-base leading-tight font-semibold text-yes">
             {isLoadingValue
               ? <Skeleton className="h-5 w-12" />
               : (
@@ -46,8 +46,8 @@ export default function HeaderPortfolio() {
         asChild
       >
         <Link href="/portfolio">
-          <div className="translate-y-[1px] text-xs leading-tight font-medium text-muted-foreground">Cash</div>
-          <div className="-translate-y-[1px] text-base leading-tight font-semibold text-yes">
+          <div className="translate-y-px text-xs leading-tight font-medium text-muted-foreground">Cash</div>
+          <div className="-translate-y-px text-base leading-tight font-semibold text-yes">
             {isLoadingValue
               ? <Skeleton className="h-5 w-12" />
               : (
