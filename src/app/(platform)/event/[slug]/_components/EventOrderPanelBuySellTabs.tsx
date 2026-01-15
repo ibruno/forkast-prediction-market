@@ -1,3 +1,4 @@
+import type { PointerEvent } from 'react'
 import type { OrderSide, OrderType } from '@/types'
 import { ChevronDownIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
@@ -92,12 +93,20 @@ export default function EventOrderPanelBuySellTabs({
     }
   }
 
-  function handleTypeMenuEnter() {
+  function handleTypeMenuEnter(event: PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'mouse') {
+      return
+    }
+
     clearCloseTimeout()
     setTypeMenuOpen(true)
   }
 
-  function handleTypeMenuLeave() {
+  function handleTypeMenuLeave(event: PointerEvent<HTMLDivElement>) {
+    if (event.pointerType !== 'mouse') {
+      return
+    }
+
     clearCloseTimeout()
     closeTimeoutRef.current = setTimeout(() => {
       setTypeMenuOpen(false)
