@@ -38,16 +38,7 @@ export default function PublicPositionsFilters({
 
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={value => onSortChange(value as SortOption)}>
-            <SelectTrigger
-              className={
-                `
-                  w-auto justify-start gap-2 bg-transparent pr-3 shadow-none
-                  hover:bg-transparent
-                  dark:bg-transparent dark:hover:bg-transparent
-                  [&>svg:last-of-type]:hidden
-                `
-              }
-            >
+            <SelectTrigger className="dark:bg-transparent [&>svg:last-of-type]:hidden">
               <ArrowDownNarrowWideIcon className="size-4 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
@@ -72,13 +63,7 @@ export default function PublicPositionsFilters({
                   type="button"
                   variant="outline"
                   size="icon"
-                  className={
-                    `
-                      shrink-0 rounded-lg bg-transparent shadow-none
-                      hover:bg-muted/70
-                      dark:bg-transparent dark:hover:bg-muted/70
-                    `
-                  }
+                  className="rounded-md dark:bg-transparent"
                   onClick={onMergeClick}
                   aria-label="Merge positions"
                 >

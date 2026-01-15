@@ -41,16 +41,7 @@ export default function PublicActivityFilters({
 
         <div className="flex flex-wrap items-center gap-2 sm:flex-nowrap">
           <Select value={typeFilter} onValueChange={value => onTypeChange(value as ActivityTypeFilter)}>
-            <SelectTrigger
-              className={
-                `
-                  w-auto justify-start gap-2 bg-transparent shadow-none
-                  hover:bg-transparent
-                  dark:bg-transparent dark:hover:bg-transparent
-                  [&>svg:last-of-type]:hidden
-                `
-              }
-            >
+            <SelectTrigger className="dark:bg-transparent [&>svg:last-of-type]:hidden">
               <ListFilterIcon className="size-4 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
@@ -64,16 +55,7 @@ export default function PublicActivityFilters({
           </Select>
 
           <Select value={sortFilter} onValueChange={value => onSortChange(value as ActivitySort)}>
-            <SelectTrigger
-              className={
-                `
-                  w-auto justify-start gap-2 bg-transparent pr-3 shadow-none
-                  hover:bg-transparent
-                  dark:bg-transparent dark:hover:bg-transparent
-                  [&>svg:last-of-type]:hidden
-                `
-              }
-            >
+            <SelectTrigger className="dark:bg-transparent [&>svg:last-of-type]:hidden">
               <ArrowDownNarrowWideIcon className="size-4 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
@@ -89,13 +71,9 @@ export default function PublicActivityFilters({
             type="button"
             variant="outline"
             size="icon"
-            className={`
-              rounded-lg bg-transparent shadow-none
-              hover:bg-transparent
-              dark:bg-transparent dark:hover:bg-transparent
-            `}
             onClick={onExport}
             disabled={disableExport}
+            className="rounded-md dark:bg-transparent"
           >
             <DownloadIcon className="size-4" />
           </Button>
