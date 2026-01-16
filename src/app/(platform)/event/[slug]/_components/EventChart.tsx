@@ -55,6 +55,18 @@ interface TradeFlowLabelItem {
 const tradeFlowMaxItems = 6
 const tradeFlowTtlMs = 8000
 const tradeFlowCleanupIntervalMs = 500
+const tradeFlowTextStrokeStyle = {
+  textShadow: `
+    1px 0 0 var(--background),
+    -1px 0 0 var(--background),
+    0 1px 0 var(--background),
+    0 -1px 0 var(--background),
+    1px 1px 0 var(--background),
+    -1px -1px 0 var(--background),
+    1px -1px 0 var(--background),
+    -1px 1px 0 var(--background)
+  `,
+} as const
 
 const PredictionChart = dynamic<PredictionChartProps>(
   () => import('@/components/PredictionChart'),
@@ -458,11 +470,15 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
                   className="size-2 shrink-0 rounded-full"
                   style={{ backgroundColor: entry.color }}
                 />
-                <span className="inline-flex w-fit items-center gap-0.5 text-xs font-medium text-muted-foreground">
+                <span className="inline-flex w-fit items-center gap-2 text-xs font-medium text-muted-foreground">
                   <span>{entry.name}</span>
-                  <span className="inline-flex w-6 items-baseline justify-end font-semibold tabular-nums">
+                  <span className={`
+                    inline-flex min-w-8 shrink-0 items-baseline justify-end text-sm font-semibold text-foreground
+                    tabular-nums
+                  `}
+                  >
                     {resolvedValue.toFixed(0)}
-                    <span className="text-2xs">%</span>
+                    <span className="ml-0.5 text-sm text-foreground">%</span>
                   </span>
                 </span>
               </div>
@@ -514,6 +530,7 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
                     <span
                       key={item.id}
                       className={`${item.outcome === 'yes' ? 'text-yes' : 'text-no'} animate-trade-flow-rise`}
+                      style={tradeFlowTextStrokeStyle}
                     >
                       +
                       {item.label}
