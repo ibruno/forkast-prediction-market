@@ -8,46 +8,58 @@ import { createSIWEConfig, formatMessage, getAddressFromMessage } from '@reown/a
 import { createAppKit, useAppKitTheme } from '@reown/appkit/react'
 import { generateRandomString } from 'better-auth/crypto'
 import { useTheme } from 'next-themes'
-import { redirect } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { WagmiProvider } from 'wagmi'
 import { AppKitContext, defaultAppKitValue } from '@/hooks/useAppKit'
 import { defaultNetwork, networks, projectId, wagmiAdapter, wagmiConfig } from '@/lib/appkit'
 import { authClient } from '@/lib/auth-client'
+import { IS_BROWSER } from '@/lib/constants'
+import { clearBrowserStorage, clearNonHttpOnlyCookies } from '@/lib/utils'
 import { useUser } from '@/stores/useUser'
 
 let hasInitializedAppKit = false
 let appKitInstance: AppKit | null = null
+const SIWE_TWO_FACTOR_INTENT_COOKIE = 'siwe_2fa_intent'
 
-function isBrowser() {
-  return typeof window !== 'undefined'
-}
-
-function clearAppKitLocalStorage() {
-  if (!isBrowser()) {
+function setSiweTwoFactorIntentCookie() {
+  if (!IS_BROWSER) {
     return
   }
 
-  try {
-    const keysToRemove: string[] = []
-    for (let index = 0; index < window.localStorage.length; index += 1) {
-      const key = window.localStorage.key(index)
-      if (key?.startsWith('@appkit')) {
-        keysToRemove.push(key)
-      }
-    }
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${SIWE_TWO_FACTOR_INTENT_COOKIE}=1; Max-Age=180; Path=/; SameSite=Lax${secure}`
+}
 
-    keysToRemove.forEach((key) => {
-      window.localStorage.removeItem(key)
-    })
+function hasSiweTwoFactorIntentCookie() {
+  if (!IS_BROWSER) {
+    return false
   }
-  catch {
-    //
+
+  return document.cookie
+    .split('; ')
+    .some(cookie => cookie.startsWith(`${SIWE_TWO_FACTOR_INTENT_COOKIE}=`))
+}
+
+function clearSiweTwoFactorIntentCookie() {
+  if (!IS_BROWSER) {
+    return
   }
+
+  const secure = window.location.protocol === 'https:' ? '; Secure' : ''
+  document.cookie = `${SIWE_TWO_FACTOR_INTENT_COOKIE}=; Max-Age=0; Path=/; SameSite=Lax${secure}`
+}
+
+function clearAppKitLocalStorage() {
+  if (!IS_BROWSER) {
+    return
+  }
+
+  clearBrowserStorage()
+  clearNonHttpOnlyCookies()
 }
 
 function initializeAppKitSingleton(themeMode: 'light' | 'dark') {
-  if (hasInitializedAppKit || !isBrowser()) {
+  if (hasInitializedAppKit || !IS_BROWSER) {
     return appKitInstance
   }
 
@@ -113,6 +125,14 @@ function initializeAppKitSingleton(themeMode: 'light' | 'dark') {
               walletAddress: address,
               chainId: defaultNetwork.id,
             })
+            // @ts-expect-error does not recognize twoFactorRedirect
+            if (data?.twoFactorRedirect && typeof window !== 'undefined') {
+              if (window.location.pathname !== '/2fa' && hasSiweTwoFactorIntentCookie()) {
+                clearSiweTwoFactorIntentCookie()
+                window.location.href = '/2fa'
+              }
+              return false
+            }
             return Boolean(data?.success)
           }
           catch {
@@ -123,7 +143,6 @@ function initializeAppKitSingleton(themeMode: 'light' | 'dark') {
           try {
             await authClient.signOut()
             useUser.setState(null)
-            queueMicrotask(() => redirect('/'))
             return true
           }
           catch {
@@ -155,6 +174,9 @@ function initializeAppKitSingleton(themeMode: 'light' | 'dark') {
         },
         onSignOut: () => {
           clearAppKitLocalStorage()
+          if (IS_BROWSER) {
+            window.location.href = '/auth/reset'
+          }
         },
       }),
     })
@@ -185,7 +207,7 @@ export default function AppKitProvider({ children }: { children: ReactNode }) {
   const [AppKitValue, setAppKitValue] = useState(defaultAppKitValue)
 
   useEffect(() => {
-    if (!isBrowser()) {
+    if (!IS_BROWSER) {
       return
     }
 
@@ -197,6 +219,7 @@ export default function AppKitProvider({ children }: { children: ReactNode }) {
       setCanSyncTheme(true)
       setAppKitValue({
         open: async (options) => {
+          setSiweTwoFactorIntentCookie()
           await instance.open(options)
         },
         close: async () => {

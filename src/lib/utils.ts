@@ -2,6 +2,7 @@ import type { ClassValue } from 'clsx'
 import confetti from 'canvas-confetti'
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
+import { IS_BROWSER } from '@/lib/constants'
 
 export const NEW_MARKET_MAX_AGE_DAYS = 7
 const MS_IN_DAY = 86_400_000
@@ -207,4 +208,35 @@ export function calculateWinnings(amount: number, price: number): number {
   }
 
   return amount / price - amount
+}
+
+export function clearBrowserStorage() {
+  if (!IS_BROWSER) {
+    return
+  }
+
+  try {
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+  }
+  catch {
+    //
+  }
+}
+
+export function clearNonHttpOnlyCookies() {
+  if (typeof document === 'undefined') {
+    return
+  }
+
+  const cookies = document.cookie.split(';')
+  cookies.forEach((cookie) => {
+    const name = cookie.split('=')[0]?.trim()
+    if (!name) {
+      return
+    }
+
+    document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`
+    document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax; Secure`
+  })
 }
