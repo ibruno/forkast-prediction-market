@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { fetchUserActivityData, fetchUserPositionsForMarket } from '@/lib/data-api/user'
 import { formatAmountInputValue, fromMicro } from '@/lib/formatters'
+import { buildUmaProposeUrl } from '@/lib/uma'
 import { cn } from '@/lib/utils'
 import { useIsSingleMarket, useOrder } from '@/stores/useOrder'
 import { useUser } from '@/stores/useUser'
@@ -84,9 +85,6 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   const [chancePulseToken, setChancePulseToken] = useState(0)
   const priceHistoryWasFetchingRef = useRef(false)
   const {
-    refresh: handleChanceRefresh,
-    isDisabled: isChanceRefreshDisabled,
-    isRefreshing: isManualChanceRefreshing,
     isFetching: isPriceHistoryFetching,
   } = useChanceRefresh({ queryKeys: chanceRefreshQueryKeys })
   const eventTokenIds = useMemo(() => {
@@ -320,43 +318,9 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   return (
     <>
       <div className="-mx-4 overflow-hidden bg-background lg:mx-0">
-        <div className="relative hidden items-center rounded-t-lg px-4 py-3 lg:flex">
-          <span className="pointer-events-none absolute inset-x-4 bottom-0 block border-b border-border/90" />
-          <div className="w-2/5">
-            <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              OUTCOMES
-            </span>
-          </div>
-          <div className="flex w-1/5 items-center justify-center gap-1">
-            <span className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-              % CHANCE
-            </span>
-            <button
-              type="button"
-              className={cn(
-                `
-                  inline-flex items-center justify-center rounded-sm border border-transparent text-muted-foreground
-                  transition-colors
-                  focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none
-                `,
-                'hover:bg-muted/80 hover:text-foreground',
-                'p-0.5',
-              )}
-              aria-label="Refresh chance data"
-              title="Refresh"
-              onClick={handleChanceRefresh}
-              disabled={isChanceRefreshDisabled}
-            >
-              <RefreshCwIcon
-                className={cn(
-                  'size-3',
-                  isManualChanceRefreshing && 'animate-spin',
-                )}
-              />
-            </button>
-          </div>
-        </div>
-
+        {marketRows.length > 0 && (
+          <div className="mx-2 mt-4 border-b border-border" />
+        )}
         {marketRows
           .map((row, index, orderedMarkets) => {
             const { market } = row
@@ -537,6 +501,8 @@ function MarketDetailTabs({
     return visibleTabs[0]?.id ?? 'orderBook'
   }, [controlledTab, visibleTabs])
 
+  const proposeUrl = useMemo(() => buildUmaProposeUrl(market.condition), [market.condition])
+
   useEffect(() => {
     if (selectedTab !== controlledTab) {
       select(selectedTab)
@@ -626,14 +592,31 @@ function MarketDetailTabs({
         {selectedTab === 'history' && <EventMarketHistory market={market} />}
 
         {selectedTab === 'resolution' && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mb-3"
-            onClick={event => event.stopPropagation()}
-          >
-            Propose resolution
-          </Button>
+          proposeUrl
+            ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-3"
+                  asChild
+                  onClick={event => event.stopPropagation()}
+                >
+                  <a href={proposeUrl} target="_blank" rel="noopener noreferrer">
+                    Propose resolution
+                  </a>
+                </Button>
+              )
+            : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mb-3"
+                  disabled
+                  onClick={event => event.stopPropagation()}
+                >
+                  Propose resolution
+                </Button>
+              )
         )}
       </div>
     </div>
