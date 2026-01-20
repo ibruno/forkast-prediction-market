@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import type { Event } from '@/types'
 import { CheckIcon, HandCoinsIcon, LinkIcon } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -32,43 +33,49 @@ export default function EventShare({ event }: EventShareProps) {
   const [affiliateSharePercent, setAffiliateSharePercent] = useState<number | null>(null)
   const [shareMenuOpen, setShareMenuOpen] = useState(false)
   const copyTimeoutRef = useRef<number | null>(null)
-  const hoverCloseTimeoutRef = useRef<number | null>(null)
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const user = useUser()
   const affiliateCode = user?.affiliate_code?.trim() ?? ''
   const isMultiMarket = event.total_markets_count > 1
 
-  const clearHoverCloseTimeout = useCallback(() => {
-    if (hoverCloseTimeoutRef.current) {
-      window.clearTimeout(hoverCloseTimeoutRef.current)
-      hoverCloseTimeoutRef.current = null
+  function relatedTargetIsWithin(ref: RefObject<HTMLElement | null>, relatedTarget: EventTarget | null) {
+    if (!relatedTarget) {
+      return false
     }
-  }, [])
 
-  const handleShareMenuOpen = useCallback(() => {
-    clearHoverCloseTimeout()
+    return Boolean(ref.current?.contains(relatedTarget as Node))
+  }
+
+  function clearCloseTimeout() {
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current)
+      closeTimeoutRef.current = null
+    }
+  }
+
+  function handleWrapperPointerEnter() {
+    clearCloseTimeout()
     setShareMenuOpen(true)
-  }, [clearHoverCloseTimeout])
+  }
 
-  const handleShareMenuClose = useCallback(() => {
-    clearHoverCloseTimeout()
-    setShareMenuOpen(false)
-  }, [clearHoverCloseTimeout])
+  function handleWrapperPointerLeave(event: React.PointerEvent) {
+    if (relatedTargetIsWithin(wrapperRef, event.relatedTarget)) {
+      return
+    }
 
-  const scheduleShareMenuClose = useCallback(() => {
-    clearHoverCloseTimeout()
-    hoverCloseTimeoutRef.current = window.setTimeout(() => {
+    clearCloseTimeout()
+    closeTimeoutRef.current = setTimeout(() => {
       setShareMenuOpen(false)
     }, 120)
-  }, [clearHoverCloseTimeout])
+  }
 
   useEffect(() => {
     return () => {
       if (copyTimeoutRef.current) {
         window.clearTimeout(copyTimeoutRef.current)
       }
-      if (hoverCloseTimeoutRef.current) {
-        window.clearTimeout(hoverCloseTimeoutRef.current)
-      }
+      clearCloseTimeout()
     }
   }, [])
 
@@ -161,73 +168,76 @@ export default function EventShare({ event }: EventShareProps) {
 
   if (isMultiMarket) {
     return (
-      <DropdownMenu
-        open={shareMenuOpen}
-        onOpenChange={(open) => {
-          clearHoverCloseTimeout()
-          setShareMenuOpen(open)
-        }}
+      <div
+        ref={wrapperRef}
+        onPointerEnter={handleWrapperPointerEnter}
+        onPointerLeave={handleWrapperPointerLeave}
       >
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className={cn(headerIconButtonClass, 'size-auto p-0')}
-            aria-label="Copy event link"
-            onPointerEnter={handleShareMenuOpen}
-            onPointerLeave={scheduleShareMenuClose}
-          >
-            <LinkIcon className="size-4 -scale-x-100" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="bottom"
-          align="end"
-          sideOffset={8}
-          collisionPadding={16}
-          onPointerEnter={handleShareMenuOpen}
-          onPointerLeave={handleShareMenuClose}
-          className="scrollbar-hide max-h-80 w-48 border border-border bg-background p-2 text-foreground shadow-xl"
+        <DropdownMenu
+          open={shareMenuOpen}
+          onOpenChange={(open) => {
+            clearCloseTimeout()
+            setShareMenuOpen(open)
+          }}
+          modal={false}
         >
-          <DropdownMenuItem
-            onSelect={(menuEvent) => {
-              menuEvent.preventDefault()
-              void handleCopy('event', `/event/${event.slug}`)
-            }}
-            className={cn(
-              'rounded-md px-3 py-2 text-sm font-semibold transition-colors',
-              copiedKey === 'event' ? 'text-foreground' : 'text-muted-foreground',
-              'hover:bg-muted/70 hover:text-foreground focus:bg-muted',
-            )}
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className={cn(headerIconButtonClass, 'size-auto p-0')}
+              aria-label="Copy event link"
+            >
+              <LinkIcon className="size-4 -scale-x-100" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="bottom"
+            align="end"
+            sideOffset={8}
+            collisionPadding={16}
+            className="scrollbar-hide max-h-80 w-48 border border-border bg-background p-2 text-foreground shadow-xl"
           >
-            {copiedKey === 'event' ? 'Copied!' : 'Copy link'}
-          </DropdownMenuItem>
-          <DropdownMenuSeparator className="my-2 bg-border" />
-          {event.markets
-            .filter(market => market.slug)
-            .map((market) => {
-              const label = getMarketSeriesLabel(market)
-              const key = `market-${market.condition_id}`
-              return (
-                <DropdownMenuItem
-                  key={market.condition_id}
-                  onSelect={(menuEvent) => {
-                    menuEvent.preventDefault()
-                    void handleCopy(key, `/event/${event.slug}/${market.slug}`)
-                  }}
-                  className={cn(
-                    'rounded-md px-3 py-2 text-sm font-semibold transition-colors',
-                    copiedKey === key ? 'text-foreground' : 'text-muted-foreground',
-                    'hover:bg-muted/70 hover:text-foreground focus:bg-muted',
-                  )}
-                >
-                  {copiedKey === key ? 'Copied!' : label}
-                </DropdownMenuItem>
-              )
-            })}
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuItem
+              onSelect={(menuEvent) => {
+                menuEvent.preventDefault()
+                void handleCopy('event', `/event/${event.slug}`)
+              }}
+              className={cn(
+                'rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+                copiedKey === 'event' ? 'text-foreground' : 'text-muted-foreground',
+                'hover:bg-muted/70 hover:text-foreground focus:bg-muted',
+              )}
+            >
+              {copiedKey === 'event' ? 'Copied!' : 'Copy link'}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator className="my-2 bg-border" />
+            {event.markets
+              .filter(market => market.slug)
+              .map((market) => {
+                const label = getMarketSeriesLabel(market)
+                const key = `market-${market.condition_id}`
+                return (
+                  <DropdownMenuItem
+                    key={market.condition_id}
+                    onSelect={(menuEvent) => {
+                      menuEvent.preventDefault()
+                      void handleCopy(key, `/event/${event.slug}/${market.slug}`)
+                    }}
+                    className={cn(
+                      'rounded-md px-3 py-2 text-sm font-semibold transition-colors',
+                      copiedKey === key ? 'text-foreground' : 'text-muted-foreground',
+                      'hover:bg-muted/70 hover:text-foreground focus:bg-muted',
+                    )}
+                  >
+                    {copiedKey === key ? 'Copied!' : label}
+                  </DropdownMenuItem>
+                )
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     )
   }
 
