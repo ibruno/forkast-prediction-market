@@ -118,15 +118,15 @@ export default function EventMetaInformation({ event }: EventMetaInformationProp
                 <span className="text-sm font-semibold text-foreground">Winner-take-all</span>
                 <div className="flex flex-col gap-2 text-muted-foreground">
                   <div className="flex items-start gap-2">
-                    <CheckIcon className="mt-0.5 size-4 text-primary" />
+                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary" />
                     <span>Only 1 winner</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckIcon className="mt-0.5 size-4 text-primary" />
+                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-primary" />
                     <span>Supports negative risk (convert No shares to Yes of the other options)</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <PlusIcon className="mt-0.5 size-4 text-primary" />
+                    <PlusIcon className="mt-0.5 size-4 shrink-0 text-primary" />
                     <span>
                       <span className="font-semibold text-foreground">Complete negative risk</span>
                       {' '}
