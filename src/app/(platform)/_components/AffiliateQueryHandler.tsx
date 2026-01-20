@@ -18,5 +18,5 @@ export default function AffiliateQueryHandler() {
     window.location.replace(redirectUrl)
   }, [])
 
-  return null
+  return <></>
 }

@@ -1,3 +1,4 @@
+import AffiliateQueryHandler from '@/app/(platform)/_components/AffiliateQueryHandler'
 import Header from '@/app/(platform)/_components/Header'
 import NavigationTabs from '@/app/(platform)/_components/NavigationTabs'
 import { FilterProvider } from '@/app/(platform)/_providers/FilterProvider'
@@ -12,6 +13,7 @@ export default async function PlatformLayout({ children }: LayoutProps<'/'>) {
           <Header />
           <NavigationTabs />
           {children}
+          <AffiliateQueryHandler />
         </FilterProvider>
       </TradingOnboardingProvider>
     </AppProviders>
