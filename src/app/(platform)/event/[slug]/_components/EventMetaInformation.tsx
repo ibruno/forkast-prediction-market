@@ -77,6 +77,7 @@ export default function EventMetaInformation({ event }: EventMetaInformationProp
   }, [event.volume, volumeFromApi])
 
   const isNegRiskEnabled = Boolean(event.enable_neg_risk || event.neg_risk)
+  const isNegRiskAugmented = Boolean(event.neg_risk_augmented)
   const shouldShowNew = event.markets.some(
     market => isMarketNew(market.created_at),
   )
@@ -133,14 +134,16 @@ export default function EventMetaInformation({ event }: EventMetaInformationProp
                     <CheckIcon className="mt-0.5 size-5 shrink-0 text-primary" />
                     <span className="text-foreground">Supports negative risk (convert No shares to Yes of the other options)</span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <PlusIcon className="mt-0.5 size-5 shrink-0 text-primary" />
-                    <span>
-                      <span className="font-bold text-foreground">Complete negative risk</span>
-                      {' '}
-                      (users who convert will receive Yes shares in any outcomes added in the future)
-                    </span>
-                  </div>
+                  {isNegRiskAugmented && (
+                    <div className="flex items-start gap-3">
+                      <PlusIcon className="mt-0.5 size-5 shrink-0 text-primary" />
+                      <span>
+                        <span className="font-bold text-foreground">Complete negative risk</span>
+                        {' '}
+                        (users who convert will receive Yes shares in any outcomes added in the future)
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </TooltipContent>
