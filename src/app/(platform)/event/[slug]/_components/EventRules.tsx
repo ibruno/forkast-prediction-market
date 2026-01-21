@@ -116,23 +116,23 @@ export default function EventRules({ event }: EventRulesProps) {
   const proposeUrl = proposeTarget?.url ?? null
   const resolutionSourceUrl = (() => {
     const value = primaryMarket?.resolution_source_url?.trim() ?? ''
-    if (!value) {
+    if (!value || value.toLowerCase() === 'n/a') {
       return ''
     }
     const href = value.startsWith('http') ? value : `https://${value}`
     try {
       const url = new URL(href)
       return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : ''
-    } catch {
+    }
+    catch {
       return ''
     }
   })()
-  const normalizedResolutionSourceUrl = resolutionSourceUrl.toLowerCase()
   const formattedRules = formatRules(event.rules ?? '')
   const createdAtLabel = formatCreatedAt(event.created_at)
   const normalizedResolverAddress = normalizeAddress(resolverAddress)?.toLowerCase()
   const isUmaResolver = normalizedResolverAddress ? UMA_RESOLVER_ADDRESS_SET.has(normalizedResolverAddress) : false
-  const hasResolutionSourceUrl = Boolean(resolutionSourceUrl) && normalizedResolutionSourceUrl !== 'n/a'
+  const hasResolutionSourceUrl = Boolean(resolutionSourceUrl)
   const resolverBadgeClassName = isUmaResolver
     ? 'bg-transparent'
     : `bg-linear-to-r ${resolverGradient}`
