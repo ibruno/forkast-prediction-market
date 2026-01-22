@@ -24,7 +24,11 @@ export default function EventCardMarketsList({
         >
           <Link
             href={`/event/${event.slug}/${market.slug}`}
-            className="truncate text-[13px] font-medium underline-offset-2 hover:underline dark:text-white"
+            className={`
+              block min-w-0 flex-1 truncate text-[13px] font-medium underline-offset-2
+              hover:underline
+              dark:text-white
+            `}
             title={market.short_title || market.title}
           >
             {market.short_title || market.title}
