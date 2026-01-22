@@ -31,6 +31,7 @@ const UMA_RESOLVER_ADDRESS_SET = new Set(
   ].map(address => address.toLowerCase()),
 )
 const RULES_URL_REGEX = /((?:https?:\/\/|www\.)[^\s<>"']+)/g
+const RULES_URL_TRAILING_PUNCTUATION_REGEX = /([)\].,!?;:]+)$/
 
 function getResolverGradient(address?: string) {
   if (!address) {
@@ -90,17 +91,39 @@ export default function EventRules({ event }: EventRulesProps) {
 
     return text.split(RULES_URL_REGEX).map((part, index) => {
       if (index % 2 === 1) {
-        const href = part.startsWith('http') ? part : `https://${part}`
+        const trailingPunctuationMatch = part.match(RULES_URL_TRAILING_PUNCTUATION_REGEX)
+        const trailingPunctuationCandidate = trailingPunctuationMatch?.[1] ?? ''
+        const urlCandidate = trailingPunctuationCandidate
+          ? part.slice(0, -trailingPunctuationCandidate.length)
+          : part
+        const hrefCandidate = urlCandidate.startsWith('http') ? urlCandidate : `https://${urlCandidate}`
+        let trailingPunctuation = ''
+        let urlPart = part
+        try {
+          const parsedUrl = new URL(hrefCandidate)
+          if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+            throw new Error('Invalid protocol')
+          }
+          urlPart = urlCandidate
+          trailingPunctuation = trailingPunctuationCandidate
+        }
+        catch {
+          //
+        }
+        const href = urlPart.startsWith('http') ? urlPart : `https://${urlPart}`
+
         return (
-          <a
-            key={`rules-link-${index}`}
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:opacity-80"
-          >
-            {part}
-          </a>
+          <span key={`rules-link-${index}`}>
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:opacity-80"
+            >
+              {trailingPunctuation ? urlPart : part}
+            </a>
+            {trailingPunctuation || null}
+          </span>
         )
       }
       return part
@@ -262,11 +285,11 @@ export default function EventRules({ event }: EventRulesProps) {
         <div className="overflow-hidden border-t border-border/30 px-3 pb-3">
           <div className="space-y-2 pt-3">
             {formattedRules && (
-              <div className="text-sm leading-relaxed whitespace-pre-line text-white">
+              <div className="text-sm leading-relaxed whitespace-pre-line text-foreground">
                 {renderRulesTextWithLinks(formattedRules)}
               </div>
             )}
-            <p className="mt-4 text-sm text-white">
+            <p className="mt-4 text-sm text-foreground">
               <span className="font-semibold">Created At:</span>
               {' '}
               {createdAtLabel}
