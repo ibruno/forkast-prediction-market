@@ -5,7 +5,7 @@ import type { OrderBookSummariesResponse } from '@/app/(platform)/event/[slug]/_
 import type { DataApiActivity } from '@/lib/data-api/user'
 import type { Event, UserPosition } from '@/types'
 import { useQuery } from '@tanstack/react-query'
-import { RefreshCwIcon } from 'lucide-react'
+import { LockKeyhole, RefreshCwIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import SellPositionModal from '@/app/(platform)/_components/SellPositionModal'
 import EventMarketCard from '@/app/(platform)/event/[slug]/_components/EventMarketCard'
@@ -23,8 +23,8 @@ import { useUserShareBalances } from '@/app/(platform)/event/[slug]/_hooks/useUs
 import { calculateMarketFill, normalizeBookLevels } from '@/app/(platform)/event/[slug]/_utils/EventOrderPanelUtils'
 import { Button } from '@/components/ui/button'
 import { ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
-import { fetchUserActivityData, fetchUserPositionsForMarket } from '@/lib/data-api/user'
-import { formatAmountInputValue, fromMicro } from '@/lib/formatters'
+import { fetchUserActivityData, fetchUserOtherBalance, fetchUserPositionsForMarket } from '@/lib/data-api/user'
+import { formatAmountInputValue, formatSharesLabel, fromMicro } from '@/lib/formatters'
 import { buildUmaProposeUrl } from '@/lib/uma'
 import { cn } from '@/lib/utils'
 import { useIsSingleMarket, useOrder } from '@/stores/useOrder'
@@ -66,6 +66,8 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   const inputRef = useOrder(state => state.inputRef)
   const user = useUser()
   const isSingleMarket = useIsSingleMarket()
+  const isNegRiskEnabled = Boolean(event.enable_neg_risk || event.neg_risk)
+  const isNegRiskAugmented = Boolean(event.neg_risk_augmented)
   const { rows: marketRows, hasChanceData } = useEventMarketRows(event)
   const {
     expandedMarketId,
@@ -128,6 +130,46 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
         signal,
       }),
   })
+  const { data: otherBalances } = useQuery({
+    queryKey: ['event-other-balance', ownerAddress, event.slug],
+    enabled: Boolean(ownerAddress && isNegRiskAugmented && userPositions),
+    staleTime: 1000 * 60,
+    gcTime: 1000 * 60 * 10,
+    queryFn: ({ signal }) =>
+      fetchUserOtherBalance({
+        eventSlug: event.slug,
+        userAddress: ownerAddress,
+        signal,
+      }),
+  })
+  const otherShares = useMemo(() => {
+    if (!otherBalances?.length) {
+      return 0
+    }
+    return otherBalances.reduce((total, entry) => {
+      const size = typeof entry.size === 'number' ? entry.size : 0
+      return total + (Number.isFinite(size) ? size : 0)
+    }, 0)
+  }, [otherBalances])
+  const shouldShowOtherRow = isNegRiskAugmented && otherShares > 0
+  const { data: eventOpenOrdersData } = useUserOpenOrdersQuery({
+    userId: user?.id,
+    eventSlug: event.slug,
+    enabled: Boolean(user?.id),
+  })
+  const openOrdersCountByCondition = useMemo(() => {
+    const pages = eventOpenOrdersData?.pages ?? []
+    return pages.reduce<Record<string, number>>((acc, page) => {
+      page.data.forEach((order) => {
+        const conditionId = order.market?.condition_id
+        if (!conditionId) {
+          return
+        }
+        acc[conditionId] = (acc[conditionId] ?? 0) + 1
+      })
+      return acc
+    }, {})
+  }, [eventOpenOrdersData?.pages])
   const positionTagsByCondition = useMemo(() => {
     if (!userPositions?.length) {
       return {}
@@ -206,6 +248,63 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
       return acc
     }, {})
   }, [event.markets, userPositions])
+
+  const convertOptions = useMemo(() => {
+    if (!isNegRiskEnabled || !userPositions?.length) {
+      return []
+    }
+
+    const marketsByConditionId = new Map(
+      event.markets.map(market => [market.condition_id, market]),
+    )
+
+    return userPositions.reduce<Array<{ id: string, label: string, shares: number, conditionId: string }>>(
+      (options, position, index) => {
+        const conditionId = position.market?.condition_id
+        if (!conditionId) {
+          return options
+        }
+        const market = marketsByConditionId.get(conditionId)
+        if (!market) {
+          return options
+        }
+
+        const normalizedOutcome = position.outcome_text?.toLowerCase()
+        const explicitOutcomeIndex = typeof position.outcome_index === 'number' ? position.outcome_index : undefined
+        const resolvedOutcomeIndex = explicitOutcomeIndex != null
+          ? explicitOutcomeIndex
+          : normalizedOutcome === 'no'
+            ? OUTCOME_INDEX.NO
+            : OUTCOME_INDEX.YES
+        if (resolvedOutcomeIndex !== OUTCOME_INDEX.NO) {
+          return options
+        }
+
+        const quantity = toNumber(position.size)
+          ?? (typeof position.total_shares === 'number' ? position.total_shares : 0)
+        if (!(quantity > 0)) {
+          return options
+        }
+
+        options.push({
+          id: `${conditionId}-no-${index}`,
+          label: market.short_title || market.title,
+          conditionId,
+          shares: quantity,
+        })
+        return options
+      },
+      [],
+    )
+  }, [event.markets, isNegRiskEnabled, userPositions])
+
+  const eventOutcomes = useMemo(() => {
+    return event.markets.map(market => ({
+      conditionId: market.condition_id,
+      questionId: market.question_id,
+      label: market.short_title || market.title,
+    }))
+  }, [event.markets])
 
   const handleCashOut = useCallback(async (market: Event['markets'][number], tag: MarketPositionTag) => {
     const outcome = market.outcomes.find(item => item.outcome_index === tag.outcomeIndex)
@@ -318,7 +417,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   return (
     <>
       <div className="-mx-4 bg-background lg:mx-0">
-        {marketRows.length > 0 && (
+        {(marketRows.length > 0 || shouldShowOtherRow) && (
           <div className="mt-4 mr-2 ml-4 border-b border-border lg:mx-0" />
         )}
         {marketRows
@@ -333,6 +432,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
               ? selectedOutcome.outcome_index
               : null
             const positionTags = positionTagsByCondition[market.condition_id] ?? []
+            const shouldShowSeparator = index !== orderedMarkets.length - 1 || shouldShowOtherRow
 
             return (
               <div key={market.condition_id} className="transition-colors">
@@ -346,6 +446,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                   onBuy={(cardMarket, outcomeIndex, source) => handleBuy(cardMarket, outcomeIndex, source)}
                   chanceHighlightKey={chanceHighlightKey}
                   positionTags={positionTags}
+                  openOrdersCount={openOrdersCountByCondition[market.condition_id] ?? 0}
                   onCashOut={handleCashOut}
                 />
 
@@ -362,6 +463,10 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                     market={market}
                     event={event}
                     isMobile={isMobile}
+                    isNegRiskEnabled={isNegRiskEnabled}
+                    isNegRiskAugmented={isNegRiskAugmented}
+                    convertOptions={convertOptions}
+                    eventOutcomes={eventOutcomes}
                     activeOutcomeForMarket={activeOutcomeForMarket}
                     tabController={{
                       selected: getSelectedDetailTab(market.condition_id),
@@ -377,12 +482,20 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                   />
                 </div>
 
-                {index !== orderedMarkets.length - 1 && (
+                {shouldShowSeparator && (
                   <div className="mr-2 ml-4 border-b border-border lg:mx-0" />
                 )}
               </div>
             )
           })}
+        {shouldShowOtherRow && (
+          <div className="transition-colors">
+            <OtherOutcomeRow shares={otherShares} showMarketIcon={Boolean(event.show_market_icons)} />
+          </div>
+        )}
+        {(marketRows.length > 0 || shouldShowOtherRow) && (
+          <div className="mr-2 mb-4 ml-4 border-b border-border lg:mx-0" />
+        )}
       </div>
 
       {cashOutPayload && (
@@ -405,10 +518,60 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   )
 }
 
+function OtherOutcomeRow({ shares, showMarketIcon }: { shares: number, showMarketIcon?: boolean }) {
+  const sharesLabel = formatSharesLabel(shares, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })
+
+  return (
+    <div
+      className={cn(
+        `
+          relative z-0 flex w-full cursor-default flex-col items-start py-3 pr-2 pl-4 transition-all duration-200
+          ease-in-out
+          before:pointer-events-none before:absolute before:inset-y-0 before:-right-3 before:-left-3 before:-z-10
+          before:rounded-lg before:bg-black/5 before:opacity-0 before:transition-opacity before:duration-200
+          before:content-['']
+          hover:before:opacity-100
+          lg:flex-row lg:items-center lg:rounded-lg lg:px-0
+          dark:before:bg-white/5
+        `,
+      )}
+    >
+      <div className="flex w-full flex-col gap-2 lg:w-2/5">
+        <div className="flex items-start gap-3">
+          {showMarketIcon && (
+            <div className="size-10.5 shrink-0 rounded-md bg-muted/60" aria-hidden="true" />
+          )}
+          <div className="text-sm font-bold text-foreground">Other</div>
+        </div>
+        <div>
+          <span className={cn(
+            `
+              inline-flex items-center gap-1 rounded-sm bg-yes/15 px-1.5 py-0.5 text-xs leading-tight font-semibold
+              text-yes-foreground
+            `,
+          )}
+          >
+            <LockKeyhole className="size-3 text-yes" />
+            <span className="tabular-nums">{sharesLabel}</span>
+            <span>Yes</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface MarketDetailTabsProps {
   market: Event['markets'][number]
   event: Event
   isMobile: boolean
+  isNegRiskEnabled: boolean
+  isNegRiskAugmented: boolean
+  convertOptions: Array<{ id: string, label: string, shares: number, conditionId: string }>
+  eventOutcomes: Array<{ conditionId: string, questionId?: string, label: string }>
   activeOutcomeForMarket: Event['markets'][number]['outcomes'][number] | undefined
   tabController: {
     selected: MarketDetailTab | undefined
@@ -427,6 +590,10 @@ function MarketDetailTabs({
   market,
   event,
   isMobile,
+  isNegRiskEnabled,
+  isNegRiskAugmented,
+  convertOptions,
+  eventOutcomes,
   activeOutcomeForMarket,
   tabController,
   orderBookData,
@@ -585,7 +752,16 @@ function MarketDetailTabs({
           />
         )}
 
-        {selectedTab === 'positions' && <EventMarketPositions market={market} />}
+        {selectedTab === 'positions' && (
+          <EventMarketPositions
+            market={market}
+            isNegRiskEnabled={isNegRiskEnabled}
+            isNegRiskAugmented={isNegRiskAugmented}
+            convertOptions={convertOptions}
+            eventOutcomes={eventOutcomes}
+            negRiskMarketId={event.neg_risk_market_id}
+          />
+        )}
 
         {selectedTab === 'openOrders' && <EventMarketOpenOrders market={market} eventSlug={event.slug} />}
 
