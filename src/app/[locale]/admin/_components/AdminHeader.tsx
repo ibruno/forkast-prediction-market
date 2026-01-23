@@ -1,4 +1,3 @@
-import { Suspense } from 'react'
 import HeaderDropdownUserMenuAuth from '@/components/HeaderDropdownUserMenuAuth'
 import HeaderLogo from '@/components/HeaderLogo'
 
@@ -9,9 +8,7 @@ export default async function AdminHeader() {
         <HeaderLogo />
         <span>Admin</span>
         <div className="ms-auto flex shrink-0 items-center gap-1 sm:gap-2 lg:gap-4">
-          <Suspense fallback={null}>
-            <HeaderDropdownUserMenuAuth />
-          </Suspense>
+          <HeaderDropdownUserMenuAuth />
         </div>
       </div>
     </header>
