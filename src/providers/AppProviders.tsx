@@ -6,7 +6,6 @@ import { ThemeProvider } from 'next-themes'
 import dynamic from 'next/dynamic'
 import { Toaster } from '@/components/ui/sonner'
 import AppKitProvider from '@/providers/AppKitProvider'
-import IntlProvider from '@/providers/IntlProvider'
 import ProgressIndicatorProvider from '@/providers/ProgressIndicatorProvider'
 
 const SpeedInsights = dynamic(
@@ -39,21 +38,19 @@ export function AppProviders({ children, disableAppKit }: AppProvidersProps) {
 
   return (
     <ProgressIndicatorProvider>
-      <IntlProvider>
-        <ThemeProvider attribute="class">
-          <QueryClientProvider client={queryClient}>
-            {shouldLoadAppKit
-              ? (
-                  <AppKitProvider>
-                    {content}
-                  </AppKitProvider>
-                )
-              : (
-                  content
-                )}
-          </QueryClientProvider>
-        </ThemeProvider>
-      </IntlProvider>
+      <ThemeProvider attribute="class">
+        <QueryClientProvider client={queryClient}>
+          {shouldLoadAppKit
+            ? (
+                <AppKitProvider>
+                  {content}
+                </AppKitProvider>
+              )
+            : (
+                content
+              )}
+        </QueryClientProvider>
+      </ThemeProvider>
     </ProgressIndicatorProvider>
   )
 }

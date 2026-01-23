@@ -1,12 +1,12 @@
 'use client'
 
+import type { Route } from 'next'
 import { useDisconnect } from '@reown/appkit-controllers/react'
 import { ChevronDownIcon } from 'lucide-react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { redirect, usePathname } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { useFilters } from '@/app/(platform)/_providers/FilterProvider'
+import { useFilters } from '@/app/[locale]/(platform)/_providers/FilterProvider'
 import HeaderPortfolio from '@/components/HeaderPortfolio'
 import ThemeSelector from '@/components/ThemeSelector'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import UserInfoSection from '@/components/UserInfoSection'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { Link } from '@/i18n/navigation'
 import { useUser } from '@/stores/useUser'
 
 export default function HeaderDropdownUserMenuAuth() {
@@ -67,7 +68,7 @@ export default function HeaderDropdownUserMenuAuth() {
 
   function handleWatchlistClick() {
     updateFilters({ bookmarked: !filters.bookmarked })
-    queueMicrotask(() => redirect('/'))
+    queueMicrotask(() => redirect('/' as Route))
   }
 
   function handleMenuClose() {
