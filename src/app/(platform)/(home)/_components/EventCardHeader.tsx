@@ -19,7 +19,7 @@ export default function EventCardHeader({
 }: EventCardHeaderProps) {
   return (
     <div className="mb-3 flex items-start justify-between">
-      <Link href={`/event/${event.slug}`} className="flex flex-1 items-center gap-2 pr-2">
+      <Link href={`/event/${event.slug}`} className="flex flex-1 items-start gap-2 pr-2">
         <div
           className={`
             flex size-10 shrink-0 items-center justify-center overflow-hidden rounded bg-muted text-muted-foreground
