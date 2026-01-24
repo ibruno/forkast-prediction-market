@@ -1,7 +1,29 @@
 {
   "Header": {
-    "deposit": "Depositar",
-    "logIn": "Iniciar sesión",
-    "signUp": "Registrarse"
+    "39AHJm": "Registrarse",
+    "r2Jjms": "Iniciar sesión",
+    "y0EYpw": "Recompensas",
+    "isGKnz": "Documentación",
+    "UhkSyx": "Términos de uso",
+    "dIgBOz": "Depósito",
+    "itPgxd": "Perfil",
+    "tfQoB8": "Afiliado",
+    "iHN12u": "Administrador",
+    "C81/uG": "Cerrar sesión"
+  },
+  "HowItWorks": {
+    "LgUcDX": "1. Elige un mercado",
+    "cgJoBQ": "Compra acciones de ‘Sí’ o ‘No’ según lo que honestamente creas que ocurrirá. Los precios se mueven en tiempo real a medida que otros traders operan.",
+    "AVPToY": "Ilustración que muestra cómo elegir un mercado",
+    "9+Ddtu": "Siguiente",
+    "jErCT8": "2. Realiza tu operación",
+    "Kg6WFz": "Agrega fondos con cripto, tarjeta o transferencia bancaria; luego elige tu posición. Opera en eventos del mundo real con total transparencia.",
+    "g4fse0": "Ilustración que muestra cómo realizar una apuesta",
+    "guoMRz": "3. Retira ganancias 🤑",
+    "rkQmAv": "Vende tus acciones de ‘Sí’ o ‘No’ en cualquier momento, o espera a que el mercado se resuelva. Las acciones ganadoras se canjean por $1 cada una. Empieza a operar en minutos.",
+    "HGiKcD": "Ilustración que muestra cómo funcionan las ganancias",
+    "9QXm1E": "Comenzar",
+    "HK3ph8": "Cómo funciona",
+    "TDaF6J": "Cerrar"
   }
 }
