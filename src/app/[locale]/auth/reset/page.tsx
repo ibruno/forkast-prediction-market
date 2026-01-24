@@ -1,12 +1,18 @@
 'use client'
 
 import { ThemeProvider } from 'next-themes'
+import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
 import HeaderLogo from '@/components/HeaderLogo'
 import { authClient } from '@/lib/auth-client'
 import { clearBrowserStorage, clearNonHttpOnlyCookies } from '@/lib/utils'
 
 export default function AuthResetPage() {
+  const params = useParams()
+  const rawLocale = params?.locale
+  const locale = Array.isArray(rawLocale) ? rawLocale[0] : rawLocale
+  const redirectHref = !locale || locale === 'en' ? '/' : `/${locale}`
+
   useEffect(() => {
     let isActive = true
 
@@ -29,7 +35,7 @@ export default function AuthResetPage() {
       clearNonHttpOnlyCookies()
 
       if (isActive) {
-        window.location.href = '/'
+        window.location.href = redirectHref
       }
     }
 
@@ -38,12 +44,12 @@ export default function AuthResetPage() {
     return () => {
       isActive = false
     }
-  }, [])
+  }, [redirectHref])
 
   return (
     <ThemeProvider attribute="class">
       <main className="flex min-h-screen items-center justify-center px-4 py-12 text-sm text-muted-foreground">
-        <HeaderLogo />
+        <HeaderLogo locale={locale} />
       </main>
     </ThemeProvider>
   )
