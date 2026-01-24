@@ -6,7 +6,9 @@ import { createContext, use, useCallback, useMemo, useState } from 'react'
 export interface FilterState {
   search: string
   tag: string
+  mainTag: string
   bookmarked: boolean
+  status: 'active' | 'resolved'
   hideSports: boolean
   hideCrypto: boolean
   hideEarnings: boolean
@@ -27,7 +29,9 @@ interface FilterProviderProps {
 const DEFAULT_FILTERS: FilterState = {
   search: '',
   tag: 'trending',
+  mainTag: 'trending',
   bookmarked: false,
+  status: 'active',
   hideSports: false,
   hideCrypto: false,
   hideEarnings: false,
@@ -36,7 +40,7 @@ const DEFAULT_FILTERS: FilterState = {
 export function FilterProvider({ children, initialTag }: FilterProviderProps) {
   const [filters, setFilters] = useState<FilterState>({
     ...DEFAULT_FILTERS,
-    ...(initialTag && { tag: initialTag }),
+    ...(initialTag && { tag: initialTag, mainTag: initialTag }),
   })
 
   const updateFilters = useCallback((updates: Partial<FilterState>) => {

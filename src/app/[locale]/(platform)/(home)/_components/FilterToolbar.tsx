@@ -100,6 +100,7 @@ export default function FilterToolbar({ filters, onFiltersChange }: FilterToolba
   const { isConnected } = useAppKitAccount()
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [filterSettings, setFilterSettings] = useState<FilterSettings>(() => createDefaultFilters({
+    status: filters.status,
     hideSports: filters.hideSports,
     hideCrypto: filters.hideCrypto,
     hideEarnings: filters.hideEarnings,
@@ -126,7 +127,8 @@ export default function FilterToolbar({ filters, onFiltersChange }: FilterToolba
   useEffect(() => {
     setFilterSettings((prev) => {
       if (
-        prev.hideSports === filters.hideSports
+        prev.status === filters.status
+        && prev.hideSports === filters.hideSports
         && prev.hideCrypto === filters.hideCrypto
         && prev.hideEarnings === filters.hideEarnings
       ) {
@@ -135,12 +137,13 @@ export default function FilterToolbar({ filters, onFiltersChange }: FilterToolba
 
       return {
         ...prev,
+        status: filters.status,
         hideSports: filters.hideSports,
         hideCrypto: filters.hideCrypto,
         hideEarnings: filters.hideEarnings,
       }
     })
-  }, [filters.hideSports, filters.hideCrypto, filters.hideEarnings])
+  }, [filters.hideSports, filters.hideCrypto, filters.hideEarnings, filters.status])
 
   const handleBookmarkToggle = useCallback(() => {
     onFiltersChange({ bookmarked: !filters.bookmarked })
@@ -175,6 +178,9 @@ export default function FilterToolbar({ filters, onFiltersChange }: FilterToolba
         }
         onFiltersChange(filterUpdates)
       }
+      if ('status' in updates && updates.status && updates.status !== prev.status) {
+        onFiltersChange({ status: updates.status })
+      }
 
       return next
     })
@@ -187,6 +193,7 @@ export default function FilterToolbar({ filters, onFiltersChange }: FilterToolba
     onFiltersChange({
       search: '',
       bookmarked: false,
+      status: defaultFilters.status,
       hideSports: defaultFilters.hideSports,
       hideCrypto: defaultFilters.hideCrypto,
       hideEarnings: defaultFilters.hideEarnings,
@@ -407,7 +414,7 @@ function FilterSettingsSelect({ label, value, options, onChange }: FilterSetting
         <span className="text-xs font-medium text-muted-foreground">{label}</span>
         <span className="text-xs font-semibold text-foreground">{activeOption?.label ?? ''}</span>
       </SelectTrigger>
-      <SelectContent align="start">
+      <SelectContent align="start" position="popper" side="bottom" sideOffset={6}>
         {options.map((option) => {
           const OptionIcon = option.icon
 
