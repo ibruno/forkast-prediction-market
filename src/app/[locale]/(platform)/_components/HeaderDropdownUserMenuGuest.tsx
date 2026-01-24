@@ -1,5 +1,8 @@
+'use client'
+
 import type { Route } from 'next'
 import { MenuIcon } from 'lucide-react'
+import LocaleSwitcherMenuItem from '@/components/LocaleSwitcherMenuItem'
 import ThemeSelector from '@/components/ThemeSelector'
 import { Button } from '@/components/ui/button'
 import {
@@ -42,6 +45,8 @@ export default function HeaderDropdownUserMenuGuest() {
         <DropdownMenuItem asChild>
           <Link href="/terms-of-use" data-testid="header-terms-link">Terms of Use</Link>
         </DropdownMenuItem>
+
+        <LocaleSwitcherMenuItem />
 
         <DropdownMenuSeparator />
 
