@@ -408,7 +408,7 @@ export default function NavigationTab({ tag, childParentMap }: NavigationTabProp
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  'relative z-10 h-8 shrink-0 bg-transparent text-sm whitespace-nowrap',
+                  'relative h-8 shrink-0 bg-transparent text-sm whitespace-nowrap',
                   'hover:bg-transparent dark:hover:bg-transparent',
                   activeSubtagSlug === tag.slug
                     ? 'text-primary hover:text-primary'

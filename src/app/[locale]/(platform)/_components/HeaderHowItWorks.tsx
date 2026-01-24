@@ -85,7 +85,9 @@ export default function HeaderHowItWorks() {
       triggerConfetti('primary')
       setIsOpen(false)
       setActiveStep(0)
-      open()
+      setTimeout(() => {
+        void open()
+      }, 1000)
       return
     }
 
