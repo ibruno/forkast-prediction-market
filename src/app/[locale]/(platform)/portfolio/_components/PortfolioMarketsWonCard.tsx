@@ -1,6 +1,7 @@
 import type { PortfolioClaimMarket, PortfolioMarketsWonData } from './PortfolioMarketsWonCardClient'
 import type { DataApiPosition } from '@/lib/data-api/user'
 import { inArray } from 'drizzle-orm'
+import { MICRO_UNIT } from '@/lib/constants'
 import { markets } from '@/lib/db/schema/events/tables'
 import { db } from '@/lib/drizzle'
 import { getSupabaseImageUrl } from '@/lib/supabase'
@@ -69,16 +70,33 @@ function resolveDataApiIcon(icon?: string | null): string | undefined {
   return `https://gateway.irys.xyz/${trimmed}`
 }
 
+function normalizeValueByPrice(value: number, size: number): number {
+  if (!(value > 0) || !(size > 0)) {
+    return value
+  }
+  const impliedPrice = value / size
+  if (impliedPrice <= 2) {
+    return value
+  }
+  const scaled = value / MICRO_UNIT
+  const scaledImplied = scaled / size
+  if (scaledImplied <= 2) {
+    return scaled
+  }
+  return value
+}
+
 function resolveInvested(position: DataApiPosition, size: number): number {
-  const totalBought = toNumber(position.totalBought)
+  const avgPrice = toNumber(position.avgPrice)
+  const totalBought = normalizeValueByPrice(toNumber(position.totalBought), size)
+  const initialValue = normalizeValueByPrice(toNumber(position.initialValue), size)
+
   if (totalBought > 0) {
     return totalBought
   }
-  const initialValue = toNumber(position.initialValue)
   if (initialValue > 0) {
     return initialValue
   }
-  const avgPrice = toNumber(position.avgPrice)
   if (size > 0 && avgPrice > 0) {
     return size * avgPrice
   }
@@ -86,7 +104,8 @@ function resolveInvested(position: DataApiPosition, size: number): number {
 }
 
 function resolveProceeds(position: DataApiPosition, size: number): number {
-  const currentValue = toNumber(position.currentValue)
+  const currentValue = normalizeValueByPrice(toNumber(position.currentValue), size)
+
   if (currentValue > 0) {
     return currentValue
   }
