@@ -88,10 +88,7 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
     if (!isResolvedEvent || !isSingleMarket) {
       return null
     }
-    const endedAt = event.end_date
-      ?? primaryMarket?.end_time
-      ?? primaryMarket?.condition?.resolved_at
-      ?? null
+    const endedAt = event.resolved_at ?? null
     if (!endedAt) {
       return null
     }
@@ -100,7 +97,7 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
       return null
     }
     return `Ended ${formatDate(resolvedDate)}`
-  }, [event.end_date, isResolvedEvent, isSingleMarket, primaryMarket?.condition?.resolved_at, primaryMarket?.end_time])
+  }, [event.resolved_at, isResolvedEvent, isSingleMarket])
 
   const resolvedVolume = useMemo(() => event.volume ?? 0, [event.volume])
 
@@ -318,7 +315,15 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
                 />
               )
             : (
-                <div className={isResolvedEvent ? 'mt-1' : 'mt-auto'}>
+                <div
+                  className={
+                    isResolvedEvent && isSingleMarket
+                      ? 'mt-6'
+                      : isResolvedEvent && !isSingleMarket
+                        ? 'mt-1'
+                        : 'mt-auto'
+                  }
+                >
                   {!isSingleMarket && (
                     <EventCardMarketsList
                       event={event}

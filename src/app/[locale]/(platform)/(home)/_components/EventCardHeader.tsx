@@ -27,6 +27,7 @@ export default function EventCardHeader({
   const headerTitle = (isInTradingMode && tradingTitle) ? tradingTitle : event.title
   const headerIcon = (isInTradingMode && activeMarket?.icon_url) ? activeMarket.icon_url : event.icon_url
   const iconSizeClass = isInTradingMode ? 'size-7' : 'size-10'
+  const isResolvedEvent = event.status === 'resolved'
 
   return (
     <div className="mb-3 flex items-start justify-between">
@@ -78,7 +79,7 @@ export default function EventCardHeader({
             </button>
           )
         : (
-            isSingleMarket && (
+            isSingleMarket && !isResolvedEvent && (
               <div className="relative -mt-3 flex flex-col items-center">
                 <div className="relative">
                   <svg
