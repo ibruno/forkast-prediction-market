@@ -3,11 +3,13 @@
 import type { ChangeEventHandler, FormEventHandler } from 'react'
 import {
   ArrowLeft,
-  ArrowUpToLine,
   Check,
+  ChevronRight,
   CircleDollarSign,
   Copy,
   CreditCard,
+  Fuel,
+  Info,
   Wallet,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
@@ -31,7 +33,9 @@ import {
 } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 const MELD_PAYMENT_METHODS = [
   'apple_pay',
@@ -47,6 +51,35 @@ const MELD_PAYMENT_METHODS = [
 const TRANSFER_PAYMENT_METHODS = [
   'polygon',
   'usdc',
+] as const
+
+const WITHDRAW_TOKEN_OPTIONS = [
+  { value: 'USDC', label: 'USDC', icon: '/images/withdraw/token/usdc.svg', enabled: false },
+  { value: 'USDC.e', label: 'USDC.e', icon: '/images/withdraw/token/usdc.svg', enabled: true },
+  { value: 'ARB', label: 'ARB', icon: '/images/withdraw/token/arb.svg', enabled: false },
+  { value: 'BNB', label: 'BNB', icon: '/images/withdraw/token/bsc.svg', enabled: false },
+  { value: 'BTCB', label: 'BTCB', icon: '/images/withdraw/token/btc.svg', enabled: false },
+  { value: 'BUSD', label: 'BUSD', icon: '/images/withdraw/token/busd.svg', enabled: false },
+  { value: 'CBBTC', label: 'CBBTC', icon: '/images/withdraw/token/cbbtc.svg', enabled: false },
+  { value: 'DAI', label: 'DAI', icon: '/images/withdraw/token/dai.svg', enabled: false },
+  { value: 'ETH', label: 'ETH', icon: '/images/withdraw/token/eth.svg', enabled: false },
+  { value: 'MATIC', label: 'MATIC', icon: '/images/withdraw/token/matic.svg', enabled: false },
+  { value: 'POL', label: 'POL', icon: '/images/withdraw/token/matic.svg', enabled: false },
+  { value: 'SOL', label: 'SOL', icon: '/images/withdraw/token/sol.svg', enabled: false },
+  { value: 'USDe', label: 'USDe', icon: '/images/withdraw/token/usde.svg', enabled: false },
+  { value: 'USDT', label: 'USDT', icon: '/images/withdraw/token/usdt.svg', enabled: false },
+  { value: 'WBNB', label: 'WBNB', icon: '/images/withdraw/token/bsc.svg', enabled: false },
+  { value: 'WETH', label: 'WETH', icon: '/images/withdraw/token/weth.svg', enabled: false },
+] as const
+
+const WITHDRAW_CHAIN_OPTIONS = [
+  { value: 'Ethereum', label: 'Ethereum', icon: '/images/withdraw/chain/ethereum.svg', enabled: false },
+  { value: 'Solana', label: 'Solana', icon: '/images/withdraw/chain/solana.svg', enabled: false },
+  { value: 'BSC', label: 'BSC', icon: '/images/withdraw/chain/bsc.svg', enabled: false },
+  { value: 'Base', label: 'Base', icon: '/images/withdraw/chain/base.svg', enabled: false },
+  { value: 'Polygon', label: 'Polygon', icon: '/images/withdraw/chain/polygon.svg', enabled: true },
+  { value: 'Arbitrum', label: 'Arbitrum', icon: '/images/withdraw/chain/arbitrum.svg', enabled: false },
+  { value: 'Optimism', label: 'Optimism', icon: '/images/withdraw/chain/optimism.svg', enabled: false },
 ] as const
 
 type WalletDepositView = 'fund' | 'receive'
@@ -188,6 +221,9 @@ function WalletSendForm({
   const trimmedRecipient = sendTo.trim()
   const isRecipientAddress = /^0x[a-fA-F0-9]{40}$/.test(trimmedRecipient)
   const parsedAmount = Number(sendAmount)
+  const [receiveToken, setReceiveToken] = useState<string>('USDC.e')
+  const [receiveChain, setReceiveChain] = useState<string>('Polygon')
+  const [isBreakdownOpen, setIsBreakdownOpen] = useState(false)
   const isSubmitDisabled = (
     isSending
     || !trimmedRecipient
@@ -196,18 +232,30 @@ function WalletSendForm({
     || parsedAmount <= 0
   )
   const showConnectedWalletButton = !sendTo?.trim()
-  const hasAvailableBalance = typeof availableBalance === 'number' && Number.isFinite(availableBalance)
-  const showBalanceLine = isBalanceLoading || hasAvailableBalance
-
-  function formatBalanceLabel(value: number | null | undefined) {
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      return '0.00'
-    }
-    return value.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  }
+  const amountDisplay = Number.isFinite(parsedAmount)
+    ? parsedAmount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    : '0.00'
+  const receiveAmountDisplay = Number.isFinite(parsedAmount)
+    ? parsedAmount.toLocaleString('en-US', {
+        minimumFractionDigits: 5,
+        maximumFractionDigits: 5,
+      })
+    : '0.00000'
+  const formattedBalance = Number.isFinite(availableBalance)
+    ? Number(availableBalance).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+    : '0.00'
+  const balanceDisplay = isBalanceLoading
+    ? <Skeleton className="h-4 w-16" />
+    : formattedBalance
+  const selectedToken = WITHDRAW_TOKEN_OPTIONS.find(option => option.value === receiveToken)
+  const selectedChain = WITHDRAW_CHAIN_OPTIONS.find(option => option.value === receiveChain)
+  const isUsdcESelected = receiveToken === 'USDC.e'
 
   return (
     <div className="space-y-5">
@@ -222,7 +270,7 @@ function WalletSendForm({
         </button>
       )}
 
-      <form className="grid gap-4" onSubmit={onSubmitSend}>
+      <form className="mt-2 grid gap-4" onSubmit={onSubmitSend}>
         <div className="grid gap-2">
           <Label htmlFor="wallet-send-to">Recipient address</Label>
           <div className="relative">
@@ -231,7 +279,7 @@ function WalletSendForm({
               value={sendTo}
               onChange={onChangeSendTo}
               placeholder="0x..."
-              className={`${showConnectedWalletButton ? 'pr-28' : ''} h-14 text-sm placeholder:text-sm`}
+              className={`${showConnectedWalletButton ? 'pr-28' : ''} h-12 text-sm placeholder:text-sm`}
               required
             />
             {showConnectedWalletButton && (
@@ -241,7 +289,7 @@ function WalletSendForm({
                 size="sm"
                 onClick={onUseConnectedWallet}
                 disabled={!connectedWalletAddress}
-                className="absolute inset-y-3 right-2 text-xs"
+                className="absolute inset-y-2 right-2 text-xs"
               >
                 <Wallet className="size-3.5 shrink-0" />
                 <span>use connected</span>
@@ -261,41 +309,234 @@ function WalletSendForm({
               onChange={onChangeSendAmount}
               placeholder="0.00"
               className={`
-                h-14
+                h-12
                 [appearance:textfield]
-                pr-16 text-sm
+                pr-36 text-sm
                 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none
               `}
               required
             />
-            <Button
-              type="button"
-              variant="default"
-              size="sm"
-              className="absolute inset-y-3 right-2 text-xs"
-              onClick={onMax}
-              disabled={!onMax || isBalanceLoading}
-            >
-              Max
-            </Button>
+            <div className="absolute inset-y-2 right-2 flex items-center gap-2">
+              <span className="text-sm font-semibold text-muted-foreground">USDC</span>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs text-foreground hover:text-muted-foreground"
+                onClick={onMax}
+                disabled={!onMax || isBalanceLoading}
+              >
+                Max
+              </Button>
+            </div>
           </div>
-          {showBalanceLine && (
-            <div className="mr-2 ml-2 flex items-center justify-between text-xs text-muted-foreground">
+          <div className="mx-2 flex items-center justify-between text-xs text-muted-foreground">
+            <span>
+              $
+              {amountDisplay}
+            </span>
+            <span className="flex items-center gap-1">
+              <span>Balance:</span>
+              <span>{balanceDisplay}</span>
               <span>USDC</span>
-              <span>
-                Balance:
+            </span>
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>Receive token</Label>
+            <Select value={receiveToken} onValueChange={setReceiveToken}>
+              <SelectTrigger className="h-12 w-full justify-between">
+                <div className="flex items-center gap-2">
+                  {selectedToken && (
+                    <Image
+                      src={selectedToken.icon}
+                      alt={selectedToken.label}
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                  <span className="text-sm font-medium">{selectedToken?.label ?? 'Select token'}</span>
+                </div>
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" align="start" sideOffset={6}>
+                {WITHDRAW_TOKEN_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} disabled={!option.enabled}>
+                    <div className="flex items-center gap-2">
+                      <Image src={option.icon} alt={option.label} width={18} height={18} />
+                      <span className="text-sm">{option.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Receive chain</Label>
+            <Select value={receiveChain} onValueChange={setReceiveChain}>
+              <SelectTrigger className="h-12 w-full justify-between">
+                <div className="flex items-center gap-2">
+                  {selectedChain && (
+                    <Image
+                      src={selectedChain.icon}
+                      alt={selectedChain.label}
+                      width={20}
+                      height={20}
+                    />
+                  )}
+                  <span className="text-sm font-medium">{selectedChain?.label ?? 'Select chain'}</span>
+                </div>
+              </SelectTrigger>
+              <SelectContent position="popper" side="bottom" align="start" sideOffset={6}>
+                {WITHDRAW_CHAIN_OPTIONS.map(option => (
+                  <SelectItem key={option.value} value={option.value} disabled={!option.enabled}>
+                    <div className="flex items-center gap-2">
+                      <Image src={option.icon} alt={option.label} width={18} height={18} />
+                      <span className="text-sm">{option.label}</span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-foreground">You will receive</span>
+            <div className="flex items-center gap-3 text-right">
+              <span className="text-foreground">
+                {receiveAmountDisplay}
                 {' '}
+                {receiveToken}
+              </span>
+              <span className="text-muted-foreground">
                 $
-                {isBalanceLoading
-                  ? <Skeleton className="inline-block h-3 w-12 align-middle" />
-                  : formatBalanceLabel(availableBalance)}
+                {amountDisplay}
               </span>
             </div>
+          </div>
+          <button
+            type="button"
+            className="flex w-full items-center justify-between text-sm text-muted-foreground"
+            onClick={() => setIsBreakdownOpen(current => !current)}
+          >
+            <span>Transaction breakdown</span>
+            <span className="flex items-center gap-1">
+              {!isBreakdownOpen && <span>0.00%</span>}
+              <ChevronRight
+                className={`size-4 transition ${isBreakdownOpen ? 'rotate-90' : ''}`}
+              />
+            </span>
+          </button>
+          {isBreakdownOpen && (
+            <TooltipProvider>
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2">
+                        <span>Network cost</span>
+                        <Info className="size-4" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      hideArrow
+                      className="border bg-background text-foreground shadow-lg"
+                    >
+                      <div className="space-y-1 text-xs text-foreground">
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Total cost</span>
+                          <span className="text-right">$0.00</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Source chain gas</span>
+                          <span className="text-right">$0.00</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Destination chain gas</span>
+                          <span className="text-right">$0.00</span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="flex items-center gap-1">
+                    <Fuel className="size-4" />
+                    <span>$0.00</span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2">
+                        <span>Price impact</span>
+                        <Info className="size-4" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      hideArrow
+                      className="border bg-background text-foreground shadow-lg"
+                    >
+                      <div className="space-y-1 text-xs text-foreground">
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Total impact</span>
+                          <span className="text-right">0.00%</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Swap impact</span>
+                          <span className="text-right">0.00%</span>
+                        </div>
+                        <div className="flex items-center justify-between gap-4">
+                          <span>Fun.xyz fee</span>
+                          <span className="text-right">0.00%</span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                  <span>0.00%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-2">
+                        <span>Max slippage</span>
+                        <Info className="size-4" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      hideArrow
+                      className="max-w-56 border bg-background text-foreground shadow-lg"
+                    >
+                      <p className="text-xs text-foreground">
+                        Slippage occurs due to price changes during trade execution. Minimum received: $00.00
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <span>Auto • 0.00%</span>
+                </div>
+              </div>
+            </TooltipProvider>
           )}
         </div>
 
+        {isUsdcESelected && (
+          <div className="rounded-lg bg-muted/60 p-4">
+            <div className="flex items-start gap-3 text-xs text-foreground">
+              <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-destructive">
+                <Info className="size-4 text-background" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-semibold">USDCe is not widely supported by most exchanges</p>
+                <p className="text-muted-foreground">
+                  Sending USDCe to an unsupported platform may result in a permanent loss of funds. Always double-check token compatibility before transferring.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         <Button type="submit" className="h-12 w-full gap-2 text-base" disabled={isSubmitDisabled}>
-          <ArrowUpToLine className="size-4" />
           {isSending ? 'Submitting…' : 'Withdraw'}
         </Button>
       </form>
@@ -553,21 +794,6 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
     onMax,
     isBalanceLoading,
   } = props
-  const siteLabel = siteName ?? process.env.NEXT_PUBLIC_SITE_NAME!
-  const formattedBalance = typeof availableBalance === 'number' && Number.isFinite(availableBalance)
-    ? availableBalance.toLocaleString(undefined, {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
-    : '0.00'
-  const balanceDisplay = isBalanceLoading
-    ? <Skeleton className="inline-block h-3 w-12 align-middle" />
-    : (
-        <>
-          $
-          {formattedBalance}
-        </>
-      )
 
   const content = (
     <WalletSendForm
@@ -595,15 +821,7 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
               {' '}
               {siteName}
             </DrawerTitle>
-            <DrawerDescription>
-              {siteLabel}
-              {' '}
-              Balance:
-              {' '}
-              {balanceDisplay}
-            </DrawerDescription>
           </DrawerHeader>
-          <div className="border-t" />
           <div className="w-full px-4 pb-4">
             <div className="space-y-4 pt-4">
               {content}
@@ -623,15 +841,7 @@ export function WalletWithdrawModal(props: WalletWithdrawModalProps) {
             {' '}
             {siteName}
           </DialogTitle>
-          <DialogDescription className="text-center">
-            {siteLabel}
-            {' '}
-            Balance:
-            {' '}
-            {balanceDisplay}
-          </DialogDescription>
         </DialogHeader>
-        <div className="border-t" />
         {content}
       </DialogContent>
     </Dialog>
