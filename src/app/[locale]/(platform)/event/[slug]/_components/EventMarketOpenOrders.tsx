@@ -3,14 +3,14 @@
 import type { InfiniteData } from '@tanstack/react-query'
 import type { Event, UserOpenOrder } from '@/types'
 import { useQueryClient } from '@tanstack/react-query'
-import { AlertCircleIcon, ChevronDown, ChevronUp, XIcon } from 'lucide-react'
+import { ChevronDown, ChevronUp, XIcon } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingProvider'
 import { cancelMarketOrdersAction } from '@/app/[locale]/(platform)/event/[slug]/_actions/cancel-market-orders'
 import { cancelOrderAction } from '@/app/[locale]/(platform)/event/[slug]/_actions/cancel-order'
 import { buildUserOpenOrdersQueryKey, useUserOpenOrdersQuery } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useUserOpenOrdersQuery'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import AlertBanner from '@/components/AlertBanner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -580,10 +580,9 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
 
       {infiniteScrollError && (
         <div className={cn(isSingleMarket ? 'border-t' : '', 'px-4 py-3')}>
-          <Alert variant="destructive">
-            <AlertCircleIcon />
-            <AlertTitle>Could not load more open orders</AlertTitle>
-            <AlertDescription>
+          <AlertBanner
+            title="Could not load more open orders"
+            description={(
               <Button
                 type="button"
                 variant="link"
@@ -601,8 +600,8 @@ export default function EventMarketOpenOrders({ market, eventSlug }: EventMarket
               >
                 Try again
               </Button>
-            </AlertDescription>
-          </Alert>
+            )}
+          />
         </div>
       )}
 
