@@ -125,7 +125,7 @@ export default function LocaleSwitcherMenuItem() {
         </span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
-        <DropdownMenuSubContent>
+        <DropdownMenuSubContent sideOffset={-30}>
           <DropdownMenuRadioGroup
             value={locale}
             onValueChange={handleValueChange}

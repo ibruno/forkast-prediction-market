@@ -1,4 +1,5 @@
 import { ArrowDown } from 'lucide-react'
+import { useExtracted } from 'next-intl'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -12,6 +13,7 @@ export default function HeaderPortfolio() {
   const { isLoading, value: positionsValue } = usePortfolioValue()
   const isLoadingValue = isLoadingBalance || isLoading
   const totalPortfolioValue = (positionsValue ?? 0) + (balance?.raw ?? 0)
+  const t = useExtracted('Header')
   const formattedPortfolioValue = Number.isFinite(totalPortfolioValue)
     ? totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     : '0.00'
@@ -28,7 +30,7 @@ export default function HeaderPortfolio() {
         asChild
       >
         <Link href="/portfolio">
-          <div className="translate-y-px text-xs leading-tight font-medium text-muted-foreground">Portfolio</div>
+          <div className="translate-y-px text-xs leading-tight font-medium text-muted-foreground">{t('Portfolio')}</div>
           <div className="-translate-y-px text-base leading-tight font-semibold text-yes">
             {isLoadingValue
               ? <Skeleton className="h-5 w-12" />
@@ -53,7 +55,7 @@ export default function HeaderPortfolio() {
             flex translate-y-px items-center gap-1 text-xs leading-tight font-medium text-muted-foreground
           `}
           >
-            <span>Cash</span>
+            <span>{t('Cash')}</span>
             {hasPendingDeposit && (
               <span className="inline-flex size-4 items-center justify-center rounded-full bg-primary">
                 <ArrowDown className="size-3 text-background" />
