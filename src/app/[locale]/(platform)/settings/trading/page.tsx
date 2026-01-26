@@ -1,5 +1,3 @@
-'use cache: private'
-
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import SettingsTradingContent from '@/app/[locale]/(platform)/settings/_components/SettingsTradingContent'
