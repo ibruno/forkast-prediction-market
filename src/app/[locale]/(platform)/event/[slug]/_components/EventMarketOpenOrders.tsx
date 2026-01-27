@@ -4,6 +4,7 @@ import type { InfiniteData } from '@tanstack/react-query'
 import type { Event, UserOpenOrder } from '@/types'
 import { useQueryClient } from '@tanstack/react-query'
 import { ChevronDown, ChevronUp, XIcon } from 'lucide-react'
+import { useExtracted } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { useTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingProvider'
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { SAFE_BALANCE_QUERY_KEY } from '@/hooks/useBalance'
+import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
 import { MICRO_UNIT, OUTCOME_INDEX, tableHeaderClass } from '@/lib/constants'
 import { formatCurrency, formatSharePriceLabel, formatSharesLabel } from '@/lib/formatters'
 import { isTradingAuthRequiredError } from '@/lib/trading-auth/errors'
@@ -181,8 +183,10 @@ function formatFilledLabel(filledShares: number, totalShares: number) {
 }
 
 function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
+  const t = useExtracted('Event.Trade')
+  const normalizeOutcomeLabel = useOutcomeLabel()
   const isBuy = order.side === 'buy'
-  const sideLabel = isBuy ? 'Buy' : 'Sell'
+  const sideLabel = isBuy ? t('Buy') : t('Sell')
   const priceLabel = formatSharePriceLabel(order.price, { fallback: '—' })
   const totalShares = microToUnit(isBuy ? order.taker_amount : order.maker_amount)
   const filledShares = microToUnit(order.size_matched)
@@ -194,7 +198,8 @@ function OpenOrderRow({ order, onCancel, isCancelling }: OpenOrderRowProps) {
   })
   const expirationLabel = formatExpirationLabel(order)
   const isNoOutcome = order.outcome.index === OUTCOME_INDEX.NO
-  const outcomeLabel = order.outcome.text || (isNoOutcome ? 'No' : 'Yes')
+  const outcomeLabel = normalizeOutcomeLabel(order.outcome.text || (isNoOutcome ? 'No' : 'Yes'))
+    || (isNoOutcome ? 'No' : 'Yes')
 
   return (
     <tr className="text-2xs leading-tight text-foreground sm:text-xs">

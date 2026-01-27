@@ -3,10 +3,12 @@
 import type { EventMarketRow } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventMarketRows'
 import { useQuery } from '@tanstack/react-query'
 import { XIcon } from 'lucide-react'
+import { useExtracted } from 'next-intl'
 import Image from 'next/image'
 import { memo, useMemo } from 'react'
 import EventMarketChance from '@/app/[locale]/(platform)/event/[slug]/_components/EventMarketChance'
 import { Button } from '@/components/ui/button'
+import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { formatCentsLabel, formatSharesLabel } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
@@ -45,9 +47,11 @@ function EventMarketCardComponent({
   openOrdersCount = 0,
   onCashOut,
 }: EventMarketCardProps) {
+  const t = useExtracted('Event.Trade')
+  const normalizeOutcomeLabel = useOutcomeLabel()
   const { market, yesOutcome, noOutcome, yesPriceValue, noPriceValue, chanceMeta } = row
-  const yesOutcomeText = yesOutcome?.outcome_text ?? 'Yes'
-  const noOutcomeText = noOutcome?.outcome_text ?? 'No'
+  const yesOutcomeText = normalizeOutcomeLabel(yesOutcome?.outcome_text) ?? t('Yes')
+  const noOutcomeText = normalizeOutcomeLabel(noOutcome?.outcome_text) ?? t('No')
   const resolvedPositionTags = positionTags.filter(tag => tag.shares > 0)
   const hasOpenOrders = openOrdersCount > 0
   const shouldShowTags = resolvedPositionTags.length > 0 || hasOpenOrders
@@ -179,9 +183,6 @@ function EventMarketCardComponent({
               }}
             >
               <span className="truncate opacity-70">
-                Buy
-                {' '}
-                {' '}
                 {yesOutcomeText}
               </span>
               <span className="shrink-0 text-base font-bold">
@@ -200,9 +201,6 @@ function EventMarketCardComponent({
               }}
             >
               <span className="truncate opacity-70">
-                Buy
-                {' '}
-                {' '}
                 {noOutcomeText}
               </span>
               <span className="shrink-0 text-base font-bold">
@@ -265,16 +263,13 @@ function EventMarketCardComponent({
                 variant="yes"
                 className={cn({
                   'bg-yes text-white': isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.YES,
-                }, 'w-[8.5rem]')}
+                }, 'w-34')}
                 onClick={(event) => {
                   event.stopPropagation()
                   onBuy(market, OUTCOME_INDEX.YES, 'desktop')
                 }}
               >
                 <span className="truncate opacity-70">
-                  Buy
-                  {' '}
-                  {' '}
                   {yesOutcomeText}
                 </span>
                 <span className="shrink-0 text-base font-bold">
@@ -287,16 +282,13 @@ function EventMarketCardComponent({
                 variant="no"
                 className={cn({
                   'bg-no text-white': isActiveMarket && activeOutcomeIndex === OUTCOME_INDEX.NO,
-                }, 'w-[8.5rem]')}
+                }, 'w-34')}
                 onClick={(event) => {
                   event.stopPropagation()
                   onBuy(market, OUTCOME_INDEX.NO, 'desktop')
                 }}
               >
                 <span className="truncate opacity-70">
-                  Buy
-                  {' '}
-                  {' '}
                   {noOutcomeText}
                 </span>
                 <span className="shrink-0 text-base font-bold">
@@ -333,6 +325,8 @@ function PositionTags({
   openOrdersCount?: number
   onCashOut?: (tag: MarketPositionTag) => void
 }) {
+  const t = useExtracted('Event.Trade')
+  const normalizeOutcomeLabel = useOutcomeLabel()
   const hasOpenOrders = openOrdersCount > 0
   const openOrdersLabel = `${openOrdersCount} open order${openOrdersCount === 1 ? '' : 's'}`
   return (
@@ -349,7 +343,7 @@ function PositionTags({
       )}
       {tags.map((tag) => {
         const isYes = tag.outcomeIndex === OUTCOME_INDEX.YES
-        const label = tag.label || (isYes ? 'Yes' : 'No')
+        const label = normalizeOutcomeLabel(tag.label) || (isYes ? t('Yes') : t('No'))
         const sharesLabel = formatSharesLabel(tag.shares)
         const avgPriceLabel = formatCentsLabel(tag.avgPrice, { fallback: '—' })
 

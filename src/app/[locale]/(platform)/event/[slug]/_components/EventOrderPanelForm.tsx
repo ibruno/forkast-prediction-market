@@ -2,6 +2,7 @@ import type { Event } from '@/types'
 import { useAppKitAccount } from '@reown/appkit/react'
 import { useQueryClient } from '@tanstack/react-query'
 import { CheckIcon, TriangleAlertIcon } from 'lucide-react'
+import { useExtracted } from 'next-intl'
 import Form from 'next/form'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useSignTypedData } from 'wagmi'
@@ -29,6 +30,7 @@ import {
 import { useAffiliateOrderMetadata } from '@/hooks/useAffiliateOrderMetadata'
 import { useAppKit } from '@/hooks/useAppKit'
 import { SAFE_BALANCE_QUERY_KEY, useBalance } from '@/hooks/useBalance'
+import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
 import { CLOB_ORDER_TYPE, getExchangeEip712Domain, ORDER_SIDE, ORDER_TYPE, OUTCOME_INDEX } from '@/lib/constants'
 import { formatCentsLabel, formatCurrency, toCents } from '@/lib/formatters'
 import { buildOrderPayload, submitOrder } from '@/lib/orders'
@@ -83,6 +85,8 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const { open, close } = useAppKit()
   const { isConnected, embeddedWalletInfo } = useAppKitAccount()
   const { signTypedDataAsync } = useSignTypedData()
+  const t = useExtracted('Event.Trade')
+  const normalizeOutcomeLabel = useOutcomeLabel()
   const user = useUser()
   const state = useOrder()
   const setUserShares = useOrder(store => store.setUserShares)
@@ -154,10 +158,10 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     [state.market],
   )
   const resolvedOutcomeLabel = resolvedOutcomeIndex === OUTCOME_INDEX.NO
-    ? 'No'
+    ? t('No')
     : resolvedOutcomeIndex === OUTCOME_INDEX.YES
-      ? 'Yes'
-      : 'Resolved'
+      ? t('Yes')
+      : t('Resolved')
   const resolvedMarketTitle = state.market?.short_title || state.market?.title
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
   const endOfDayTimestamp = useMemo(() => {
@@ -252,11 +256,11 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
   const selectedShares = state.side === ORDER_SIDE.SELL
     ? (isLimitOrder ? selectedTokenShares : selectedPositionShares)
     : selectedTokenShares
-  const selectedShareLabel = state.outcome?.outcome_text
+  const selectedShareLabel = normalizeOutcomeLabel(state.outcome?.outcome_text)
     ?? (outcomeIndex === OUTCOME_INDEX.NO
-      ? 'No'
+      ? t('No')
       : outcomeIndex === OUTCOME_INDEX.YES
-        ? 'Yes'
+        ? t('Yes')
         : undefined)
 
   const marketSellFill = useMemo(() => {
@@ -631,7 +635,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         return
       }
 
-      handleOrderErrorFeedback('Trade failed', 'We could not sign your order. Please try again.')
+      handleOrderErrorFeedback(t('Trade failed'), t('We could not sign your order. Please try again.'))
       return
     }
 
@@ -652,7 +656,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         if (isTradingAuthRequiredError(result.error)) {
           openTradeRequirements()
         }
-        handleOrderErrorFeedback('Trade failed', result.error)
+        handleOrderErrorFeedback(t('Trade failed'), result.error)
         return
       }
 
@@ -668,7 +672,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
         amountInput: state.amount,
         sellSharesLabel,
         isLimitOrder: state.type === ORDER_TYPE.LIMIT,
-        outcomeText: state.outcome.outcome_text,
+        outcomeText: normalizeOutcomeLabel(state.outcome.outcome_text) ?? state.outcome.outcome_text,
         eventTitle: event.title,
         marketImage: state.market?.icon_url,
         marketTitle: state.market?.short_title || state.market?.title,
@@ -700,7 +704,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       }, 3000)
     }
     catch {
-      handleOrderErrorFeedback('Trade failed', 'An unexpected error occurred. Please try again.')
+      handleOrderErrorFeedback(t('Trade failed'), t('An unexpected error occurred. Please try again.'))
     }
     finally {
       state.setIsLoading(false)
@@ -751,7 +755,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 <CheckIcon className="size-7 text-background" />
               </div>
               <div className="text-lg font-bold text-primary">
-                Outcome:
+                {t('Outcome:')}
                 {' '}
                 {resolvedOutcomeLabel}
               </div>
@@ -780,7 +784,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 <EventOrderPanelOutcomeButton
                   variant="yes"
                   price={yesPrice}
-                  label={yesOutcome?.outcome_text ?? 'Yes'}
+                  label={normalizeOutcomeLabel(yesOutcome?.outcome_text) ?? t('Yes')}
                   isSelected={state.outcome?.outcome_index === OUTCOME_INDEX.YES}
                   onSelect={() => {
                     if (!state.market || !yesOutcome) {
@@ -793,7 +797,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 <EventOrderPanelOutcomeButton
                   variant="no"
                   price={noPrice}
-                  label={noOutcome?.outcome_text ?? 'No'}
+                  label={normalizeOutcomeLabel(noOutcome?.outcome_text) ?? t('No')}
                   isSelected={state.outcome?.outcome_index === OUTCOME_INDEX.NO}
                   onSelect={() => {
                     if (!state.market || !noOutcome) {
@@ -890,7 +894,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                           `}
                         >
                           <TriangleAlertIcon className="size-4" />
-                          Market buys must be at least $1
+                          {t('Market buys must be at least $1')}
                         </div>
                       )}
                       {showNoLiquidityWarning && (
@@ -901,7 +905,7 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                           `}
                         >
                           <TriangleAlertIcon className="size-4" />
-                          No liquidity for this market order
+                          {t('No liquidity for this market order')}
                         </div>
                       )}
                     </>
@@ -916,10 +920,10 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 >
                   <TriangleAlertIcon className="size-4" />
                   {showAmountTooLowWarning
-                    ? 'Amount too low'
+                    ? t('Amount too low')
                     : showInsufficientBalanceWarning
-                      ? 'Insufficient USDC balance'
-                      : 'Insufficient shares for this order'}
+                      ? t('Insufficient USDC balance')
+                      : t('Insufficient shares for this order')}
                 </div>
               )}
 
@@ -941,17 +945,17 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                 }}
                 label={(() => {
                   if (!isConnected) {
-                    return 'Trade'
+                    return t('Trade')
                   }
                   if (shouldShowDepositCta) {
-                    return 'Deposit'
+                    return t('Deposit')
                   }
                   const outcomeLabel = selectedShareLabel
                   if (outcomeLabel) {
-                    const verb = state.side === ORDER_SIDE.SELL ? 'Sell' : 'Buy'
+                    const verb = state.side === ORDER_SIDE.SELL ? t('Sell') : t('Buy')
                     return `${verb} ${outcomeLabel}`
                   }
-                  return 'Trade'
+                  return t('Trade')
                 })()}
               />
               <EventOrderPanelTermsDisclaimer />
