@@ -11,6 +11,7 @@ import { WalletDepositModal, WalletWithdrawModal } from '@/app/[locale]/(platfor
 import { useTradingOnboarding } from '@/app/[locale]/(platform)/_providers/TradingOnboardingProvider'
 import { useBalance } from '@/hooks/useBalance'
 import { useIsMobile } from '@/hooks/useIsMobile'
+import { useLiFiWalletUsdBalance } from '@/hooks/useLiFiWalletUsdBalance'
 import { defaultNetwork } from '@/lib/appkit'
 import { DEFAULT_ERROR_MESSAGE } from '@/lib/constants'
 import { COLLATERAL_TOKEN_ADDRESS } from '@/lib/contracts'
@@ -41,11 +42,15 @@ export function WalletFlow({
 }: WalletFlowProps) {
   const isMobile = useIsMobile()
   const { signMessageAsync } = useSignMessage()
-  const [depositView, setDepositView] = useState<'fund' | 'receive'>('fund')
+  const [depositView, setDepositView] = useState<'fund' | 'receive' | 'wallets' | 'amount' | 'confirm' | 'success'>('fund')
   const [walletSendTo, setWalletSendTo] = useState('')
   const [walletSendAmount, setWalletSendAmount] = useState('')
   const [isWalletSending, setIsWalletSending] = useState(false)
   const { balance, isLoadingBalance } = useBalance()
+  const {
+    formattedUsdBalance,
+    isLoadingUsdBalance,
+  } = useLiFiWalletUsdBalance(user?.address, { enabled: depositOpen })
   const connectedWalletAddress = user?.address ?? null
   const { openTradeRequirements } = useTradingOnboarding()
 
@@ -213,14 +218,15 @@ export function WalletFlow({
         onOpenChange={handleDepositModalChange}
         isMobile={isMobile}
         walletAddress={user?.proxy_wallet_address ?? null}
+        walletEoaAddress={user?.address ?? null}
         siteName={process.env.NEXT_PUBLIC_SITE_NAME}
         meldUrl={meldUrl}
         hasDeployedProxyWallet={hasDeployedProxyWallet}
         view={depositView}
         onViewChange={setDepositView}
         onBuy={handleBuy}
-        walletBalance={balance.text}
-        isBalanceLoading={isLoadingBalance}
+        walletBalance={formattedUsdBalance}
+        isBalanceLoading={isLoadingUsdBalance}
       />
       <WalletWithdrawModal
         open={withdrawOpen}

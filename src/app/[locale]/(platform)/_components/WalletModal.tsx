@@ -1,41 +1,43 @@
 'use client'
 
 import type { ChangeEventHandler, FormEventHandler } from 'react'
+import type { LiFiWalletTokenItem } from '@/hooks/useLiFiWalletTokens'
 import {
   ArrowLeft,
+  ArrowRight,
   Check,
+  ChevronLeft,
   ChevronRight,
   CircleDollarSign,
   Copy,
   CreditCard,
+  ExternalLink,
   Fuel,
   Info,
+  Loader2,
   Wallet,
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import QRCode from 'react-qr-code'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle } from '@/components/ui/drawer'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { useLiFiExecution } from '@/hooks/useLiFiExecution'
+import { useLiFiQuote } from '@/hooks/useLiFiQuote'
+import { useLiFiWalletTokens } from '@/hooks/useLiFiWalletTokens'
+import { formatDisplayAmount, getAmountSizeClass, MAX_AMOUNT_INPUT, sanitizeNumericInput } from '@/lib/amount-input'
+import { POLYGON_SCAN_BASE } from '@/lib/constants'
+import { formatAmountInputValue } from '@/lib/formatters'
+import { IS_TEST_MODE } from '@/lib/network'
+import { svgLogo } from '@/lib/utils'
 
 const MELD_PAYMENT_METHODS = [
   'apple_pay',
@@ -82,13 +84,14 @@ const WITHDRAW_CHAIN_OPTIONS = [
   { value: 'Optimism', label: 'Optimism', icon: '/images/withdraw/chain/optimism.svg', enabled: false },
 ] as const
 
-type WalletDepositView = 'fund' | 'receive'
+type WalletDepositView = 'fund' | 'receive' | 'wallets' | 'amount' | 'confirm' | 'success'
 
 interface WalletDepositModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   isMobile: boolean
   walletAddress?: string | null
+  walletEoaAddress?: string | null
   siteName?: string
   meldUrl: string | null
   hasDeployedProxyWallet: boolean
@@ -129,20 +132,30 @@ function WalletAddressCard({
   label?: string
 }) {
   return (
-    <div className="rounded-md border bg-muted/40 p-3 text-sm">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onCopy}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onCopy()
+        }
+      }}
+      className={`
+        cursor-pointer rounded-md border p-1.5 text-sm transition
+        hover:bg-muted/40
+        focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+      `}
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="space-y-1">
           <p className="text-xs font-semibold text-muted-foreground">{label}</p>
-          <p className="font-mono text-xs break-all">{walletAddress}</p>
+          <p className="ml-2 text-xs font-bold break-all">{walletAddress}</p>
         </div>
-        <Button
-          type="button"
-          size="icon"
-          variant="outline"
-          onClick={onCopy}
-        >
-          {copied ? <Check className="size-4 text-primary" /> : <Copy className="size-4" />}
-        </Button>
+        <span className="inline-flex size-8 items-center justify-center">
+          {copied ? <Check className="size-4 text-primary" /> : <Copy className="size-4 text-muted-foreground" />}
+        </span>
       </div>
     </div>
   )
@@ -151,13 +164,11 @@ function WalletAddressCard({
 function WalletReceiveView({
   walletAddress,
   siteName,
-  onBack,
   onCopy,
   copied,
 }: {
   walletAddress?: string | null
   siteName?: string
-  onBack: () => void
   onCopy: () => void
   copied: boolean
 }) {
@@ -165,28 +176,54 @@ function WalletReceiveView({
 
   return (
     <div className="space-y-4">
-      <button
-        type="button"
-        className="flex items-center gap-2 text-sm text-muted-foreground transition hover:text-foreground"
-        onClick={onBack}
-      >
-        <ArrowLeft className="size-4" />
-        Back
-      </button>
+      <div className="space-y-2">
+        <p className="text-center text-sm font-semibold text-muted-foreground">
+          <span>
+            Scan QR Code or copy your
+            {' '}
+            {siteLabel}
+            {' '}
+            wallet address to transfer
+          </span>
+          {' '}
+          <span className="inline-flex items-center gap-1 align-middle">
+            <Image
+              src="/images/deposit/transfer/usdc_dark.png"
+              alt="USDC"
+              width={14}
+              height={14}
+              className="block"
+            />
+            <span>USDC</span>
+          </span>
+          {' '}
+          <span>on</span>
+          {' '}
+          <span className="inline-flex items-center gap-1 align-middle">
+            <Image
+              src="/images/deposit/transfer/polygon_dark.png"
+              alt="Polygon"
+              width={14}
+              height={14}
+              className="block"
+            />
+            <span>Polygon</span>
+          </span>
+        </p>
+        <div className="flex justify-center">
+          <div className="rounded-lg border bg-white p-2 transition">
+            {walletAddress
+              ? <QRCode value={walletAddress} size={200} />
+              : <p className="text-sm">Proxy wallet not ready yet.</p>}
+          </div>
+        </div>
+      </div>
       <WalletAddressCard
         walletAddress={walletAddress}
         onCopy={onCopy}
         copied={copied}
-        label={`Your ${siteLabel} wallet address`}
+        label=""
       />
-      <div className="flex justify-center rounded-lg border p-4">
-        {walletAddress
-          ? <QRCode value={walletAddress} size={200} />
-          : <p className="text-sm text-destructive">Proxy wallet not ready yet.</p>}
-      </div>
-      <p className="text-center text-xs text-muted-foreground">
-        Copy your address or scan this QR code to transfer USDC on Polygon
-      </p>
     </div>
   )
 }
@@ -547,29 +584,100 @@ function WalletSendForm({
 function WalletFundMenu({
   onBuy,
   onReceive,
+  onWallet,
   disabledBuy,
   disabledReceive,
   meldUrl,
+  walletEoaAddress,
+  walletBalance,
+  isBalanceLoading,
 }: {
   onBuy: (url: string) => void
   onReceive: () => void
+  onWallet: () => void
   disabledBuy: boolean
   disabledReceive: boolean
   meldUrl: string | null
+  walletEoaAddress?: string | null
+  walletBalance?: string | null
+  isBalanceLoading?: boolean
 }) {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
   const logoVariant = isDark ? 'dark' : 'light'
   const paymentLogos = MELD_PAYMENT_METHODS.map(method => `/images/deposit/meld/${method}_${logoVariant}.png`)
   const transferLogos = TRANSFER_PAYMENT_METHODS.map(method => `/images/deposit/transfer/${method}_${logoVariant}.png`)
+  const walletSuffix = walletEoaAddress?.slice(-4) ?? '----'
+  const formattedWalletBalance = walletBalance && walletBalance !== '' ? walletBalance : '0.00'
 
   return (
     <div className="grid gap-2">
       <button
         type="button"
         className={`
-          group flex w-full items-center justify-between gap-4 rounded-lg border bg-card px-4 py-3 text-left transition
-          hover:border-primary hover:text-primary
+          group flex w-full items-center justify-between gap-4 rounded-lg border border-border px-4 py-2 text-left
+          transition
+          hover:bg-muted/50
+          disabled:cursor-not-allowed disabled:opacity-50
+        `}
+        onClick={onWallet}
+        disabled={IS_TEST_MODE}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex size-12 items-center justify-center text-foreground">
+            <Wallet className="size-6" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">
+              Wallet (...
+              {walletSuffix}
+              )
+              {IS_TEST_MODE && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className={`
+                        ml-2 inline-flex size-4 items-center justify-center rounded-full text-muted-foreground
+                      `}
+                      >
+                        <Info className="size-3" />
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent hideArrow>
+                      Wallet deposits are not available in test mode.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              {isBalanceLoading
+                ? <Skeleton className="h-3 w-10 rounded-full" />
+                : (
+                    <span>
+                      $
+                      {formattedWalletBalance}
+                    </span>
+                  )}
+              <span className="size-1 rounded-full bg-muted-foreground" />
+              <span>Instant</span>
+            </div>
+          </div>
+        </div>
+      </button>
+
+      <div className="mx-auto flex w-full items-center gap-3 text-xs text-muted-foreground">
+        <div className="h-px flex-1 bg-border/70" />
+        <span>more</span>
+        <div className="h-px flex-1 bg-border/70" />
+      </div>
+
+      <button
+        type="button"
+        className={`
+          group flex w-full items-center justify-between gap-4 rounded-lg border border-border px-4 py-2 text-left
+          transition
+          hover:bg-muted/50
           disabled:cursor-not-allowed disabled:opacity-50
         `}
         onClick={() => {
@@ -581,23 +689,23 @@ function WalletFundMenu({
         disabled={disabledBuy}
       >
         <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-full bg-muted/60 text-primary">
+          <div className="flex size-12 items-center justify-center text-foreground">
             <CreditCard className="size-6" />
           </div>
           <div>
             <p className="text-sm font-semibold">Buy Crypto</p>
-            <p className="text-xs text-muted-foreground">
-              card
-              {' \u00B7 '}
-              bank wire
-            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>card</span>
+              <span className="size-1 rounded-full bg-muted-foreground" />
+              <span>bank wire</span>
+            </div>
           </div>
         </div>
         <div className="flex items-center -space-x-2 transition-all group-hover:-space-x-1">
           {paymentLogos.map(logo => (
             <div
               key={logo}
-              className="relative size-6 overflow-hidden rounded-full border bg-background shadow-sm"
+              className="relative size-5 overflow-hidden rounded-full bg-background shadow-sm"
             >
               <Image
                 src={logo}
@@ -614,31 +722,32 @@ function WalletFundMenu({
       <button
         type="button"
         className={`
-          group flex w-full items-center justify-between gap-4 rounded-lg border bg-card px-4 py-3 text-left transition
-          hover:border-primary hover:text-primary
+          group flex w-full items-center justify-between gap-4 rounded-lg border border-border px-4 py-2 text-left
+          transition
+          hover:bg-muted/50
           disabled:cursor-not-allowed disabled:opacity-50
         `}
         onClick={onReceive}
         disabled={disabledReceive}
       >
         <div className="flex items-center gap-3">
-          <div className="flex size-12 items-center justify-center rounded-full bg-muted/60 text-primary">
+          <div className="flex size-12 items-center justify-center text-foreground">
             <CircleDollarSign className="size-6" />
           </div>
           <div>
             <p className="text-sm font-semibold">Transfer Funds</p>
-            <p className="text-xs text-muted-foreground">
-              USDC
-              {' \u00B7 '}
-              copy wallet or scan QR code
-            </p>
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>USDC</span>
+              <span className="size-1 rounded-full bg-muted-foreground" />
+              <span>copy wallet or scan QR code</span>
+            </div>
           </div>
         </div>
         <div className="flex items-center -space-x-2 transition-all group-hover:-space-x-1">
           {transferLogos.map(logo => (
             <div
               key={logo}
-              className="relative size-7 overflow-hidden rounded-full border bg-background shadow-sm"
+              className="relative size-6 overflow-hidden rounded-full bg-background shadow-sm"
             >
               <Image
                 src={logo}
@@ -655,12 +764,930 @@ function WalletFundMenu({
   )
 }
 
+function WalletTokenList({
+  onContinue,
+  items,
+  isLoadingTokens,
+  selectedId,
+  onSelect,
+}: {
+  onContinue: () => void
+  items: Array<{
+    id: string
+    symbol: string
+    network: string
+    icon: string
+    chainIcon?: string
+    balance: string
+    usd: string
+    disabled: boolean
+  }>
+  isLoadingTokens: boolean
+  selectedId: string
+  onSelect: (id: string) => void
+}) {
+  const showEmptyState = !isLoadingTokens && items.length === 0
+
+  return (
+    <div className="space-y-4">
+      <div className="max-h-90 overflow-y-scroll pr-1">
+        <div className="space-y-2">
+          {isLoadingTokens && (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div
+                key={`wallet-token-skeleton-${index}`}
+                className="flex w-full items-center justify-between rounded-lg border border-transparent px-3 py-1.5"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex align-middle">
+                    <span className="size-8.5 animate-pulse rounded-full bg-accent" />
+                  </span>
+                  <div className="space-y-1">
+                    <span className="inline-flex align-middle">
+                      <span className="h-4 w-16 animate-pulse rounded-md bg-accent" />
+                    </span>
+                    <span className="inline-flex align-middle">
+                      <span className="h-3 w-24 animate-pulse rounded-md bg-accent" />
+                    </span>
+                  </div>
+                </div>
+                <span className="inline-flex align-middle">
+                  <span className="h-6 w-16 animate-pulse rounded-md bg-accent" />
+                </span>
+              </div>
+            ))
+          )}
+          {showEmptyState && (
+            <div className="rounded-lg border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
+              No LI.FI-supported tokens with balance found.
+            </div>
+          )}
+          {items.map((item) => {
+            const isSelected = selectedId === item.id
+            const isDisabled = item.disabled
+            const chainIconSrc = item.chainIcon ?? '/images/deposit/transfer/polygon_dark.png'
+            return (
+              <button
+                key={item.id}
+                type="button"
+                disabled={isDisabled}
+                onClick={() => {
+                  if (!isDisabled) {
+                    onSelect(item.id)
+                  }
+                }}
+                className={`
+                  flex w-full items-center justify-between rounded-lg px-3 py-1.5 text-left transition
+                  ${isSelected ? 'border border-foreground/20' : 'border border-transparent'}
+                  ${isDisabled ? 'cursor-not-allowed opacity-50' : isSelected ? '' : 'hover:bg-muted/50'}
+                `}
+              >
+                <div className="flex items-center gap-3">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative">
+                        <Image
+                          src={item.icon}
+                          alt={item.symbol}
+                          width={34}
+                          height={34}
+                          className="rounded-full"
+                          unoptimized
+                        />
+                        <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5">
+                          {chainIconSrc.startsWith('http')
+                            ? (
+                                <Image
+                                  src={chainIconSrc}
+                                  alt={item.network}
+                                  width={14}
+                                  height={14}
+                                  className="rounded-full"
+                                  unoptimized
+                                />
+                              )
+                            : (
+                                <Image
+                                  src={chainIconSrc}
+                                  alt={item.network}
+                                  width={14}
+                                  height={14}
+                                  className="rounded-full"
+                                />
+                              )}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      hideArrow
+                      className="border bg-background text-foreground shadow-lg"
+                    >
+                      <p className="text-sm text-foreground">
+                        {item.symbol}
+                        {' '}
+                        on
+                        {' '}
+                        {item.network}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <div className="space-y-0.5">
+                    <p className="text-sm font-semibold text-foreground">{item.symbol}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.balance}
+                      {' '}
+                      {item.symbol}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {isDisabled && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+                          Low Balance
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        hideArrow
+                        className="border bg-background text-foreground shadow-lg"
+                      >
+                        <p className="text-sm text-foreground">Minimum required: $2.00</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  )}
+                  <span className="text-lg font-semibold text-foreground">
+                    $
+                    {item.usd}
+                  </span>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      <div className="-mx-6 border-t" />
+      <Button
+        type="button"
+        className="h-12 w-full"
+        onClick={onContinue}
+        disabled={!selectedId || isLoadingTokens || showEmptyState}
+      >
+        Continue
+      </Button>
+    </div>
+  )
+}
+
+function WalletAmountStep({
+  onContinue,
+  selectedTokenSymbol,
+  availableTokenAmount,
+  amountValue,
+  onAmountChange,
+}: {
+  onContinue: () => void
+  selectedTokenSymbol?: string | null
+  availableTokenAmount?: number | null
+  amountValue: string
+  onAmountChange: (value: string) => void
+}) {
+  const hasAvailableTokenAmount = typeof availableTokenAmount === 'number' && Number.isFinite(availableTokenAmount)
+
+  function handleInputChange(rawValue: string) {
+    const cleaned = sanitizeNumericInput(rawValue)
+    const numericValue = Number.parseFloat(cleaned)
+
+    if (cleaned === '' || numericValue <= MAX_AMOUNT_INPUT) {
+      onAmountChange(cleaned)
+    }
+  }
+
+  function handleBlur(rawValue: string) {
+    const cleaned = sanitizeNumericInput(rawValue)
+    const numeric = Number.parseFloat(cleaned)
+
+    if (!cleaned || Number.isNaN(numeric)) {
+      onAmountChange('')
+      return
+    }
+
+    const clampedValue = Math.min(numeric, MAX_AMOUNT_INPUT)
+    onAmountChange(formatAmountInputValue(clampedValue))
+  }
+
+  function handleQuickFill(label: string) {
+    if (!hasAvailableTokenAmount) {
+      return
+    }
+
+    const baseValue = Math.min(availableTokenAmount ?? 0, MAX_AMOUNT_INPUT)
+
+    if (label === 'Max') {
+      onAmountChange(formatAmountInputValue(baseValue, { roundingMode: 'floor' }))
+      return
+    }
+
+    const percentValue = Number.parseInt(label.replace('%', ''), 10) / 100
+    const nextValue = baseValue * percentValue
+    onAmountChange(formatAmountInputValue(nextValue))
+  }
+
+  const amountNumber = Number.parseFloat(amountValue || '0')
+  const isAmountExceedingBalance = hasAvailableTokenAmount && amountNumber > (availableTokenAmount ?? 0)
+  const isAmountInvalid = !amountValue.trim() || !Number.isFinite(amountNumber) || amountNumber <= 0
+  const availableTokenLabel = hasAvailableTokenAmount
+    ? (availableTokenAmount as number).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 6 })
+    : null
+  const amountSizeClass = getAmountSizeClass(amountValue, {
+    large: 'text-6xl',
+    medium: 'text-5xl',
+    small: 'text-4xl',
+  })
+  const inputValue = formatDisplayAmount(amountValue)
+  const quickLabels = ['25%', '50%', '75%', 'Max']
+  const placeholderText = selectedTokenSymbol ? `0.00 ${selectedTokenSymbol}` : '0.00'
+  const minChWidth = placeholderText.length + 1
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-center gap-2 text-center">
+        <input
+          type="text"
+          inputMode="decimal"
+          value={inputValue}
+          onChange={(event) => {
+            handleInputChange(event.target.value)
+          }}
+          onBlur={(event) => {
+            handleBlur(event.target.value)
+          }}
+          placeholder={placeholderText}
+          className={`
+            min-h-[1.2em] bg-transparent pb-1 text-center leading-tight font-semibold text-foreground outline-none
+            placeholder:leading-tight
+            ${amountSizeClass}
+          `}
+          style={{ width: `${Math.max(inputValue.length, minChWidth)}ch`, maxWidth: '70vw' }}
+        />
+        {selectedTokenSymbol && (
+          <span className="pb-1 text-xl leading-tight font-semibold text-muted-foreground">
+            {selectedTokenSymbol}
+          </span>
+        )}
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        {quickLabels.map(label => (
+          <button
+            key={label}
+            type="button"
+            className={`
+              rounded-md bg-muted/60 px-4 py-2 text-sm text-foreground transition hover:bg-muted
+              ${!hasAvailableTokenAmount ? 'cursor-not-allowed opacity-50' : ''}
+            `}
+            disabled={!hasAvailableTokenAmount}
+            onClick={() => handleQuickFill(label)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {isAmountExceedingBalance && (
+        <p className="text-center text-sm font-medium text-destructive">
+          Amount exceeds the available balance
+          {selectedTokenSymbol ? ` for ${selectedTokenSymbol}` : ''}
+          {availableTokenLabel ? ` (${availableTokenLabel} ${selectedTokenSymbol ?? ''})` : ''}
+          .
+        </p>
+      )}
+      <div className="flex items-center justify-center">
+        <div className="flex items-center gap-3 rounded-full bg-muted/60 px-4 py-2">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Image
+                src="/images/deposit/transfer/polygon_dark.png"
+                alt="POL"
+                width={30}
+                height={30}
+                className="rounded-full"
+              />
+              <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5">
+                <Image
+                  src="/images/deposit/transfer/polygon_dark.png"
+                  alt="Polygon"
+                  width={14}
+                  height={14}
+                  className="rounded-full"
+                />
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground">You send</p>
+              <p className="text-sm font-semibold text-foreground">{selectedTokenSymbol ?? 'Token'}</p>
+            </div>
+          </div>
+          <ArrowRight className="size-4 text-muted-foreground" />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Image
+                src="/images/deposit/transfer/usdc_dark.png"
+                alt="USDC"
+                width={30}
+                height={30}
+                className="rounded-full"
+              />
+              <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5">
+                <Image
+                  src="/images/deposit/transfer/polygon_dark.png"
+                  alt="Polygon"
+                  width={14}
+                  height={14}
+                  className="rounded-full"
+                />
+              </span>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground">You receive</p>
+              <p className="text-sm font-semibold text-foreground">USDC</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <Button
+        type="button"
+        className="h-12 w-full"
+        onClick={onContinue}
+        disabled={isAmountExceedingBalance || isAmountInvalid}
+      >
+        Continue
+      </Button>
+    </div>
+  )
+}
+
+function CountdownBadge({
+  seconds = 30,
+  onReset,
+}: {
+  seconds?: number
+  onReset?: () => void
+}) {
+  const [remaining, setRemaining] = useState(seconds)
+  const endTimeRef = useRef(Date.now() + seconds * 1000)
+  const hasTriggeredResetRef = useRef(false)
+  const onResetRef = useRef(onReset)
+
+  useEffect(() => {
+    onResetRef.current = onReset
+  }, [onReset])
+
+  useEffect(() => {
+    setRemaining(seconds)
+    endTimeRef.current = Date.now() + seconds * 1000
+    hasTriggeredResetRef.current = false
+    const interval = setInterval(() => {
+      const now = Date.now()
+      let diff = endTimeRef.current - now
+      if (diff <= 0) {
+        if (!hasTriggeredResetRef.current) {
+          hasTriggeredResetRef.current = true
+          onResetRef.current?.()
+        }
+        endTimeRef.current = Date.now() + seconds * 1000
+        diff = endTimeRef.current - now
+        hasTriggeredResetRef.current = false
+      }
+      const next = Math.max(0, Math.ceil(diff / 1000))
+      setRemaining(next)
+    }, 250)
+
+    return () => clearInterval(interval)
+  }, [seconds])
+
+  const size = 36
+  const strokeWidth = 3
+  const radius = (size - strokeWidth) / 2
+  const circumference = 2 * Math.PI * radius
+  const progressRatio = seconds > 0 ? remaining / seconds : 0
+  const dashOffset = circumference * (1 - progressRatio)
+
+  return (
+    <div className="absolute top-4 right-4">
+      <div className="relative size-9">
+        <svg
+          width={size}
+          height={size}
+          viewBox={`0 0 ${size} ${size}`}
+          className="-rotate-90"
+          aria-hidden="true"
+        >
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            fill="none"
+            className="text-muted-foreground/40"
+          />
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="currentColor"
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            fill="none"
+            strokeDasharray={circumference}
+            strokeDashoffset={dashOffset}
+            className="text-primary"
+          />
+        </svg>
+        <div className={`
+          absolute inset-0.75 flex items-center justify-center rounded-full bg-background text-[9px] font-semibold
+          text-foreground ring-1 ring-border/60
+        `}
+        >
+          {remaining}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WalletConfirmStep({
+  walletEoaAddress,
+  walletAddress,
+  siteLabel,
+  onComplete,
+  amountValue,
+  selectedToken,
+  quote,
+  refreshIndex,
+}: {
+  walletEoaAddress?: string | null
+  walletAddress?: string | null
+  siteLabel: string
+  onComplete: () => void
+  amountValue: string
+  selectedToken?: LiFiWalletTokenItem | null
+  quote?: { toAmountDisplay: string | null, gasUsdDisplay: string | null } | null
+  refreshIndex: number
+}) {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const eoaSuffix = walletEoaAddress?.slice(-4) ?? '542d'
+  const [isBreakdownOpen, setIsBreakdownOpen] = useState(false)
+  const logoSvg = svgLogo()
+  const formattedAmount = formatDisplayAmount(amountValue)
+  const displayAmount = formattedAmount && formattedAmount.trim() !== '' ? formattedAmount : '0.00'
+  const { quote: fetchedQuote, isLoadingQuote } = useLiFiQuote({
+    fromToken: selectedToken,
+    amountValue,
+    fromAddress: walletEoaAddress,
+    toAddress: walletAddress,
+    refreshIndex,
+  })
+  const effectiveQuote = quote ?? fetchedQuote
+  const hasAmount = amountValue.trim() !== ''
+  const isQuoteLoading = isLoadingQuote && hasAmount
+  const status: 'quote' | 'gas' | 'ready' = effectiveQuote ? 'ready' : (isLoadingQuote ? 'gas' : 'quote')
+  const {
+    execute,
+    isExecuting,
+  } = useLiFiExecution({
+    fromToken: selectedToken,
+    amountValue,
+    fromAddress: walletEoaAddress,
+    toAddress: walletAddress,
+  })
+  const isCtaDisabled = isExecuting || isSubmitting || !effectiveQuote || isLoadingQuote
+  const sendSymbol = selectedToken?.symbol ?? 'Token'
+  const sendIcon = selectedToken?.icon ?? '/images/deposit/transfer/polygon_dark.png'
+  const chainIcon = selectedToken?.chainIcon ?? '/images/deposit/transfer/polygon_dark.png'
+  const receiveAmountDisplay = effectiveQuote?.toAmountDisplay ?? '—'
+  const gasUsdDisplay = effectiveQuote?.gasUsdDisplay ?? null
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-center">
+        <p className="text-5xl font-semibold text-foreground">
+          {displayAmount}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        <div className="rounded-lg border">
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Source</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <Wallet className="size-4" />
+                Wallet (...
+                {eoaSuffix}
+                )
+              </span>
+            </div>
+          </div>
+          <div className="mx-auto h-px w-[90%] bg-border/60" />
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Destination</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <span
+                  className={`
+                    size-4 text-current
+                    [&_svg]:h-[1em] [&_svg]:w-[1em]
+                    [&_svg_*]:fill-current [&_svg_*]:stroke-current
+                  `}
+                  dangerouslySetInnerHTML={{ __html: logoSvg! }}
+                />
+                {siteLabel}
+                {' '}
+                Wallet
+              </span>
+            </div>
+          </div>
+          <div className="mx-auto h-px w-[90%] bg-border/60" />
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Estimated time</span>
+              <span className="font-semibold text-foreground">&lt; 1 min</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border">
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>You send</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <span className="relative">
+                  <Image
+                    src={sendIcon}
+                    alt={sendSymbol}
+                    width={18}
+                    height={18}
+                    className="rounded-full"
+                    unoptimized
+                  />
+                  <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5">
+                    <Image
+                      src={chainIcon}
+                      alt={selectedToken?.network ?? 'Chain'}
+                      width={10}
+                      height={10}
+                      className="rounded-full"
+                      unoptimized={chainIcon.startsWith('http')}
+                    />
+                  </span>
+                </span>
+                {displayAmount}
+                {' '}
+                {sendSymbol}
+              </span>
+            </div>
+          </div>
+          <div className="mx-auto h-px w-[90%] bg-border/60" />
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>You receive</span>
+              {isQuoteLoading
+                ? <Skeleton className="h-4 w-28 rounded-full" />
+                : (
+                    <span className="flex items-center gap-2 font-semibold text-foreground">
+                      <span className="relative">
+                        <Image
+                          src="/images/deposit/transfer/usdc_dark.png"
+                          alt="USDC"
+                          width={18}
+                          height={18}
+                          className="rounded-full"
+                        />
+                        <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5">
+                          <Image
+                            src="/images/deposit/transfer/polygon_dark.png"
+                            alt="Polygon"
+                            width={10}
+                            height={10}
+                            className="rounded-full"
+                          />
+                        </span>
+                      </span>
+                      {receiveAmountDisplay}
+                      {' '}
+                      USDC
+                    </span>
+                  )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2 text-xs text-muted-foreground">
+        <button
+          type="button"
+          className="flex w-full items-center justify-between text-xs text-muted-foreground"
+          onClick={() => setIsBreakdownOpen(current => !current)}
+          disabled={isQuoteLoading}
+        >
+          <span>Transaction breakdown</span>
+          <span className="flex items-center gap-1">
+            {isQuoteLoading
+              ? <Skeleton className="h-3 w-20 rounded-full" />
+              : (
+                  <>
+                    {!isBreakdownOpen && <span>{gasUsdDisplay ? `$${gasUsdDisplay}` : '—'}</span>}
+                    <ChevronRight className={`size-3 transition ${isBreakdownOpen ? 'rotate-90' : ''}`} />
+                  </>
+                )}
+          </span>
+        </button>
+        {isBreakdownOpen && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                Network cost
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Info className="size-3" />
+                  </TooltipTrigger>
+                  <TooltipContent hideArrow className="border bg-background text-foreground shadow-lg">
+                    <div className="space-y-1 text-xs text-foreground">
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Total cost</span>
+                        <span className="text-right">{gasUsdDisplay ? `$${gasUsdDisplay}` : '—'}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Source chain gas</span>
+                        <span className="text-right">{gasUsdDisplay ? `$${gasUsdDisplay}` : '—'}</span>
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        <span>Destination chain gas</span>
+                        <span className="text-right">—</span>
+                      </div>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </span>
+              <span className="flex items-center gap-2">
+                <Fuel className="size-3" />
+                {gasUsdDisplay ? `$${gasUsdDisplay}` : '—'}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Badge variant="outline" className="w-full p-3 text-muted-foreground">
+        By clicking on Confirm Order, you agree to our
+        {' '}
+        <a
+          href="/terms-of-use"
+          target="_blank"
+          rel="noreferrer"
+          className="underline"
+        >
+          terms
+        </a>
+        .
+      </Badge>
+      <Button
+        type="button"
+        className="h-12 w-full"
+        disabled={isCtaDisabled}
+        onClick={async () => {
+          if (status !== 'ready') {
+            return
+          }
+          try {
+            setIsSubmitting(true)
+            await execute()
+            onComplete()
+          }
+          finally {
+            setIsSubmitting(false)
+          }
+        }}
+      >
+        {(isLoadingQuote || isSubmitting || isExecuting) && <Loader2 className="size-4 animate-spin" />}
+        {isSubmitting && 'Confirm transaction in your wallet'}
+        {!isSubmitting && status === 'quote' && 'Preparing your quote...'}
+        {!isSubmitting && status === 'gas' && 'Estimating gas...'}
+        {!isSubmitting && status === 'ready' && 'Confirm order'}
+      </Button>
+    </div>
+  )
+}
+
+function WalletSuccessStep({
+  walletEoaAddress,
+  walletAddress,
+  siteLabel,
+  amountValue,
+  selectedToken,
+  quote,
+  onClose,
+  onNewDeposit,
+}: {
+  walletEoaAddress?: string | null
+  walletAddress?: string | null
+  siteLabel: string
+  amountValue: string
+  selectedToken?: LiFiWalletTokenItem | null
+  quote?: { toAmountDisplay: string | null, gasUsdDisplay: string | null } | null
+  onClose: () => void
+  onNewDeposit: () => void
+}) {
+  const eoaSuffix = walletEoaAddress?.slice(-4) ?? '1234'
+  const safeSuffix = walletAddress?.slice(-4) ?? '5678'
+  const logoSvg = svgLogo()
+  const supportUrl = process.env.NEXT_PUBLIC_SUPPORT_URL
+  const formattedAmount = formatDisplayAmount(amountValue)
+  const displayAmount = formattedAmount && formattedAmount.trim() !== '' ? formattedAmount : '0.00'
+  const sendSymbol = selectedToken?.symbol ?? 'Token'
+  const sendIcon = selectedToken?.icon ?? '/images/deposit/transfer/polygon_dark.png'
+  const chainIcon = selectedToken?.chainIcon ?? '/images/deposit/transfer/polygon_dark.png'
+  const receiveAmountDisplay = quote?.toAmountDisplay ?? '—'
+
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col items-center gap-3 text-center">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute size-20 rounded-full bg-emerald-500/25 blur-md" />
+          <div className="relative flex size-14 items-center justify-center rounded-full bg-emerald-500">
+            <Check className="size-7 text-background" />
+          </div>
+        </div>
+        <div className="space-y-1">
+          <p className="text-base font-semibold text-foreground">Deposit successful</p>
+          <p className="text-sm text-muted-foreground">Your funds were successfully deposited.</p>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        <div className="rounded-lg border">
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Fill status</span>
+              <span className="font-semibold text-emerald-500">Successful</span>
+            </div>
+          </div>
+          <div className="mx-auto h-px w-[90%] bg-border/60" />
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Total time</span>
+              <span className="font-semibold text-foreground">1 second</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border">
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Source</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <Wallet className="size-4" />
+                Wallet (...
+                {eoaSuffix}
+                )
+                {walletEoaAddress && (
+                  <a
+                    href={`${POLYGON_SCAN_BASE}/address/${walletEoaAddress}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex"
+                    aria-label="View wallet on Polygonscan"
+                  >
+                    <ExternalLink className="size-3" />
+                  </a>
+                )}
+              </span>
+            </div>
+          </div>
+          <div className="mx-auto h-px w-[90%] bg-border/60" />
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>Destination</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <span
+                  className={`
+                    size-4 text-current
+                    [&_svg]:h-[1em] [&_svg]:w-[1em]
+                    [&_svg_*]:fill-current [&_svg_*]:stroke-current
+                  `}
+                  dangerouslySetInnerHTML={{ __html: logoSvg! }}
+                />
+                {siteLabel}
+                {' '}
+                Wallet (...
+                {safeSuffix}
+                )
+                {walletAddress && (
+                  <a
+                    href={`${POLYGON_SCAN_BASE}/address/${walletAddress}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex"
+                    aria-label="View wallet on Polygonscan"
+                  >
+                    <ExternalLink className="size-3" />
+                  </a>
+                )}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border">
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>You send</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <span className="relative">
+                  <Image
+                    src={sendIcon}
+                    alt={sendSymbol}
+                    width={18}
+                    height={18}
+                    className="rounded-full"
+                    unoptimized
+                  />
+                  <span className="absolute -right-1 -bottom-1 rounded-full bg-background p-0.5">
+                    <Image
+                      src={chainIcon}
+                      alt={selectedToken?.network ?? 'Chain'}
+                      width={10}
+                      height={10}
+                      className="rounded-full"
+                      unoptimized={chainIcon.startsWith('http')}
+                    />
+                  </span>
+                </span>
+                {displayAmount}
+                {' '}
+                {sendSymbol}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-lg border">
+          <div className="px-4 py-1.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>You receive</span>
+              <span className="flex items-center gap-2 font-semibold text-foreground">
+                <Image
+                  src="/images/deposit/transfer/usdc_dark.png"
+                  alt="USDC"
+                  width={18}
+                  height={18}
+                  className="rounded-full"
+                />
+                {receiveAmountDisplay}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {supportUrl && (
+        <div className="flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-xs text-foreground">
+          <Info className="size-4 text-muted-foreground" />
+          <span>
+            Experiencing problems?
+            {' '}
+            <a
+              href={supportUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="underline"
+            >
+              Get help
+            </a>
+            .
+          </span>
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <Button type="button" className="h-11 bg-muted text-foreground hover:bg-muted/80" onClick={onClose}>
+          Close
+        </Button>
+        <Button type="button" className="h-11" onClick={onNewDeposit}>
+          New Deposit
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function WalletDepositModal(props: WalletDepositModalProps) {
   const {
     open,
     onOpenChange,
     isMobile,
     walletAddress,
+    walletEoaAddress,
     siteName,
     meldUrl,
     hasDeployedProxyWallet,
@@ -673,17 +1700,52 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
 
   const [copied, setCopied] = useState(false)
   const siteLabel = siteName ?? process.env.NEXT_PUBLIC_SITE_NAME!
+  const tokensQueryEnabled = open && (view === 'wallets' || view === 'amount' || view === 'confirm')
+  const { items: walletTokenItems, isLoadingTokens } = useLiFiWalletTokens(walletEoaAddress, { enabled: tokensQueryEnabled })
+  const [selectedTokenId, setSelectedTokenId] = useState('')
+  const [amountValue, setAmountValue] = useState('')
+  const [confirmRefreshIndex, setConfirmRefreshIndex] = useState(0)
   const formattedBalance = walletBalance && walletBalance !== ''
     ? walletBalance
     : '0.00'
   const balanceDisplay = isBalanceLoading
-    ? <Skeleton className="inline-block h-3 w-12 align-middle" />
+    ? (
+        <span className="inline-flex align-middle">
+          <span className="h-3 w-12 animate-pulse rounded-md bg-accent" />
+        </span>
+      )
     : (
         <>
           $
           {formattedBalance}
         </>
       )
+
+  useEffect(() => {
+    if (!walletTokenItems.length) {
+      setSelectedTokenId('')
+      return
+    }
+
+    setSelectedTokenId((currentSelectedId) => {
+      if (currentSelectedId && walletTokenItems.some(item => item.id === currentSelectedId && !item.disabled)) {
+        return currentSelectedId
+      }
+
+      const firstEnabledItem = walletTokenItems.find(item => !item.disabled)
+      return firstEnabledItem?.id ?? walletTokenItems[0].id
+    })
+  }, [walletTokenItems])
+
+  const selectedToken = walletTokenItems.find(item => item.id === selectedTokenId) ?? null
+  const { quote } = useLiFiQuote({
+    fromToken: selectedToken,
+    amountValue,
+    fromAddress: walletEoaAddress,
+    toAddress: walletAddress,
+    refreshIndex: confirmRefreshIndex,
+  })
+
   const content = view === 'fund'
     ? (
         <WalletFundMenu
@@ -691,19 +1753,68 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
             onBuy(url)
           }}
           onReceive={() => onViewChange('receive')}
+          onWallet={() => onViewChange('wallets')}
           disabledBuy={!meldUrl}
           disabledReceive={!hasDeployedProxyWallet}
           meldUrl={meldUrl}
+          walletEoaAddress={walletEoaAddress}
+          walletBalance={walletBalance}
+          isBalanceLoading={isBalanceLoading}
         />
       )
-    : (
-        <WalletReceiveView
-          walletAddress={walletAddress}
-          onBack={() => onViewChange('fund')}
-          onCopy={handleCopy}
-          copied={copied}
-        />
-      )
+    : view === 'receive'
+      ? (
+          <WalletReceiveView
+            walletAddress={walletAddress}
+            onCopy={handleCopy}
+            copied={copied}
+          />
+        )
+      : view === 'wallets'
+        ? (
+            <WalletTokenList
+              onContinue={() => onViewChange('amount')}
+              items={walletTokenItems}
+              isLoadingTokens={isLoadingTokens}
+              selectedId={selectedTokenId}
+              onSelect={setSelectedTokenId}
+            />
+          )
+        : view === 'amount'
+          ? (
+              <WalletAmountStep
+                onContinue={() => onViewChange('confirm')}
+                selectedTokenSymbol={selectedToken?.symbol ?? null}
+                availableTokenAmount={selectedToken?.balanceRaw ?? null}
+                amountValue={amountValue}
+                onAmountChange={setAmountValue}
+              />
+            )
+          : view === 'confirm'
+            ? (
+                <WalletConfirmStep
+                  walletEoaAddress={walletEoaAddress}
+                  walletAddress={walletAddress}
+                  siteLabel={siteLabel}
+                  onComplete={() => onViewChange('success')}
+                  amountValue={amountValue}
+                  selectedToken={selectedToken}
+                  quote={quote}
+                  refreshIndex={confirmRefreshIndex}
+                />
+              )
+            : (
+                <WalletSuccessStep
+                  walletEoaAddress={walletEoaAddress}
+                  walletAddress={walletAddress}
+                  siteLabel={siteLabel}
+                  amountValue={amountValue}
+                  selectedToken={selectedToken}
+                  quote={quote}
+                  onClose={() => onOpenChange(false)}
+                  onNewDeposit={() => onViewChange('fund')}
+                />
+              )
 
   async function handleCopy() {
     if (!walletAddress) {
@@ -729,9 +1840,32 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
         }}
       >
         <DrawerContent className="max-h-[90vh] w-full bg-background px-0">
-          <DrawerHeader className="px-4 pt-4 pb-3">
-            <DrawerTitle className="text-center text-2xl font-semibold text-foreground">Deposit</DrawerTitle>
-            <DrawerDescription>
+          <DrawerHeader className="gap-1 px-4 pt-3 pb-2">
+            <div className="flex items-center">
+              {view !== 'fund' && view !== 'success'
+                ? (
+                    <button
+                      type="button"
+                      className={`
+                        rounded-md p-2 opacity-70 ring-offset-background transition
+                        hover:bg-muted hover:opacity-100
+                        focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden
+                        disabled:pointer-events-none
+                        [&_svg]:pointer-events-none [&_svg]:shrink-0
+                        [&_svg:not([class*='size-'])]:size-4
+                      `}
+                      onClick={() => onViewChange('fund')}
+                    >
+                      <ChevronLeft />
+                    </button>
+                  )
+                : (
+                    <span className="size-8" aria-hidden="true" />
+                  )}
+              <DrawerTitle className="flex-1 text-center text-xl font-semibold text-foreground">Deposit</DrawerTitle>
+              <span className="size-8" aria-hidden="true" />
+            </div>
+            <DrawerDescription className="text-center text-xs text-muted-foreground">
               {siteLabel}
               {' '}
               Balance:
@@ -758,10 +1892,41 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
         onOpenChange(next)
       }}
     >
-      <DialogContent className="w-full max-w-xl border bg-background">
-        <DialogHeader>
-          <DialogTitle className="text-center text-2xl font-semibold text-foreground">Deposit</DialogTitle>
-          <DialogDescription className="text-center">
+      <DialogContent
+        className="max-w-md border bg-background pt-4 sm:max-w-md"
+        showCloseButton={view !== 'confirm'}
+      >
+        {view === 'confirm' && (
+          <CountdownBadge
+            onReset={() => setConfirmRefreshIndex(current => current + 1)}
+          />
+        )}
+        <DialogHeader className="gap-1">
+          <div className="flex items-center">
+            {view !== 'fund' && view !== 'success'
+              ? (
+                  <button
+                    type="button"
+                    className={`
+                      rounded-md p-2 opacity-70 ring-offset-background transition
+                      hover:bg-muted hover:opacity-100
+                      focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-hidden
+                      disabled:pointer-events-none
+                      [&_svg]:pointer-events-none [&_svg]:shrink-0
+                      [&_svg:not([class*='size-'])]:size-4
+                    `}
+                    onClick={() => onViewChange('fund')}
+                  >
+                    <ChevronLeft />
+                  </button>
+                )
+              : (
+                  <span className="size-8" aria-hidden="true" />
+                )}
+            <DialogTitle className="flex-1 text-center text-lg font-semibold text-foreground">Deposit</DialogTitle>
+            <span className="size-8" aria-hidden="true" />
+          </div>
+          <DialogDescription className="text-center text-xs text-muted-foreground">
             {siteLabel}
             {' '}
             Balance:
@@ -769,7 +1934,7 @@ export function WalletDepositModal(props: WalletDepositModalProps) {
             {balanceDisplay}
           </DialogDescription>
         </DialogHeader>
-        <div className="border-t" />
+        <div className="-mx-6 border-t" />
         {content}
       </DialogContent>
     </Dialog>
