@@ -20,7 +20,12 @@ export default async function PlatformLayout({ params, children }: LayoutProps<'
       <TradingOnboardingProvider>
         <FilterProvider>
           <Header locale={locale} />
-          <Suspense fallback={<Skeleton className="h-8 w-16 rounded" />}>
+          <Suspense fallback={(
+            <div className="container">
+              <Skeleton className="h-8 w-16 rounded" />
+            </div>
+          )}
+          >
             <NavigationTabs />
           </Suspense>
           {children}
