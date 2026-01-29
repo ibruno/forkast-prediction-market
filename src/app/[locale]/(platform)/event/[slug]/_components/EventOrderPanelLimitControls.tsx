@@ -132,6 +132,11 @@ export default function EventOrderPanelLimitControls({
   const maxSharesForSide = MAX_AMOUNT_INPUT
 
   const totalValueLabel = formatCurrency(totalValue)
+  const safeTotalValueLabel = totalValueLabel.trim() ? totalValueLabel : '0'
+  const americanOddsLabel = americanOdds != null
+    ? `${americanOdds >= 0 ? '+' : ''}${americanOdds.toFixed(1)}`
+    : '0'
+  const decimalOddsLabel = decimalOdds != null ? decimalOdds.toFixed(3) : '0'
   const potentialWinLabel = formatCurrency(potentialWin)
   const showMinimumSharesWarning = showLimitMinimumWarning && isLimitOrder && limitSharesNumber < MIN_LIMIT_ORDER_SHARES
   const formattedBalanceText = Number.isFinite(balance?.raw)
@@ -356,7 +361,7 @@ export default function EventOrderPanelLimitControls({
                   <span>{t('{shares} matching', { shares: matchingSharesLabel })}</span>
                 </span>
               </TooltipTrigger>
-              <TooltipContent className="max-w-48 text-xs" collisionPadding={8}>
+              <TooltipContent className="max-w-48" collisionPadding={8}>
                 {t('{shares} shares from this order will be executed imediatelly', { shares: matchingSharesLabel })}
               </TooltipContent>
             </Tooltip>
@@ -450,56 +455,48 @@ export default function EventOrderPanelLimitControls({
               <>
                 <div className="flex items-center justify-between text-lg font-bold text-foreground">
                   <span>{t('Total')}</span>
-                  {effectivePriceDollars
-                    ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="border-b border-dotted border-primary font-semibold text-primary">
-                              {totalValueLabel}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent
-                            side="top"
-                            className="w-52 p-3"
-                          >
-                            <div className="flex flex-col gap-2">
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="h-4 w-1.5 rounded-full bg-blue-500" />
-                                  <span>{t('Price')}</span>
-                                </div>
-                                <span className="text-base font-bold">
-                                  {limitPriceNumber.toFixed(1)}
-                                  ¢
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="h-4 w-1.5 rounded-full bg-amber-400" />
-                                  <span>{t('American')}</span>
-                                </div>
-                                <span className="text-base font-bold">
-                                  {americanOdds != null ? `${americanOdds >= 0 ? '+' : ''}${americanOdds.toFixed(1)}` : '—'}
-                                </span>
-                              </div>
-                              <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2">
-                                  <span className="h-4 w-1.5 rounded-full bg-yes" />
-                                  <span>{t('Decimal')}</span>
-                                </div>
-                                <span className="text-base font-bold">
-                                  {decimalOdds != null ? decimalOdds.toFixed(3) : '—'}
-                                </span>
-                              </div>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      )
-                    : (
-                        <span className="border-b border-dotted border-primary font-semibold text-primary">
-                          {totalValueLabel}
-                        </span>
-                      )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="border-b border-dotted border-primary font-semibold text-primary">
+                        {safeTotalValueLabel}
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="w-52 p-3"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="h-4 w-1.5 rounded-full bg-blue-500" />
+                            <span>{t('Price')}</span>
+                          </div>
+                          <span className="text-base font-bold">
+                            {limitPriceNumber.toFixed(1)}
+                            ¢
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="h-4 w-1.5 rounded-full bg-amber-400" />
+                            <span>{t('American')}</span>
+                          </div>
+                          <span className="text-base font-bold">
+                            {americanOddsLabel}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2">
+                            <span className="h-4 w-1.5 rounded-full bg-yes" />
+                            <span>{t('Decimal')}</span>
+                          </div>
+                          <span className="text-base font-bold">
+                            {decimalOddsLabel}
+                          </span>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
                 </div>
                 <div className="flex items-center justify-between text-lg font-bold">
                   <span className="flex items-center gap-2 text-foreground">
