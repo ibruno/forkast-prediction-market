@@ -362,7 +362,7 @@ export default function EventOrderPanelLimitControls({
                 </span>
               </TooltipTrigger>
               <TooltipContent className="max-w-48" collisionPadding={8}>
-                {t('{shares} shares from this order will be executed imediatelly', { shares: matchingSharesLabel })}
+                {t('{shares} shares from this order will be executed immediatelly', { shares: matchingSharesLabel })}
               </TooltipContent>
             </Tooltip>
           </div>
