@@ -40,7 +40,7 @@ interface EventContentProps {
 }
 
 export default function EventContent({ event, user, marketContextEnabled, marketSlug }: EventContentProps) {
-  const t = useExtracted('Event.Trade')
+  const t = useExtracted()
   const setEvent = useOrder(state => state.setEvent)
   const setMarket = useOrder(state => state.setMarket)
   const setOutcome = useOrder(state => state.setOutcome)
@@ -308,7 +308,7 @@ export default function EventContent({ event, user, marketContextEnabled, market
           )}
           {isMobile && (
             <>
-              <h3 className="text-lg font-semibold">Related</h3>
+              <h3 className="text-lg font-medium">Related</h3>
               <EventRelated event={event} />
             </>
           )}

@@ -50,7 +50,7 @@ export default function EventOrderPanelBuySellTabs({
   onAmountReset,
   onFocusInput,
 }: EventOrderPanelBuySellTabsProps) {
-  const t = useExtracted('Event.Trade')
+  const t = useExtracted()
   const [typeMenuOpen, setTypeMenuOpen] = useState(false)
   const [isMergeDialogOpen, setIsMergeDialogOpen] = useState(false)
   const [isSplitDialogOpen, setIsSplitDialogOpen] = useState(false)
@@ -221,7 +221,7 @@ export default function EventOrderPanelBuySellTabs({
 
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger className="cursor-pointer">
-                  More
+                  {t('More')}
                 </DropdownMenuSubTrigger>
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent className="min-w-32" alignOffset={-4}>
@@ -233,7 +233,7 @@ export default function EventOrderPanelBuySellTabs({
                         setIsMergeDialogOpen(true)
                       }}
                     >
-                      Merge
+                      {t('Merge')}
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer"
@@ -243,7 +243,7 @@ export default function EventOrderPanelBuySellTabs({
                         setIsSplitDialogOpen(true)
                       }}
                     >
-                      Split
+                      {t('Split')}
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
                 </DropdownMenuPortal>
