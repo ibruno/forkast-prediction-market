@@ -1,6 +1,11 @@
 import AdminCreateEventForm from '@/app/[locale]/admin/create-event/_components/AdminCreateEventForm'
+import { routing } from '@/i18n/routing'
 
-export default async function AdminCreateEventPage() {
+export async function generateStaticParams() {
+  return routing.locales.map(locale => ({ locale }))
+}
+
+export default async function AdminCreateEventPage(_: PageProps<'/[locale]/admin/categories'>) {
   return (
     <section className="grid gap-4">
       <div className="grid gap-2">

@@ -1,12 +1,17 @@
 import type { Metadata } from 'next'
 import MentionsList from '@/app/[locale]/(platform)/mentions/_components/MentionsList'
+import { routing } from '@/i18n/routing'
 import { EventRepository } from '@/lib/db/queries/event'
 
 export const metadata: Metadata = {
   title: 'Mentions',
 }
 
-export default async function MentionsPage() {
+export async function generateStaticParams() {
+  return routing.locales.map(locale => ({ locale }))
+}
+
+export default async function MentionsPage(_: PageProps<'/[locale]/mentions'>) {
   const { data, error } = await EventRepository.listEvents({
     tag: 'mentions',
   })

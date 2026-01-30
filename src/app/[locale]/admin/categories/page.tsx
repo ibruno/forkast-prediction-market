@@ -1,6 +1,11 @@
 import AdminCategoriesTable from '@/app/[locale]/admin/categories/_components/AdminCategoriesTable'
+import { routing } from '@/i18n/routing'
 
-export default async function AdminCategoriesPage() {
+export async function generateStaticParams() {
+  return routing.locales.map(locale => ({ locale }))
+}
+
+export default async function AdminCategoriesPage(_: PageProps<'/[locale]/admin/categories'>) {
   return (
     <section className="grid gap-4">
       <div className="grid gap-2">

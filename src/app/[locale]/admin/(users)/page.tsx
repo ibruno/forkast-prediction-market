@@ -1,6 +1,11 @@
 import AdminUsersTable from '@/app/[locale]/admin/(users)/_components/AdminUsersTable'
+import { routing } from '@/i18n/routing'
 
-export default async function AdminUsersPage() {
+export async function generateStaticParams() {
+  return routing.locales.map(locale => ({ locale }))
+}
+
+export default async function AdminUsersPage(_: PageProps<'/[locale]/admin'>) {
   return (
     <section className="grid gap-4">
       <div className="grid gap-2">

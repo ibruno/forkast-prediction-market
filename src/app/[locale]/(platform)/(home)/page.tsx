@@ -2,9 +2,14 @@
 
 import type { Event } from '@/types'
 import HomeClient from '@/app/[locale]/(platform)/(home)/_components/HomeClient'
+import { routing } from '@/i18n/routing'
 import { EventRepository } from '@/lib/db/queries/event'
 
-export default async function HomePage() {
+export async function generateStaticParams() {
+  return routing.locales.map(locale => ({ locale }))
+}
+
+export default async function HomePage(_: PageProps<'/[locale]'>) {
   let initialEvents: Event[] = []
 
   try {
