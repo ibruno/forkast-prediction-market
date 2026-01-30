@@ -1,15 +1,10 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import SettingsTwoFactorAuthContent from '@/app/[locale]/(platform)/settings/_components/SettingsTwoFactorAuthContent'
-import { routing } from '@/i18n/routing'
 import { UserRepository } from '@/lib/db/queries/user'
 
 export const metadata: Metadata = {
   title: 'Two Factor Settings',
-}
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
 }
 
 export default async function TwoFactorSettingsPage(_: PageProps<'/[locale]/settings/two-factor'>) {

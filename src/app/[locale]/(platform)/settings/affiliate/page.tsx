@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import SettingsAffiliateContent from '@/app/[locale]/(platform)/settings/_components/SettingsAffiliateContent'
-import { routing } from '@/i18n/routing'
 import { baseUnitsToNumber, fetchFeeReceiverTotals, sumFeeTotalsByToken } from '@/lib/data-api/fees'
 import { AffiliateRepository } from '@/lib/db/queries/affiliate'
 import { SettingsRepository } from '@/lib/db/queries/settings'
@@ -8,10 +7,6 @@ import { UserRepository } from '@/lib/db/queries/user'
 
 export const metadata: Metadata = {
   title: 'Affiliate Settings',
-}
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
 }
 
 export default async function AffiliateSettingsPage(_: PageProps<'/[locale]/settings/affiliate'>) {

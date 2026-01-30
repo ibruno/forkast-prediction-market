@@ -3,12 +3,7 @@
 import AdminLocalesSettingsForm from '@/app/[locale]/admin/locales/_components/AdminLocalesSettingsForm'
 import { getEnabledLocalesFromSettings } from '@/i18n/locale-settings'
 import { SUPPORTED_LOCALES } from '@/i18n/locales'
-import { routing } from '@/i18n/routing'
 import { SettingsRepository } from '@/lib/db/queries/settings'
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
-}
 
 export default async function AdminLocalesSettingsPage(_: PageProps<'/[locale]/admin/locales'>) {
   const { data: allSettings } = await SettingsRepository.getSettings()

@@ -1,9 +1,4 @@
 import AdminUsersTable from '@/app/[locale]/admin/(users)/_components/AdminUsersTable'
-import { routing } from '@/i18n/routing'
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
-}
 
 export default async function AdminUsersPage(_: PageProps<'/[locale]/admin'>) {
   return (

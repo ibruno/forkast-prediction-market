@@ -1,9 +1,4 @@
 import AdminCreateEventForm from '@/app/[locale]/admin/create-event/_components/AdminCreateEventForm'
-import { routing } from '@/i18n/routing'
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
-}
 
 export default async function AdminCreateEventPage(_: PageProps<'/[locale]/admin/categories'>) {
   return (

@@ -4,16 +4,11 @@ import PendingDepositBanner from '@/app/[locale]/(platform)/portfolio/_component
 import PortfolioMarketsWonCard from '@/app/[locale]/(platform)/portfolio/_components/PortfolioMarketsWonCard'
 import PortfolioTabs from '@/app/[locale]/(platform)/portfolio/_components/PortfolioTabs'
 import PortfolioWalletActions from '@/app/[locale]/(platform)/portfolio/_components/PortfolioWalletActions'
-import { routing } from '@/i18n/routing'
 import { UserRepository } from '@/lib/db/queries/user'
 import { fetchPortfolioSnapshot } from '@/lib/portfolio'
 
 export const metadata: Metadata = {
   title: 'Portfolio',
-}
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
 }
 
 export default async function PortfolioPage(_: PageProps<'/[locale]/portfolio'>) {

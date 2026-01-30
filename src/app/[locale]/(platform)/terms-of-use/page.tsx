@@ -1,13 +1,8 @@
 import type { Metadata } from 'next'
-import { routing } from '@/i18n/routing'
 
 export const metadata: Metadata = {
   title: 'Terms of Use',
   description: `Terms of Use for ${process.env.NEXT_PUBLIC_SITE_NAME?.trim() ?? 'this site'}`,
-}
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
 }
 
 export default function TermsOfUsePage(_: PageProps<'/[locale]/terms-of-use'>) {

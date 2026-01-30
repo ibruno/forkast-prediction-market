@@ -2,7 +2,6 @@
 
 import AdminAffiliateOverview from '@/app/[locale]/admin/affiliate/_components/AdminAffiliateOverview'
 import AdminAffiliateSettingsForm from '@/app/[locale]/admin/affiliate/_components/AdminAffiliateSettingsForm'
-import { routing } from '@/i18n/routing'
 import { baseUnitsToNumber, fetchFeeReceiverTotals, sumFeeTotalsByToken } from '@/lib/data-api/fees'
 import { AffiliateRepository } from '@/lib/db/queries/affiliate'
 import { SettingsRepository } from '@/lib/db/queries/settings'
@@ -35,10 +34,6 @@ interface RowSummary {
   total_referrals: number
   volume: number
   total_affiliate_fees: number
-}
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
 }
 
 export default async function AdminSettingsPage(_: PageProps<'/[locale]/admin/affiliate'>) {

@@ -1,15 +1,10 @@
 'use cache'
 
 import AdminMarketContextSettingsForm from '@/app/[locale]/admin/market-context/_components/AdminMarketContextSettingsForm'
-import { routing } from '@/i18n/routing'
 import { parseMarketContextSettings } from '@/lib/ai/market-context-config'
 import { MARKET_CONTEXT_VARIABLES } from '@/lib/ai/market-context-template'
 import { fetchOpenRouterModels } from '@/lib/ai/openrouter'
 import { SettingsRepository } from '@/lib/db/queries/settings'
-
-export async function generateStaticParams() {
-  return routing.locales.map(locale => ({ locale }))
-}
 
 export default async function AdminMarketContextSettingsPage(_: PageProps<'/[locale]/admin/market-context'>) {
   const { data: allSettings } = await SettingsRepository.getSettings()
