@@ -57,6 +57,10 @@ BEGIN
     SELECT key, value AS old_value, new_row -> key AS new_value
     FROM jsonb_each(old_row)
     WHERE value IS DISTINCT FROM new_row -> key
+      AND NOT (
+        value = 'null'::jsonb
+        AND new_row -> key IS DISTINCT FROM 'null'::jsonb
+      )
   ) changes;
 
   IF diff_new IS NULL THEN
