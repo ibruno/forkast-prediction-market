@@ -323,6 +323,15 @@ function eventResource(event: DrizzleEventResult, userId: string, priceMap: Map<
   }
 }
 
+async function buildEventResource(eventResult: DrizzleEventResult, userId: string): Promise<Event> {
+  const outcomeTokenIds = (eventResult.markets ?? []).flatMap((market: any) =>
+    (market.condition?.outcomes ?? []).map((outcome: any) => outcome.token_id).filter(Boolean),
+  )
+
+  const priceMap = await fetchOutcomePrices(outcomeTokenIds)
+  return eventResource(eventResult, userId, priceMap)
+}
+
 function getEventMainTag(tags: any[] | undefined): string {
   if (!tags?.length) {
     return 'World'
@@ -566,8 +575,6 @@ export const EventRepository = {
   },
 
   async getEventConditionChangeLogBySlug(slug: string): Promise<QueryResult<ConditionChangeLogEntry[]>> {
-    'use cache'
-
     return runQuery(async () => {
       const eventResult = await db
         .select({ id: events.id })
@@ -580,7 +587,6 @@ export const EventRepository = {
       }
 
       const eventId = eventResult[0]!.id
-      cacheTag(cacheTags.event(eventId))
 
       const rows = await db
         .select({
@@ -701,7 +707,40 @@ export const EventRepository = {
     })
   },
 
-  async getEventBySlug(slug: string, userId: string = ''): Promise<QueryResult<Event>> {
+  async getEventBySlugUncached(slug: string, userId: string = ''): Promise<QueryResult<Event>> {
+    return runQuery(async () => {
+      const eventResult = await db.query.events.findFirst({
+        where: eq(events.slug, slug),
+        with: {
+          markets: {
+            with: {
+              condition: {
+                with: { outcomes: true },
+              },
+            },
+          },
+          eventTags: {
+            with: { tag: true },
+          },
+          ...(userId && {
+            bookmarks: {
+              where: eq(bookmarks.user_id, userId),
+            },
+          }),
+        },
+      }) as DrizzleEventResult
+
+      if (!eventResult) {
+        throw new Error('Event not found')
+      }
+
+      const transformedEvent = await buildEventResource(eventResult as DrizzleEventResult, userId)
+
+      return { data: transformedEvent, error: null }
+    })
+  },
+
+  async getEventBySlugBase(slug: string, userId: string = ''): Promise<QueryResult<DrizzleEventResult>> {
     'use cache'
 
     return runQuery(async () => {
@@ -730,21 +769,27 @@ export const EventRepository = {
         throw new Error('Event not found')
       }
 
-      const outcomeTokenIds = (eventResult.markets ?? []).flatMap((market: any) =>
-        (market.condition?.outcomes ?? []).map((outcome: any) => outcome.token_id).filter(Boolean),
-      )
-
-      const priceMap = await fetchOutcomePrices(outcomeTokenIds)
-      const transformedEvent = eventResource(
-        eventResult as DrizzleEventResult,
-        userId,
-        priceMap,
-      )
-
-      cacheTag(cacheTags.event(`${transformedEvent.id}:${userId}`))
-
-      return { data: transformedEvent, error: null }
+      return { data: eventResult, error: null }
     })
+  },
+
+  async getEventBySlug(slug: string, userId: string = ''): Promise<QueryResult<Event>> {
+    let baseResult: QueryResult<DrizzleEventResult>
+
+    try {
+      baseResult = await EventRepository.getEventBySlugBase(slug, userId)
+    }
+    catch {
+      return EventRepository.getEventBySlugUncached(slug, userId)
+    }
+
+    if (!baseResult.data) {
+      return { data: null, error: baseResult.error }
+    }
+
+    const transformedEvent = await buildEventResource(baseResult.data, userId)
+
+    return { data: transformedEvent, error: null }
   },
 
   async getRelatedEventsBySlug(slug: string, options: RelatedEventOptions = {}): Promise<QueryResult<RelatedEvent[]>> {
