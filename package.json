@@ -1,6 +1,7 @@
 {
   "name": "kuest-prediction-market",
   "private": true,
+  "packageManager": "npm@11.6.2",
   "description": "Launch Your Own Decentralized Prediction Market in Minutes.",
   "repository": {
     "type": "git",
