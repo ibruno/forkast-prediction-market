@@ -13,7 +13,7 @@
 
 <p align="center">
   <a href="https://kuest.com">
-    <img src="https://i.imgur.com/q1edYP5.png" alt="Kuest" />
+    <img src="https://github.com/user-attachments/assets/7f7ab1dc-2571-4f71-a184-1cef722ea24d" alt="Kuest Prediction Market Open Source" />
   </a>
 </p>
 
@@ -28,26 +28,30 @@
 - Same USDC on Polygon — plug‑and‑play for Polymarket users.
 
 <p>
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-polymarket.svg" height="52" alt="Polymarket" />
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-kalshi.svg" height="52" alt="Kalshi (soon)" />
+  <img src="https://github.com/user-attachments/assets/295d3cbe-d361-4205-991e-a9f855fa8c0e" height="52" alt="Polymarket" />
+  <img src="https://github.com/user-attachments/assets/ec0dbc79-33aa-4367-b292-aae7fbfc4490" height="52" alt="Kalshi (soon)" />
 </p>
 
 > [!TIP]
-> Want your own Polymarket-style venue? Launch fast with your brand, rules, and fees. Arbitrage flows are live (Kalshi connector soon) and bot SDKs are ready today — see [kuestcom on GitHub](https://github.com/kuestcom).
+> ### Want your own Polymarket-style prediction market?
+> 
+> Launch fast with your brand, rules, and fees. Arbitrage flows are live (Kalshi connector soon) and [bot SDKs](https://github.com/kuestcom) are ready today.
 
 ## Core Web3 Stack
 
 <p align="center">
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-polygon.svg" height="42" alt="Polygon" />
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-usdc.svg" height="42" alt="USDC" />
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-uma.svg" height="42" alt="UMA" />
+  <img src="https://github.com/user-attachments/assets/dd1c533d-001f-4732-87d9-2b76f4280b58" height="42" alt="Polygon" />
+  <img src="https://github.com/user-attachments/assets/a403c566-08cc-4bfc-82f2-d1e2e77d1809" height="42" alt="USDC" />
+  <img src="https://github.com/user-attachments/assets/c644944a-ce74-464c-9036-e0a63326fd35" height="42" alt="UMA" />
 </p>
 <p align="center">
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-gnosis-safe-wallet.svg" height="42" alt="Safe (Gnosis)" />
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-reown.svg" height="42" alt="Reown" />
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-better-auth.svg" height="42" alt="Better Auth" />
-  <img src="https://kuest.theproxies.workers.dev/kuest-stack-wevm.svg" height="42" alt="wevm (wagmi/viem)" />
+  <img src="https://github.com/user-attachments/assets/9bed7d91-57ba-4652-90d4-e7c83873b24b" height="42" alt="Safe (Gnosis)" />
+  <img src="https://github.com/user-attachments/assets/23dbcdb4-ce31-40b9-a1c5-bedd3ce55a6c" height="42" alt="Reown" />
+  <img src="https://github.com/user-attachments/assets/af482998-d80c-4156-8eed-84c2681d0a30" height="42" alt="Better Auth" />
+  <img src="https://github.com/user-attachments/assets/5f2935d3-ee8d-43d3-8362-873003e92f03" height="42" alt="wevm (wagmi/viem)" />
 </p>
+
+---
 
 ## Quick Start (15 minutes)
 
@@ -55,10 +59,10 @@
 > **Get Started Now!**
 > Follow these simple steps to launch your own prediction market:
 > <p>
->   <img src="https://kuest.theproxies.workers.dev/kuest-stack-vercel.svg" height="42" alt="Vercel" />
->   <img src="https://kuest.theproxies.workers.dev/kuest-stack-nextjs.svg" height="42" alt="Next.js" />
->   <img src="https://kuest.theproxies.workers.dev/kuest-stack-typescript.svg" height="42" alt="TypeScript" />
->   <img src="https://kuest.theproxies.workers.dev/kuest-stack-supabase.svg" height="42" alt="Supabase" />
+>   <img src="https://github.com/user-attachments/assets/5386379f-7b96-4826-9d4e-1b7883bedf8e" height="42" alt="Vercel" />
+>   <img src="https://github.com/user-attachments/assets/364a3525-7102-4a20-b096-12eb5337a62b" height="42" alt="Next.js" />
+>   <img src="https://github.com/user-attachments/assets/88cc61ff-e068-46a4-b197-0c7b7d421bb3" height="42" alt="TypeScript" />
+>   <img src="https://github.com/user-attachments/assets/d1c1f2a5-d6f8-44cb-ae47-262b1ecb195f" height="42" alt="Supabase" />
 > </p>
 >
 > ### 1. Fork the Repository
@@ -98,6 +102,8 @@
 
 **Ready! 🎉** Your prediction market will be online with automatic database setup in a few minutes.
 
+---
+
 ## Roadmap
 
 - [x] Polymarket-inspired UI and market pages
@@ -119,21 +125,30 @@
 - [ ] User-created markets (soon)
 - [ ] Kalshi arbitrage connector (soon)
 
+---
+
 ## Follow Us
 
 <p>
   <a href="https://discord.gg/kuest">
     <img alt="Discord" src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&style=social" />
   </a>
+</p>
+<p>
   <a href="https://x.com/kuest">
     <img alt="X" src="https://img.shields.io/badge/X-@kuest-000?logo=x&style=social" />
   </a>
+</p>
+<p>
   <a href="mailto:hello@kuest.com">
     <img alt="Email" src="https://img.shields.io/badge/Email-hello%40kuest.com-444?logo=gmail&style=social" />
   </a>
+</p>
+<p>
   <a href="https://kuest.com">
     <img alt="Website" src="https://img.shields.io/badge/Website-kuest.com-111?logo=website&style=social" />
   </a>
+</p>
 </p>
 
 ---
