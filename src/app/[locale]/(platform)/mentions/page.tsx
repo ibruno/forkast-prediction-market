@@ -1,3 +1,5 @@
+'use cache'
+
 import type { Metadata } from 'next'
 import { setRequestLocale } from 'next-intl/server'
 import MentionsList from '@/app/[locale]/(platform)/mentions/_components/MentionsList'
