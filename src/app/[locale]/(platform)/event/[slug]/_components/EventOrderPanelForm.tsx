@@ -16,7 +16,6 @@ import EventOrderPanelMarketInfo from '@/app/[locale]/(platform)/event/[slug]/_c
 import EventOrderPanelMobileMarketInfo from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelMobileMarketInfo'
 import EventOrderPanelOutcomeButton from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelOutcomeButton'
 import EventOrderPanelSubmitButton from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelSubmitButton'
-import EventOrderPanelTermsDisclaimer from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelTermsDisclaimer'
 import EventOrderPanelUserShares from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderPanelUserShares'
 import { handleOrderCancelledFeedback, handleOrderErrorFeedback, handleOrderSuccessFeedback, handleValidationError, notifyWalletApprovalPrompt } from '@/app/[locale]/(platform)/event/[slug]/_components/feedback'
 import { useEventOrderPanelOpenOrders } from '@/app/[locale]/(platform)/event/[slug]/_hooks/useEventOrderPanelOpenOrders'
@@ -773,8 +772,8 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
       action={onSubmit}
       id="event-order-form"
       className={cn({
-        'rounded-lg border lg:w-85': !isMobile,
-      }, 'w-full p-4 shadow-xl/5')}
+        'rounded-xl border lg:w-85': !isMobile,
+      }, 'w-full p-4 lg:shadow-xl/5')}
     >
       {!isResolvedMarket && !isMobile && !isSingleMarket && <EventOrderPanelMarketInfo market={state.market} />}
       {!isResolvedMarket && isMobile && (
@@ -997,7 +996,6 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
                   return t('Trade')
                 })()}
               />
-              <EventOrderPanelTermsDisclaimer />
             </>
           )}
     </Form>
