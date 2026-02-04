@@ -117,7 +117,7 @@ export default function HeaderDropdownUserMenuAuth() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
-          className="w-64"
+          className="scrollbar-hide w-64"
           align="end"
           sideOffset={0}
           collisionPadding={16}

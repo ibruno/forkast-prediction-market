@@ -283,7 +283,7 @@ export default function EventContent({
             id="event-markets"
             className="min-w-0 overflow-x-hidden lg:overflow-x-visible"
           >
-            <EventMarkets event={event} isMobile={isMobile} />
+            {event.total_markets_count > 1 && <EventMarkets event={event} isMobile={isMobile} />}
           </div>
           {event.total_markets_count === 1 && (
             <>

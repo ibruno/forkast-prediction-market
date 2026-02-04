@@ -78,7 +78,7 @@ const tradeFlowTextStrokeStyle = {
 
 const PredictionChart = dynamic<PredictionChartProps>(
   () => import('@/components/PredictionChart'),
-  { ssr: false },
+  { ssr: false, loading: () => <div className="h-83 w-full" /> },
 )
 
 function getOutcomeTokenIds(market: Market | null) {

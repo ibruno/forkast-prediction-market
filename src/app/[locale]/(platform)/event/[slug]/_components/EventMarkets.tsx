@@ -514,9 +514,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
   return (
     <>
       <div className="-mr-2 -ml-4 bg-background lg:mx-0">
-        {shouldShowActiveSection && (
-          <div className="mt-4 mr-2 ml-4 border-b border-border lg:mx-0" />
-        )}
+        {shouldShowActiveSection && <div className="mt-4 mr-2 ml-4 border-b border-border lg:mx-0" />}
         {primaryMarketRows
           .map((row, index, orderedMarkets) => {
             const { market } = row
@@ -592,9 +590,7 @@ export default function EventMarkets({ event, isMobile }: EventMarketsProps) {
                   />
                 </div>
 
-                {shouldShowSeparator && (
-                  <div className="mr-2 ml-4 border-b border-border lg:mx-0" />
-                )}
+                {shouldShowSeparator && <div className="mr-2 ml-4 border-b border-border lg:mx-0" />}
               </div>
             )
           })}
