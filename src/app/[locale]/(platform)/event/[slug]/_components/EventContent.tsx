@@ -273,55 +273,60 @@ export default function EventContent({
     <EventMarketChannelProvider markets={event.markets}>
       <EventOutcomeChanceProvider eventId={event.id}>
         <OrderLimitPriceSync />
-        <div className="grid gap-6" ref={contentRef}>
+        <div className="grid gap-3" ref={contentRef}>
           <EventHeader event={event} />
-          <div className="-mt-3 min-h-96 w-full">
+
+          <div className="min-h-96 w-full">
             <EventChart event={event} isMobile={isMobile} />
           </div>
-          <div
-            ref={eventMarketsRef}
-            id="event-markets"
-            className="min-w-0 overflow-x-hidden lg:overflow-x-visible"
-          >
-            {event.total_markets_count > 1 && <EventMarkets event={event} isMobile={isMobile} />}
-          </div>
-          {event.total_markets_count === 1 && (
-            <>
-              {currentUser && (
-                <EventMarketPositions
-                  market={event.markets[0]}
-                  isNegRiskEnabled={Boolean(event.enable_neg_risk || event.neg_risk)}
-                  isNegRiskAugmented={Boolean(event.neg_risk_augmented)}
-                  eventOutcomes={event.markets.map(market => ({
-                    conditionId: market.condition_id,
-                    questionId: market.question_id,
-                    label: market.short_title || market.title,
-                    iconUrl: market.icon_url,
-                  }))}
-                  negRiskMarketId={event.neg_risk_market_id}
-                />
-              )}
-              <EventSingleMarketOrderBook market={event.markets[0]} eventSlug={event.slug} />
-              { currentUser && <EventMarketOpenOrders market={event.markets[0]} eventSlug={event.slug} />}
-              { currentUser && <EventMarketHistory market={event.markets[0]} /> }
-            </>
-          )}
-          {marketContextEnabled && <EventMarketContext event={event} />}
-          <EventRules event={event} />
-          {selectedMarketResolved && (
-            <div className="rounded-xl border bg-background p-4">
-              <ResolvedResolutionPanel
-                outcomeLabel={selectedResolvedOutcomeLabel}
-                settledUrl={null}
-                showLink={false}
-              />
+
+          <div className="grid gap-6">
+            <div
+              ref={eventMarketsRef}
+              id="event-markets"
+              className="min-w-0 overflow-x-hidden lg:overflow-x-visible"
+            >
+              {event.total_markets_count > 1 && <EventMarkets event={event} isMobile={isMobile} />}
             </div>
-          )}
+            {event.total_markets_count === 1 && (
+              <>
+                {currentUser && (
+                  <EventMarketPositions
+                    market={event.markets[0]}
+                    isNegRiskEnabled={Boolean(event.enable_neg_risk || event.neg_risk)}
+                    isNegRiskAugmented={Boolean(event.neg_risk_augmented)}
+                    eventOutcomes={event.markets.map(market => ({
+                      conditionId: market.condition_id,
+                      questionId: market.question_id,
+                      label: market.short_title || market.title,
+                      iconUrl: market.icon_url,
+                    }))}
+                    negRiskMarketId={event.neg_risk_market_id}
+                  />
+                )}
+                <EventSingleMarketOrderBook market={event.markets[0]} eventSlug={event.slug} />
+                { currentUser && <EventMarketOpenOrders market={event.markets[0]} eventSlug={event.slug} />}
+                { currentUser && <EventMarketHistory market={event.markets[0]} /> }
+              </>
+            )}
+            {marketContextEnabled && <EventMarketContext event={event} />}
+            <EventRules event={event} />
+            {selectedMarketResolved && (
+              <div className="rounded-xl border bg-background p-4">
+                <ResolvedResolutionPanel
+                  outcomeLabel={selectedResolvedOutcomeLabel}
+                  settledUrl={null}
+                  showLink={false}
+                />
+              </div>
+            )}
+          </div>
+
           {isMobile && (
-            <>
-              <h3 className="text-lg font-medium">Related</h3>
+            <div className="grid gap-4 lg:hidden">
+              <h3 className="text-base font-medium">{t('Related')}</h3>
               <EventRelated event={event} />
-            </>
+            </div>
           )}
           <EventTabs event={event} user={currentUser} />
         </div>
@@ -341,7 +346,7 @@ export default function EventContent({
                   font-medium text-foreground shadow-lg backdrop-blur-sm transition-colors
                   hover:text-muted-foreground
                 `}
-                aria-label="Back to top"
+                aria-label={t('Back to top')}
               >
                 <span className="inline-flex items-center gap-2">
                   {t('Back to top')}

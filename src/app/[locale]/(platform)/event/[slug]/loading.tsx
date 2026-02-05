@@ -14,7 +14,7 @@ export default async function Loading() {
       <div className="min-h-100 w-full" />
 
       {Array.from({ length: 3 }).map((_, index) => (
-        <Skeleton key={`summary-${index}`} className="h-16 rounded-xl border bg-card" />
+        <Skeleton key={`summary-${index}`} className="h-18 rounded-xl border bg-card" />
       ))}
 
       <Teleport to="#event-order-panel">

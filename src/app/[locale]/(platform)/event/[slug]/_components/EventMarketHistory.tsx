@@ -116,7 +116,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
       <>
         {isSingleMarket && (
           <div className="p-4">
-            <h3 className="text-lg font-medium">{t('History')}</h3>
+            <h3 className="text-base font-medium">{t('History')}</h3>
           </div>
         )}
         <div className={cn(isSingleMarket ? 'border-t' : '', 'p-4')}>
@@ -167,7 +167,7 @@ export default function EventMarketHistory({ market }: EventMarketHistoryProps) 
     <>
       {isSingleMarket && (
         <div className="sticky top-0 p-4">
-          <h3 className="text-lg font-medium">{t('History')}</h3>
+          <h3 className="text-base font-medium">{t('History')}</h3>
         </div>
       )}
 

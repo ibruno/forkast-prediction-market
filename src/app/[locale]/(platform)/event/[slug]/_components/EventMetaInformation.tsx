@@ -104,9 +104,9 @@ export default function EventMetaInformation({ event }: EventMetaInformationProp
   const remainingLabel = remainingDays !== null ? t('In {days} days', { days: String(remainingDays) }) : ''
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
+    <div className="flex flex-wrap items-center gap-2">
       {shouldShowNew && (
-        <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+        <span className="inline-flex items-center gap-1.5 text-sm font-medium text-primary">
           <SparkleIcon className="size-3.5 fill-current" stroke="currentColor" fill="currentColor" />
           <span>{t('New')}</span>
         </span>
@@ -164,7 +164,7 @@ export default function EventMetaInformation({ event }: EventMetaInformationProp
             </TooltipContent>
           </Tooltip>
         )}
-        <span className="text-sm font-semibold">{volumeLabel}</span>
+        <span className="text-sm font-medium">{volumeLabel}</span>
       </div>
       {expiryDate && <span className="mx-1.5 h-4 w-px bg-muted-foreground/40" aria-hidden="true" />}
       {expiryDate && (
