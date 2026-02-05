@@ -12,7 +12,7 @@ export default async function Loading() {
           </div>
         </div>
 
-        <Skeleton className="mb-16 h-83 w-full bg-card" />
+        <div className="mb-16 h-83 w-full" />
 
         <div className="grid gap-6">
           {Array.from({ length: 3 }).map((_, index) => (
