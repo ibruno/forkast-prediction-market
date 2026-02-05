@@ -790,7 +790,7 @@ function EventChartComponent({ event, isMobile }: EventChartProps) {
           />
         )}
         chart={(
-          <div className="relative min-h-83 w-full">
+          <div className="relative">
             <PredictionChart
               data={chartData}
               series={legendSeries}
