@@ -992,10 +992,10 @@ function MarketDetailTabs({
   }, [controlledTab, select, selectedTab])
 
   return (
-    <div className="pt-2">
+    <div className="pt-0">
       <div className="px-0">
         <div className="flex items-center gap-2 border-b">
-          <div className="scrollbar-hide flex w-0 flex-1 gap-4 overflow-x-auto">
+          <div className="flex w-0 flex-1 gap-4 overflow-x-auto">
             {visibleTabs.map((tab) => {
               const isActive = selectedTab === tab.id
               return (
@@ -1046,7 +1046,7 @@ function MarketDetailTabs({
         </div>
       </div>
 
-      <div className="px-0 py-4">
+      <div className={cn('px-0', selectedTab === 'orderBook' ? 'pt-4 pb-0' : 'py-4')}>
         {selectedTab === 'orderBook' && (
           <EventOrderBook
             market={market}
