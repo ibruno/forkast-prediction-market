@@ -20,12 +20,12 @@
 ## Why Kuest
 
 - Launch your own on-chain prediction market in minutes.
-- Earn fees on trades with a transparent, open-source stack.
-- Built-in affiliate links so partners can promote your fork and grow volume.
-- Polygon-native for low fees and high-speed settlement.
-- UMA resolves outcomes with public, verifiable oracles.
-- Full web UI plus bot-ready APIs and SDKs (Python/Rust) . No backend infra to manage.
-- Same USDC on Polygon — plug‑and‑play for Polymarket users.
+- Polygon-native for low fees and fast settlement.
+- Same USDC on Polygon — plug-and-play for Polymarket users.
+- Earn trading fees from your fork.
+- Amplify volume via on-chain affiliate attribution.
+- UMA-powered outcome resolution with public, verifiable oracles.
+- Full web UI plus bot-ready APIs and SDKs (Python/Rust). No backend infrastructure to manage.
 
 <p>
   <img src="https://github.com/user-attachments/assets/295d3cbe-d361-4205-991e-a9f855fa8c0e" height="52" alt="Polymarket" />
@@ -35,7 +35,7 @@
 > [!TIP]
 > ### Want your own Polymarket-style prediction market?
 > 
-> Launch fast with your brand, rules, and fees. Arbitrage flows are live (Kalshi connector soon) and [bot SDKs](https://github.com/kuestcom) are ready today.
+> Launch quickly with your own brand, rules, and fee configuration. Arbitrage flows are live (Kalshi connector soon) and [bot SDKs](https://github.com/kuestcom) are ready today.
 
 ## Core Web3 Stack
 
@@ -66,7 +66,9 @@
 > </p>
 >
 > ### 1. Fork the Repository
-> Click the **Fork** button in the top right corner (and feel free to leave a **⭐ star**!)
+> 1. In the top right corner, click the [**⭐ Star**] button  
+> 2. From the same menu, click [**Fork**]
+>
 > ### 2. Create a New Project on Vercel
 > 1. Go to [Vercel](https://vercel.com) dashboard
 > 2. Select **Add New** → **Project**
@@ -93,7 +95,7 @@
 > 5. Click **"Import .env"** button
 > 6. Select your edited `.env.example` file
 > ### 5. Redeploy your project
-> *Optionally, add your custom domain in **Settings** → **Domains** on your project dashboard.*
+> Optionally, wait 15 minutes after deployment, then add your custom domain in **Settings** → **Domains** on your project dashboard.
 > ### 6. Sync Your Fork (via GitHub Actions)
 > In your forked Kuest repository:
 > 1. Go to **Settings** → **Actions** → **General**
@@ -108,6 +110,9 @@
 
 - [x] Polymarket-inspired UI and market pages
 - [x] Polygon network support
+- [x] On-chain configurable fees per fork
+- [x] On-chain affiliate mode (trustless fee sharing)
+- [x] Shared liquidity across multiple forks
 - [x] Wallet onboarding via Reown AppKit
 - [x] Safe-compatible proxy wallet flows
 - [x] Relayer server
@@ -116,13 +121,14 @@
 - [x] PnL system
 - [x] Negative Risk Conversion Positions function
 - [x] Public bot SDK (Python/Rust)
+- [x] Activity page
+- [x] Traders Ranking
 - [ ] UMA Oracle implementation
 - [ ] 🏆 MVP Ready (stress tests, security and calculation checks)
 - [ ] Move matching engine to mainnet
-- [ ] Traders Ranking (soon)
 - [ ] Auto‑renew Crypto and X counter markets (soon)
 - [ ] Sports markets (soon)
-- [ ] User-created markets (soon)
+- [ ] Fork-created markets with opt-in cross-fork sharing (soon)
 - [ ] Kalshi arbitrage connector (soon)
 
 ---
@@ -130,23 +136,23 @@
 ## Follow Us
 
 <p>
-  <a href="https://discord.gg/kuest">
-    <img alt="Discord" src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&style=social" />
-  </a>
-</p>
-<p>
   <a href="https://x.com/kuest">
     <img alt="X" src="https://img.shields.io/badge/X-@kuest-000?logo=x&style=social" />
   </a>
 </p>
 <p>
-  <a href="mailto:hello@kuest.com">
-    <img alt="Email" src="https://img.shields.io/badge/Email-hello%40kuest.com-444?logo=gmail&style=social" />
+  <a href="https://discord.gg/kuest">
+    <img alt="Discord" src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&style=social" />
   </a>
 </p>
 <p>
   <a href="https://kuest.com">
     <img alt="Website" src="https://img.shields.io/badge/Website-kuest.com-111?logo=website&style=social" />
+  </a>
+</p>
+<p>
+  <a href="mailto:hello@kuest.com">
+    <img alt="Email" src="https://img.shields.io/badge/Email-hello%40kuest.com-444?logo=gmail&style=social" />
   </a>
 </p>
 </p>
