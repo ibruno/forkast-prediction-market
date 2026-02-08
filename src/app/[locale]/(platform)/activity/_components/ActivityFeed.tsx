@@ -452,8 +452,7 @@ export default function ActivityFeed() {
 
   const rowClassName = cn(
     `
-      group relative z-0 flex w-full cursor-pointer flex-col gap-3 py-3 pr-2 pl-3 transition-all duration-200
-      ease-in-out
+      group relative z-0 flex w-full cursor-pointer flex-col gap-3 p-3 transition-all duration-200 ease-in-out
       before:pointer-events-none before:absolute before:-inset-x-3 before:inset-y-0 before:-z-10 before:rounded-lg
       before:bg-black/5 before:opacity-0 before:transition-opacity before:duration-200 before:content-['']
       hover:before:opacity-100
