@@ -36,10 +36,15 @@ describe('theme settings runtime resolver', () => {
           radius: { value: '12px', updated_at: '2026-01-01T00:00:00.000Z' },
           light_json: { value: '{"primary":"#112233"}', updated_at: '2026-01-01T00:00:00.000Z' },
           dark_json: { value: '{"primary":"#445566"}', updated_at: '2026-01-01T00:00:00.000Z' },
+        },
+        general: {
           site_name: { value: 'Kuest Lime', updated_at: '2026-01-01T00:00:00.000Z' },
           site_description: { value: 'Lime branded market', updated_at: '2026-01-01T00:00:00.000Z' },
           site_logo_mode: { value: 'svg', updated_at: '2026-01-01T00:00:00.000Z' },
           site_logo_svg: { value: '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\"><circle cx=\"5\" cy=\"5\" r=\"4\"/></svg>', updated_at: '2026-01-01T00:00:00.000Z' },
+          site_google_analytics: { value: 'G-TEST123', updated_at: '2026-01-01T00:00:00.000Z' },
+          site_discord_link: { value: 'https://discord.gg/kuest', updated_at: '2026-01-01T00:00:00.000Z' },
+          site_support_url: { value: 'https://kuest.com/support', updated_at: '2026-01-01T00:00:00.000Z' },
         },
       },
       error: null,
@@ -57,6 +62,9 @@ describe('theme settings runtime resolver', () => {
     expect(state.site.name).toBe('Kuest Lime')
     expect(state.site.description).toBe('Lime branded market')
     expect(state.site.logoMode).toBe('svg')
+    expect(state.site.googleAnalyticsId).toBe('G-TEST123')
+    expect(state.site.discordLink).toBe('https://discord.gg/kuest')
+    expect(state.site.supportUrl).toBe('https://kuest.com/support')
   })
 
   it('falls back when stored settings are invalid', async () => {
@@ -93,5 +101,23 @@ describe('theme settings runtime resolver', () => {
     expect(state.theme.radius).toBeNull()
     expect(state.site.name).toBeTruthy()
     expect(state.site.description).toBeTruthy()
+  })
+
+  it('does not read site identity from theme group', async () => {
+    mocks.getSettings.mockResolvedValueOnce({
+      data: {
+        theme: {
+          site_name: { value: 'Legacy Theme Name', updated_at: '2026-01-01T00:00:00.000Z' },
+          site_description: { value: 'Legacy Theme Description', updated_at: '2026-01-01T00:00:00.000Z' },
+        },
+      },
+      error: null,
+    })
+
+    const { loadRuntimeThemeState } = await import('@/lib/theme-settings')
+    const state = await loadRuntimeThemeState()
+
+    expect(state.site.name).not.toBe('Legacy Theme Name')
+    expect(state.site.description).not.toBe('Legacy Theme Description')
   })
 })
