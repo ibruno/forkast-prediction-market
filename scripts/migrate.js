@@ -4,6 +4,11 @@ const fs = require('node:fs')
 const path = require('node:path')
 const postgres = require('postgres')
 
+function readPositiveInt(name, fallback) {
+  const value = Number.parseInt(process.env[name] || '', 10)
+  return Number.isInteger(value) && value > 0 ? value : fallback
+}
+
 async function applyMigrations(sql) {
   console.log('Applying migrations...')
 
@@ -157,14 +162,42 @@ function shouldSkip(requiredEnvVars) {
   return true
 }
 
+function resolveMigrationConnectionString() {
+  const migrationUrl = process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL
+
+  if (!migrationUrl) {
+    return null
+  }
+
+  return migrationUrl.replace('require', 'disable')
+}
+
 async function run() {
-  const requiredEnvVars = ['POSTGRES_URL', 'VERCEL_PROJECT_PRODUCTION_URL', 'CRON_SECRET']
+  const requiredEnvVars = ['VERCEL_PROJECT_PRODUCTION_URL', 'CRON_SECRET']
   if (shouldSkip(requiredEnvVars)) {
     return
   }
 
-  const connectionString = process.env.POSTGRES_URL.replace('require', 'disable')
-  const sql = postgres(connectionString)
+  const connectionString = resolveMigrationConnectionString()
+  if (!connectionString) {
+    console.log('Skipping db:push because required env vars are missing: POSTGRES_URL_NON_POOLING, POSTGRES_MIGRATION_URL or POSTGRES_URL')
+    return
+  }
+
+  if (process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_MIGRATION_URL) {
+    console.log('Using non-pooling database URL for migrations.')
+  }
+  else {
+    console.log('Using POSTGRES_URL for migrations (set POSTGRES_URL_NON_POOLING to use direct/session pooler URL).')
+  }
+
+  const maxConnections = readPositiveInt('DB_PUSH_MAX_CONNECTIONS', 1)
+
+  const sql = postgres(connectionString, {
+    max: maxConnections,
+    connect_timeout: 30,
+    idle_timeout: 5,
+  })
 
   try {
     console.log('Connecting to database...')
@@ -172,16 +205,13 @@ async function run() {
     console.log('Connected to database successfully')
 
     await applyMigrations(sql)
-
-    await Promise.all([
-      createCleanCronDetailsCron(sql),
-      createSyncEventsCron(sql),
-      createSyncVolumeCron(sql),
-    ])
+    await createCleanCronDetailsCron(sql)
+    await createSyncEventsCron(sql)
+    await createSyncVolumeCron(sql)
   }
   catch (error) {
     console.error('An error occurred:', error)
-    process.exit(1)
+    process.exitCode = 1
   }
   finally {
     console.log('Closing database connection...')
