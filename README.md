@@ -72,12 +72,15 @@
 > 2. From the same menu, click **[Fork]**
 >
 > ### 2. Configure Environment Variables before Deploy
-> 1. Download `.env.example` from this repository
+> 1. Download [`.env.example`](./.env.example) from this repository
 > 2. **Edit** it with your configuration:
->    - **Kuest CLOB Ordersbook**: Connect your wallet at [auth.kuest.com](https://auth.kuest.com), sign to verify ownership, and copy the API key, secret, and passphrase
->    - **Reown AppKit**: Get Project ID at [dashboard.reown.com](https://dashboard.reown.com)
->    - **Better Auth**: Generate secret at [better-auth.com](https://www.better-auth.com/docs/installation#set-environment-variables)
->    - **CRON_SECRET**: Create a random secret of at least 16 characters
+>    | ENV key | What it is |
+>    | --- | --- |
+>    | `KUEST_ADDRESS`<br/>`KUEST_API_KEY`<br/>`KUEST_API_SECRET`<br/>`KUEST_PASSPHRASE` | Kuest CLOB Auth credentials (generate at [auth.kuest.com](https://auth.kuest.com) by connecting your Polygon EVM 0x wallet) |
+>    | `ADMIN_WALLETS` | Wallets that should be admins (comma-separated 0x addresses) |
+>    | `NEXT_PUBLIC_REOWN_APPKIT_PROJECT_ID` | Reown AppKit Project ID (from [dashboard.reown.com](https://dashboard.reown.com)) |
+>    | `BETTER_AUTH_SECRET` | Better Auth secret (32 chars, generate at [better-auth.com](https://www.better-auth.com/docs/installation#set-environment-variables)) |
+>    | `CRON_SECRET` | Create a random secret (16+ chars) |
 >
 > ### 3. Create a New Project on Vercel
 > <img src="https://github.com/user-attachments/assets/5386379f-7b96-4826-9d4e-1b7883bedf8e" height="38" alt="Vercel" />
@@ -104,13 +107,18 @@
 > 1. Open **Deployments**
 > 2. Click the three dots (**...**) and select **Redeploy** on the latest deployment
 > 3. Optional: wait 15 minutes, then add your custom domain in **Settings** → **Domains**
+>
 > ### 6. Sync Your Fork (via GitHub Actions)
 > In your forked Kuest repository:
 > 1. Go to **Settings** → **Actions** → **General**
 > 2. Select **"Allow all actions and reusable workflows"**
 > 3. Click **Save**
+>
+> ### 7. Finish Setup in Admin
+> 1. Log in with a wallet listed in `ADMIN_WALLETS`
+> 2. Open **Admin → General** to finish setup (Company name, branding, fees...).
 
-**Ready! 🎉** Your prediction market will be online.
+**Ready! 🎉** Your prediction market is live.
 
 ---
 
