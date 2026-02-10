@@ -107,7 +107,7 @@ async function tryAcquireSyncLock(): Promise<boolean> {
     .update(runningPayload)
     .eq('service_name', 'resolution_sync')
     .eq('subgraph_name', 'resolution')
-    .or(`status.neq.running,updated_at.lt.${staleThreshold}`)
+    .or(`status.neq."running",updated_at.lt.${staleThreshold}`)
     .select('id')
     .limit(1)
 
