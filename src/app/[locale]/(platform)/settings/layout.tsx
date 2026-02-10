@@ -1,9 +1,15 @@
 import type { Metadata } from 'next'
-import { setRequestLocale } from 'next-intl/server'
+import { getExtracted, setRequestLocale } from 'next-intl/server'
 import SettingsSidebar from '@/app/[locale]/(platform)/settings/_components/SettingsSidebar'
 
-export const metadata: Metadata = {
-  title: 'Settings',
+export async function generateMetadata({ params }: LayoutProps<'/[locale]/settings'>): Promise<Metadata> {
+  const { locale } = await params
+  setRequestLocale(locale)
+  const t = await getExtracted()
+
+  return {
+    title: t('Settings'),
+  }
 }
 
 export default async function SettingsLayout({ params, children }: LayoutProps<'/[locale]/settings'>) {

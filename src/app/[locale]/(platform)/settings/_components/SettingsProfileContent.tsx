@@ -2,6 +2,7 @@
 
 import type { User } from '@/types'
 import { useQueryClient } from '@tanstack/react-query'
+import { useExtracted } from 'next-intl'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -21,6 +22,7 @@ import {
 import { useUser } from '@/stores/useUser'
 
 export default function SettingsProfileContent({ user }: { user: User }) {
+  const t = useExtracted()
   const queryClient = useQueryClient()
   const { signMessageAsync } = useSignMessage()
   const communityApiUrl = process.env.COMMUNITY_URL!
@@ -112,7 +114,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
         }
 
         if (!response.ok) {
-          const message = await parseCommunityError(response, 'Failed to update profile.')
+          const message = await parseCommunityError(response, t('Failed to update profile.'))
           setFormError(message)
           toast.error(message)
           return
@@ -154,10 +156,10 @@ export default function SettingsProfileContent({ user }: { user: User }) {
           return key === 'event-comments' || key === 'event-activity' || key === 'event-holders'
         },
       })
-      toast.success('Profile updated successfully!')
+      toast.success(t('Profile updated successfully!'))
     }
     catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to update profile.'
+      const message = err instanceof Error ? err.message : t('Failed to update profile.')
       setFormError(message)
       toast.error(message)
     }
@@ -180,7 +182,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
                       width={42}
                       height={42}
                       src={previewImage}
-                      alt="Profile"
+                      alt={t('Profile')}
                       className="size-full object-cover"
                     />
                   )
@@ -197,7 +199,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
                           width={42}
                           height={42}
                           src={avatarUrl}
-                          alt="Profile"
+                          alt={t('Profile')}
                           className="size-full object-cover"
                         />
                       ))}
@@ -210,10 +212,10 @@ export default function SettingsProfileContent({ user }: { user: User }) {
                 onClick={handleUploadClick}
                 disabled={isPending}
               >
-                Upload
+                {t('Upload')}
               </Button>
               {errors?.image && <InputError message={errors.image} />}
-              <p className="text-xs text-muted-foreground">Max 5MB, JPG/PNG/WEBP only</p>
+              <p className="text-xs text-muted-foreground">{t('Max 5MB, JPG/PNG/WEBP only')}</p>
             </div>
           </div>
 
@@ -228,7 +230,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
               const file = e.target.files?.[0]
               if (file) {
                 if (file.size > 5 * 1024 * 1024) {
-                  toast.error('File too big! Max 5MB.')
+                  toast.error(t('File too big! Max 5MB.'))
                   e.target.value = ''
                   clearPreview()
                 }
@@ -248,7 +250,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
         <div className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">
-              Email
+              {t('Email')}
             </Label>
             <Input
               id="email"
@@ -256,14 +258,14 @@ export default function SettingsProfileContent({ user }: { user: User }) {
               name="email"
               defaultValue={user.email}
               disabled={isPending}
-              placeholder="Enter your email"
+              placeholder={t('Enter your email')}
             />
             {errors?.email && <InputError message={errors.email} />}
           </div>
 
           <div className="grid gap-2">
             <Label htmlFor="username">
-              Username
+              {t('Username')}
             </Label>
             <Input
               id="username"
@@ -272,7 +274,7 @@ export default function SettingsProfileContent({ user }: { user: User }) {
               maxLength={30}
               defaultValue={user.username}
               disabled={isPending}
-              placeholder="Enter your username"
+              placeholder={t('Enter your username')}
             />
             {errors?.username && <InputError message={errors.username} />}
           </div>
@@ -283,10 +285,10 @@ export default function SettingsProfileContent({ user }: { user: User }) {
             href={user.username ? `/@${user.username}` : `/@${user.proxy_wallet_address}`}
             className="text-sm font-medium text-primary transition-colors hover:text-primary/80 hover:underline"
           >
-            View Public Profile
+            {t('View Public Profile')}
           </Link>
           <Button type="submit" disabled={isPending} className="w-36">
-            {isPending ? 'Saving...' : 'Save changes'}
+            {isPending ? t('Saving...') : t('Save changes')}
           </Button>
         </div>
       </form>

@@ -1,6 +1,7 @@
 'use client'
 
 import type { MarketOrderType, User } from '@/types'
+import { useExtracted } from 'next-intl'
 import Form from 'next/form'
 import { startTransition, useOptimistic, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -10,28 +11,23 @@ import { CLOB_ORDER_TYPE } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { useUser } from '@/stores/useUser'
 
-const ORDER_TYPE_OPTIONS: Array<{
-  value: MarketOrderType
-  title: string
-  description: string
-  badge?: string
-}> = [
-  {
-    value: CLOB_ORDER_TYPE.FAK,
-    title: 'Fill and Kill (FAK)',
-    description: 'Fills as much as possible at the best available prices and cancels any remaining unfilled portion',
-  },
-  {
-    value: CLOB_ORDER_TYPE.FOK,
-    title: 'Fill or Kill (FOK)',
-    description: 'Executes the entire order immediately at the specified price or cancels it completely',
-  },
-]
-
 export default function SettingsTradingContent({ user }: { user: User }) {
+  const t = useExtracted()
   const [error, setError] = useState<string | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const initialOrderType = (user.settings?.trading?.market_order_type as MarketOrderType) ?? CLOB_ORDER_TYPE.FAK
+  const orderTypeOptions = [
+    {
+      value: CLOB_ORDER_TYPE.FAK as MarketOrderType,
+      title: t('Fill and Kill (FAK)'),
+      description: t('Fills as much as possible at the best available prices and cancels any remaining unfilled portion'),
+    },
+    {
+      value: CLOB_ORDER_TYPE.FOK as MarketOrderType,
+      title: t('Fill or Kill (FOK)'),
+      description: t('Executes the entire order immediately at the specified price or cancels it completely'),
+    },
+  ]
 
   const [optimisticOrderType, setOptimisticOrderType] = useOptimistic<MarketOrderType, MarketOrderType>(
     initialOrderType,
@@ -82,7 +78,7 @@ export default function SettingsTradingContent({ user }: { user: User }) {
       }
       else {
         setError(error)
-        toast.success('Trading settings updated.')
+        toast.success(t('Trading settings updated.'))
         updateGlobalUser(value)
       }
     })
@@ -96,7 +92,7 @@ export default function SettingsTradingContent({ user }: { user: User }) {
         <input type="hidden" name="market_order_type" value={optimisticOrderType} />
 
         <div className="grid gap-3">
-          {ORDER_TYPE_OPTIONS.map((option) => {
+          {orderTypeOptions.map((option) => {
             const isSelected = optimisticOrderType === option.value
 
             return (

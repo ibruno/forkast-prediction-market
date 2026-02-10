@@ -1,6 +1,7 @@
 'use client'
 
 import type { User } from '@/types'
+import { useExtracted } from 'next-intl'
 import Form from 'next/form'
 import { startTransition, useOptimistic, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -17,6 +18,7 @@ interface NotificationSettings {
 }
 
 export default function SettingsNotificationsContent({ user }: { user: User }) {
+  const t = useExtracted()
   const [status, setStatus] = useState<{ error: string } | null>(null)
   const formRef = useRef<HTMLFormElement>(null)
   const initialSettings = user.settings?.notifications ?? {
@@ -56,7 +58,7 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
         setStatus(result)
       }
       else {
-        toast.success('Notification settings updated.')
+        toast.success(t('Notification settings updated.'))
         setStatus(null)
       }
     })
@@ -90,15 +92,15 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
 
         <div className="rounded-lg border p-6">
           <div className="grid gap-4">
-            <h3 className="text-lg font-semibold">Email</h3>
+            <h3 className="text-lg font-semibold">{t('Email')}</h3>
 
             <div className="flex items-center justify-between">
               <div className="grid gap-1">
                 <Label htmlFor="email-resolutions" className="text-sm font-medium">
-                  Resolutions
+                  {t('Resolutions')}
                 </Label>
                 <p className="text-sm text-muted-foreground">
-                  Get notified when markets are resolved
+                  {t('Get notified when markets are resolved')}
                 </p>
               </div>
               <Switch
@@ -112,16 +114,16 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
 
         <div className="rounded-lg border p-6">
           <div className="grid gap-4">
-            <h3 className="text-lg font-semibold">In-app</h3>
+            <h3 className="text-lg font-semibold">{t('In-app')}</h3>
 
             <div className="grid gap-4">
               <div className="flex items-center justify-between">
                 <div className="grid gap-1">
                   <Label htmlFor="inapp-order-fills" className="text-sm font-medium">
-                    Order Fills
+                    {t('Order Fills')}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Get notified when your orders are filled
+                    {t('Get notified when your orders are filled')}
                   </p>
                 </div>
                 <Switch
@@ -134,10 +136,10 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
               <div className="flex items-center justify-between">
                 <div className="grid gap-1">
                   <Label htmlFor="inapp-hide-small" className="text-sm font-medium">
-                    Hide small fills (&lt;1 share)
+                    {t('Hide small fills (<1 share)')}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Don't notify for fills smaller than 1 share
+                    {t('Don\'t notify for fills smaller than 1 share')}
                   </p>
                 </div>
                 <Switch
@@ -150,10 +152,10 @@ export default function SettingsNotificationsContent({ user }: { user: User }) {
               <div className="flex items-center justify-between">
                 <div className="grid gap-1">
                   <Label htmlFor="inapp-resolutions" className="text-sm font-medium">
-                    Resolutions
+                    {t('Resolutions')}
                   </Label>
                   <p className="text-sm text-muted-foreground">
-                    Get notified when markets are resolved
+                    {t('Get notified when markets are resolved')}
                   </p>
                 </div>
                 <Switch

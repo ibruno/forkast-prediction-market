@@ -2,6 +2,7 @@
 
 import type { AffiliateData } from '@/types'
 import { CheckIcon, CopyIcon, InfoIcon } from 'lucide-react'
+import { useExtracted, useLocale } from 'next-intl'
 import ProfileLink from '@/components/ProfileLink'
 import { Button } from '@/components/ui/button'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -13,12 +14,14 @@ interface SettingsAffiliateContentProps {
 }
 
 export default function SettingsAffiliateContent({ affiliateData }: SettingsAffiliateContentProps) {
+  const t = useExtracted()
+  const locale = useLocale()
   const { copied, copy } = useClipboard()
 
   if (!affiliateData) {
     return (
       <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-        Unable to load affiliate information. Please try again later.
+        {t('Unable to load affiliate information. Please try again later.')}
       </div>
     )
   }
@@ -32,7 +35,7 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
       <div className="rounded-lg border p-4 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="min-w-0 flex-1 space-y-1">
-            <h3 className="text-lg font-semibold">Referral link</h3>
+            <h3 className="text-lg font-semibold">{t('Referral link')}</h3>
             <div className="flex items-center gap-2">
               <span className="min-w-0 truncate text-sm text-muted-foreground" title={affiliateData.referralUrl}>
                 {affiliateData.referralUrl}
@@ -43,7 +46,7 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
                 size="icon"
                 onClick={handleCopyReferralUrl}
                 className="shrink-0"
-                title={copied ? 'Copied!' : 'Copy referral link'}
+                title={copied ? t('Copied!') : t('Copy referral link')}
               >
                 {copied ? <CheckIcon className="size-4 text-yes" /> : <CopyIcon className="size-4" />}
               </Button>
@@ -61,49 +64,49 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
                       hover:text-foreground
                       focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none
                     `}
-                    aria-label="Commission info"
+                    aria-label={t('Commission info')}
                   >
                     <InfoIcon className="size-3" aria-hidden />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="max-w-64 text-left">
-                  Commission is taken from the trading fee at execution, not from volume. The exchange base fee comes out first.
+                  {t('Commission is taken from the trading fee at execution, not from volume. The exchange base fee comes out first.')}
                 </TooltipContent>
               </Tooltip>
             </div>
-            <div className="text-sm text-muted-foreground">Commission</div>
+            <div className="text-sm text-muted-foreground">{t('Commission')}</div>
           </div>
         </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground uppercase">Total referrals</p>
+          <p className="text-xs text-muted-foreground uppercase">{t('Total referrals')}</p>
           <p className="mt-2 text-2xl font-semibold">{affiliateData.stats.total_referrals}</p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground uppercase">Active traders</p>
+          <p className="text-xs text-muted-foreground uppercase">{t('Active traders')}</p>
           <p className="mt-2 text-2xl font-semibold">{affiliateData.stats.active_referrals}</p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground uppercase">Referred volume</p>
+          <p className="text-xs text-muted-foreground uppercase">{t('Referred volume')}</p>
           <p className="mt-2 text-2xl font-semibold">{formatCurrency(Number(affiliateData.stats.volume ?? 0))}</p>
         </div>
         <div className="rounded-lg border p-4">
-          <p className="text-xs text-muted-foreground uppercase">Earned fees</p>
+          <p className="text-xs text-muted-foreground uppercase">{t('Earned fees')}</p>
           <p className="mt-2 text-2xl font-semibold">{formatCurrency(Number(affiliateData.stats.total_affiliate_fees ?? 0))}</p>
         </div>
       </div>
 
       <div className="rounded-lg border">
         <div className="border-b p-4 sm:px-6">
-          <h3 className="text-lg font-semibold">Recent referrals</h3>
-          <p className="text-sm text-muted-foreground">Latest users who joined through your link.</p>
+          <h3 className="text-lg font-semibold">{t('Recent referrals')}</h3>
+          <p className="text-sm text-muted-foreground">{t('Latest users who joined through your link.')}</p>
         </div>
         <div className="divide-y">
           {affiliateData.recentReferrals.length === 0 && (
             <div className="px-4 py-10 text-center text-sm text-muted-foreground sm:px-6">
-              No referrals yet. Share your link to get started.
+              {t('No referrals yet. Share your link to get started.')}
             </div>
           )}
           {affiliateData.recentReferrals.map((referral) => {
@@ -125,9 +128,9 @@ export default function SettingsAffiliateContent({ affiliateData }: SettingsAffi
                   usernameMaxWidthClassName="max-w-48 sm:max-w-64"
                 >
                   <p className="text-xs text-muted-foreground">
-                    Joined
+                    {t('Joined')}
                     {' '}
-                    {new Date(referral.created_at).toLocaleDateString()}
+                    {new Date(referral.created_at).toLocaleDateString(locale)}
                   </p>
                 </ProfileLink>
               </div>

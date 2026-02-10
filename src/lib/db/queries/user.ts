@@ -150,12 +150,12 @@ export const UserRepository = {
       }
 
       const user: any = session.user
-      const productionDomain = process.env.VERCEL_PROJECT_PRODUCTION_URL
       const rawEmail = typeof user.email === 'string' ? user.email : ''
       const shouldRedactEmail = Boolean(
         rawEmail
         && (
-          (productionDomain && rawEmail.includes(productionDomain))
+          rawEmail.includes('http://')
+          || rawEmail.includes('https://')
           || rawEmail.includes('vercel.app')
         ),
       )
