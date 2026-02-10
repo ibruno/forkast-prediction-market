@@ -284,15 +284,8 @@ async function run() {
 
   const connectionString = resolveMigrationConnectionString()
   if (!connectionString) {
-    console.log('Skipping db:push because required env vars are missing: POSTGRES_URL_NON_POOLING, POSTGRES_MIGRATION_URL or POSTGRES_URL')
+    console.log('Skipping db:push because required env vars are missing: POSTGRES_URL_NON_POOLING or POSTGRES_URL')
     return
-  }
-
-  if (process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_MIGRATION_URL) {
-    console.log('Using non-pooling database URL for migrations.')
-  }
-  else {
-    console.log('Using POSTGRES_URL for migrations (set POSTGRES_URL_NON_POOLING to use direct/session pooler URL).')
   }
 
   const maxConnections = readPositiveInt('DB_PUSH_MAX_CONNECTIONS', 1)
