@@ -162,10 +162,16 @@ export default function EventOrderPanelForm({ event, isMobile }: EventOrderPanel
     () => resolveWinningOutcomeIndex(state.market),
     [state.market],
   )
+  const resolvedOutcomeText = state.market?.outcomes.find(
+    outcome => outcome.outcome_index === resolvedOutcomeIndex,
+  )?.outcome_text
+  const normalizedResolvedOutcomeLabel = resolvedOutcomeText
+    ? normalizeOutcomeLabel(resolvedOutcomeText)
+    : ''
   const resolvedOutcomeLabel = resolvedOutcomeIndex === OUTCOME_INDEX.NO
-    ? t('No')
+    ? (normalizedResolvedOutcomeLabel || resolvedOutcomeText || t('No'))
     : resolvedOutcomeIndex === OUTCOME_INDEX.YES
-      ? t('Yes')
+      ? (normalizedResolvedOutcomeLabel || resolvedOutcomeText || t('Yes'))
       : t('Resolved')
   const resolvedMarketTitle = state.market?.short_title || state.market?.title
   const orderDomain = useMemo(() => getExchangeEip712Domain(isNegRiskEnabled), [isNegRiskEnabled])
