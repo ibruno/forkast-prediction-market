@@ -13,22 +13,17 @@ export function Teleport({ to, children }: TeleportProps) {
   const [container, setContainer] = useState<HTMLElement | null>(null)
 
   useEffect(() => {
-    (async function () {
+    function resolveContainer() {
       const target = document.querySelector(to) as HTMLElement | null
+      setContainer(prev => (prev === target ? prev : target))
+    }
 
-      if (!target) {
-        setContainer(null)
-        return
-      }
+    resolveContainer()
 
-      setContainer(target)
+    const observer = new MutationObserver(resolveContainer)
+    observer.observe(document.documentElement, { childList: true, subtree: true })
 
-      return () => {
-        if (target && document.body.contains(target)) {
-          document.body.removeChild(target)
-        }
-      }
-    })()
+    return () => observer.disconnect()
   }, [to])
 
   if (!container) {
