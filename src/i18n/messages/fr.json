@@ -137,8 +137,8 @@
   "2oCaym": "Êtes-vous sûr ?",
   "oIpOzP": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
   "Yn86tb": "Peu importe",
-  "N2IrpM": "Confirmer",
   "noZdV2": "Suppression...",
+  "N2IrpM": "Confirmer",
   "47RKN7": "Le contenu du commentaire est requis",
   "BSRUgh": "Le commentaire est trop long (max 2000 caractères).",
   "/08HOZ": "Impossible de créer le commentaire.",
@@ -342,5 +342,7 @@
   "74KDC1": "Le mode test est",
   "qFpN4j": "ACTIVÉ",
   "ClnFH6": "Obtenez des Amoy USDC gratuits sur Discord avec",
-  "CCIrox": "Ouvrir Discord"
+  "CCIrox": "Ouvrir Discord",
+  "Pg+LLi": "Hausse",
+  "xhBLiY": "Baisse"
 }

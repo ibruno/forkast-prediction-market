@@ -12,6 +12,12 @@ export function useOutcomeLabel() {
     if (label === 'No') {
       return t('No')
     }
+    if (label === 'Up') {
+      return t('Up')
+    }
+    if (label === 'Down') {
+      return t('Down')
+    }
     return label ?? ''
   }
 }
