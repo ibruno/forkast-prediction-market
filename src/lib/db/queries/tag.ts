@@ -1,4 +1,5 @@
 import type { NonDefaultLocale, SupportedLocale } from '@/i18n/locales'
+import { createHash } from 'node:crypto'
 import { and, asc, count, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { cacheTag, revalidatePath } from 'next/cache'
@@ -72,6 +73,10 @@ function normalizeTranslationLocale(locale: string): NonDefaultLocale | null {
   return NON_DEFAULT_LOCALES.includes(locale as NonDefaultLocale)
     ? locale as NonDefaultLocale
     : null
+}
+
+function buildSourceHash(value: string) {
+  return createHash('sha256').update(value).digest('hex')
 }
 
 function buildTagTranslationsByTagId(rows: TagTranslationRecord[]): Map<number, TagTranslationsMap> {
@@ -588,27 +593,30 @@ export const TagRepository = {
       .filter(entry => entry.value.length === 0)
       .map(entry => entry.locale)
 
+    const { data: tagRecord, error: tagCheckError } = await runQuery(async () => {
+      const result = await db
+        .select({ id: tags.id, name: tags.name })
+        .from(tags)
+        .where(eq(tags.id, tagId))
+        .limit(1)
+
+      return { data: result[0] ?? null, error: null }
+    })
+
+    if (tagCheckError || !tagRecord) {
+      return { data: null, error: tagCheckError ?? 'Tag not found.' }
+    }
+
+    const sourceHash = buildSourceHash(tagRecord.name)
     const rowsToUpsert = normalizedEntries
       .filter(entry => entry.value.length > 0)
       .map(entry => ({
         tag_id: tagId,
         locale: entry.locale,
         name: entry.value,
+        source_hash: sourceHash,
+        is_manual: true,
       }))
-
-    const { data: tagExists, error: tagCheckError } = await runQuery(async () => {
-      const result = await db
-        .select({ id: tags.id })
-        .from(tags)
-        .where(eq(tags.id, tagId))
-        .limit(1)
-
-      return { data: result.length > 0, error: null }
-    })
-
-    if (tagCheckError || !tagExists) {
-      return { data: null, error: tagCheckError ?? 'Tag not found.' }
-    }
 
     const { error } = await runQuery(async () => {
       await db.transaction(async (tx) => {
@@ -629,6 +637,8 @@ export const TagRepository = {
               target: [tag_translations.tag_id, tag_translations.locale],
               set: {
                 name: sql`EXCLUDED.name`,
+                source_hash: sql`EXCLUDED.source_hash`,
+                is_manual: true,
               },
             })
         }

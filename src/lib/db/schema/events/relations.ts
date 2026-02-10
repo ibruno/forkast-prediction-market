@@ -1,5 +1,14 @@
 import { relations } from 'drizzle-orm'
-import { conditions, event_tags, events, markets, outcomes, tag_translations, tags } from './tables'
+import {
+  conditions,
+  event_tags,
+  event_translations,
+  events,
+  markets,
+  outcomes,
+  tag_translations,
+  tags,
+} from './tables'
 
 export const conditionsRelations = relations(conditions, ({ many }) => ({
   markets: many(markets),
@@ -9,6 +18,7 @@ export const conditionsRelations = relations(conditions, ({ many }) => ({
 export const eventsRelations = relations(events, ({ many }) => ({
   markets: many(markets),
   eventTags: many(event_tags),
+  translations: many(event_translations),
 }))
 
 export const marketsRelations = relations(markets, ({ one, many }) => ({
@@ -58,5 +68,12 @@ export const tagTranslationsRelations = relations(tag_translations, ({ one }) =>
   tag: one(tags, {
     fields: [tag_translations.tag_id],
     references: [tags.id],
+  }),
+}))
+
+export const eventTranslationsRelations = relations(event_translations, ({ one }) => ({
+  event: one(events, {
+    fields: [event_translations.event_id],
+    references: [events.id],
   }),
 }))

@@ -459,6 +459,11 @@ async function processEvent(eventData: any, creatorAddress: string, createdAtIso
     throw new Error(`Invalid event data: ${JSON.stringify(eventData)}`)
   }
 
+  const normalizedEventTitle = String(eventData.title).trim()
+  if (!normalizedEventTitle) {
+    throw new Error(`Invalid event title for slug ${eventData.slug}`)
+  }
+
   const normalizedEndDate = normalizeTimestamp(eventData.end_time)
   const enableNegRiskFlag = normalizeBooleanField(eventData.enable_neg_risk)
   const negRiskAugmentedFlag = normalizeBooleanField(eventData.neg_risk_augmented)
@@ -467,7 +472,7 @@ async function processEvent(eventData: any, creatorAddress: string, createdAtIso
 
   const { data: existingEvent } = await supabaseAdmin
     .from('events')
-    .select('id, end_date, created_at')
+    .select('id, title, end_date, created_at')
     .eq('slug', eventData.slug)
     .maybeSingle()
 
@@ -477,6 +482,10 @@ async function processEvent(eventData: any, creatorAddress: string, createdAtIso
       neg_risk_augmented: negRiskAugmentedFlag,
       neg_risk: eventNegRiskFlag,
       neg_risk_market_id: eventNegRiskMarketId ?? null,
+    }
+
+    if (existingEvent.title !== normalizedEventTitle) {
+      updatePayload.title = normalizedEventTitle
     }
 
     const existingCreatedAtMs = Date.parse(existingEvent.created_at)
@@ -516,7 +525,7 @@ async function processEvent(eventData: any, creatorAddress: string, createdAtIso
     .from('events')
     .insert({
       slug: eventData.slug,
-      title: eventData.title,
+      title: normalizedEventTitle,
       creator: creatorAddress,
       icon_url: iconUrl,
       show_market_icons: eventData.show_market_icons !== false,

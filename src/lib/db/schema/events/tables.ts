@@ -11,6 +11,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
 } from 'drizzle-orm/pg-core'
 
 export const conditions = pgTable(
@@ -98,6 +99,47 @@ export const events = pgTable(
   },
 )
 
+export const event_translations = pgTable(
+  'event_translations',
+  {
+    event_id: char({ length: 26 })
+      .notNull()
+      .references(() => events.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
+    locale: text().notNull(),
+    title: text().notNull(),
+    source_hash: text().notNull(),
+    is_manual: boolean().notNull().default(false),
+    created_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  table => ({
+    pk: primaryKey({ columns: [table.event_id, table.locale] }),
+  }),
+)
+
+export const jobs = pgTable(
+  'jobs',
+  {
+    id: char({ length: 26 })
+      .primaryKey()
+      .default(sql`generate_ulid()`),
+    job_type: text().notNull(),
+    dedupe_key: text().notNull(),
+    payload: jsonb().notNull(),
+    status: text().notNull().default('pending'),
+    attempts: smallint().notNull().default(0),
+    max_attempts: smallint().notNull().default(5),
+    available_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    reserved_at: timestamp({ withTimezone: true }),
+    last_error: text(),
+    created_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
+    updated_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
+  },
+  table => ({
+    job_type_dedupe_key_unique: unique('jobs_job_type_dedupe_key_key').on(table.job_type, table.dedupe_key),
+  }),
+)
+
 export const markets = pgTable(
   'markets',
   {
@@ -174,6 +216,8 @@ export const tag_translations = pgTable(
       .references(() => tags.id, { onDelete: 'cascade', onUpdate: 'cascade' }),
     locale: text().notNull(),
     name: text().notNull(),
+    source_hash: text(),
+    is_manual: boolean().notNull().default(false),
     created_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updated_at: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
