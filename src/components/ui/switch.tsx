@@ -17,7 +17,6 @@ function Switch({ ref, className, ...props }: React.ComponentPropsWithoutRef<typ
           disabled:cursor-not-allowed disabled:opacity-50
           data-[state=checked]:bg-primary
           data-[state=unchecked]:bg-input
-          dark:data-[state=unchecked]:bg-input/50
         `,
         className,
       )}

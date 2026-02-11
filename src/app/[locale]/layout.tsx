@@ -21,7 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     title: {
-      template: `${site.name} | %s`,
+      template: `%s | ${site.name}`,
       default: `${site.name} | ${site.description}`,
     },
     description: site.description,
