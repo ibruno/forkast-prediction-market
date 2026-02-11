@@ -16,7 +16,12 @@ function createDb(): DrizzleDb {
     throw new Error('POSTGRES_URL is not set. Configure the database env vars to enable DB features.')
   }
 
-  const client = globalForDb.client ?? postgres(url, { prepare: false })
+  const client = globalForDb.client ?? postgres(url, {
+    prepare: false,
+    max: 3,
+    connect_timeout: 10,
+    idle_timeout: 20,
+  })
   globalForDb.client = client
 
   const database = globalForDb.db ?? drizzle(client, { schema })
