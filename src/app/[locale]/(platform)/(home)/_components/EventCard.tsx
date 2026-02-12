@@ -284,7 +284,14 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
         `
       }
     >
-      <CardContent className="flex h-full flex-col px-3 pt-3 pb-1">
+      <CardContent
+        className={
+          `
+            flex h-full flex-col px-3 pt-3
+            ${isResolvedEvent ? 'pb-3' : 'pb-1'}
+          `
+        }
+      >
         <EventCardHeader
           event={event}
           activeOutcome={activeOutcome}
@@ -323,7 +330,7 @@ export default function EventCard({ event, priceOverridesByMarket = EMPTY_PRICE_
                       ? 'mt-6'
                       : isResolvedEvent && !isSingleMarket
                         ? 'mt-1'
-                        : 'mt-auto pb-2 md:pb-0'
+                        : 'mt-auto'
                   }
                 >
                   {!isSingleMarket && (

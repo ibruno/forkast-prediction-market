@@ -3,7 +3,6 @@ import { Repeat } from 'lucide-react'
 import EventBookmark from '@/app/[locale]/(platform)/event/[slug]/_components/EventBookmark'
 import { NewBadge } from '@/components/ui/new-badge'
 import { formatVolume } from '@/lib/formatters'
-import { cn } from '@/lib/utils'
 
 interface EventCardFooterProps {
   event: Event
@@ -28,7 +27,7 @@ export default function EventCardFooter({
   const recurrenceLabel = event.series_recurrence?.trim() || null
 
   return (
-    <div className={cn(`flex items-center justify-between gap-2 pb-2 text-xs/tight text-muted-foreground md:pb-0`, { 'pb-2': isResolvedEvent })}>
+    <div className="flex items-center justify-between gap-2 text-xs/tight text-muted-foreground">
       <div className="flex items-center gap-2">
         {hasRecentMarket
           ? <NewBadge />
