@@ -1,13 +1,14 @@
 'use client'
 
 import type { Market, Outcome } from '@/types'
-import { RefreshCwIcon } from 'lucide-react'
+import { InfoIcon, RefreshCwIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import EventOrderBook, {
   useOrderBookSummaries,
 } from '@/app/[locale]/(platform)/event/[slug]/_components/EventOrderBook'
 import MarketChannelStatusIndicator from '@/app/[locale]/(platform)/event/[slug]/_components/MarketChannelStatusIndicator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { useOutcomeLabel } from '@/hooks/useOutcomeLabel'
 import { OUTCOME_INDEX } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -94,7 +95,28 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
         )}
         aria-expanded={isExpanded}
       >
-        <h3 className="text-base font-medium">{t('Order Book')}</h3>
+        <div className="flex items-center gap-1.5">
+          <h3 className="text-base font-medium">{t('Order Book')}</h3>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span
+                className="inline-flex size-4 items-center justify-center text-muted-foreground hover:text-foreground"
+                aria-label="Order book information"
+                onClick={(event) => {
+                  event.stopPropagation()
+                }}
+                onPointerDown={(event) => {
+                  event.stopPropagation()
+                }}
+              >
+                <InfoIcon className="size-3.5" aria-hidden />
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="max-w-68 text-left">
+              The order book shows all open buy and sell orders for this market. Use it to place limit orders at your preferred price.
+            </TooltipContent>
+          </Tooltip>
+        </div>
         <span
           aria-hidden="true"
           className="pointer-events-none flex size-8 items-center justify-center"
@@ -127,7 +149,12 @@ export default function EventSingleMarketOrderBook({ market, eventSlug }: EventS
         )}
         aria-hidden={!isExpanded}
       >
-        <div className="overflow-hidden border-t border-border/30">
+        <div
+          className={cn(
+            'overflow-hidden',
+            isExpanded && 'border-t border-border/30',
+          )}
+        >
           <div
             className="flex flex-wrap items-center justify-between gap-3 border-b p-3 pb-0 text-sm font-semibold"
           >
