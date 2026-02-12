@@ -155,7 +155,7 @@ async function createSyncEventsCron(sql) {
       PERFORM cron.unschedule(job_id);
     END IF;
 
-    PERFORM cron.schedule('sync-events', '*/5 * * * *', cmd);
+    PERFORM cron.schedule('sync-events', '1-59/5 * * * *', cmd);
   END $$;`
 
   const updatedSQL = sqlQuery
@@ -185,7 +185,7 @@ async function createSyncVolumeCron(sql) {
       PERFORM cron.unschedule(job_id);
     END IF;
 
-    PERFORM cron.schedule('sync-volume', '*/30 * * * *', cmd);
+    PERFORM cron.schedule('sync-volume', '14,44 * * * *', cmd);
   END $$;`
 
   const updatedSQL = sqlQuery
@@ -245,7 +245,7 @@ async function createSyncResolutionCron(sql) {
       PERFORM cron.unschedule(job_id);
     END IF;
 
-    PERFORM cron.schedule('sync-resolution', '*/5 * * * *', cmd);
+    PERFORM cron.schedule('sync-resolution', '3-59/5 * * * *', cmd);
   END $$;`
 
   const updatedSQL = sqlQuery
