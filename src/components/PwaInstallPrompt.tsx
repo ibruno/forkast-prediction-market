@@ -1,6 +1,6 @@
 'use client'
 
-import { DownloadIcon, Share2Icon, XIcon } from 'lucide-react'
+import { DownloadIcon, ShareIcon, XIcon } from 'lucide-react'
 import { useExtracted } from 'next-intl'
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -157,7 +157,7 @@ export default function PwaInstallPrompt() {
             ? (
                 <p className="mt-3 flex items-center gap-1 text-xs text-muted-foreground">
                   {t('Tap Share')}
-                  <Share2Icon className="size-3.5" />
+                  <ShareIcon className="size-3.5" />
                   {t('then Add to Home Screen.')}
                 </p>
               )
