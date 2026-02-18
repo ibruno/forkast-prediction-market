@@ -149,6 +149,7 @@
   --input-hover: #353d4b;
   --ring: #29313d;
 }
+
 @theme inline {
   --color-yes: var(--yes);
   --color-yes-foreground: var(--yes-foreground);
@@ -241,15 +242,6 @@
 
 @utility text-2xs {
   font-size: 10px;
-}
-
-@utility scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
 }
 
 @utility comment-item {

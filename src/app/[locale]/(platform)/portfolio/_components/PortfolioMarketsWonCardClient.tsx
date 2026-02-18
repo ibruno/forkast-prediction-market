@@ -362,7 +362,7 @@ export default function PortfolioMarketsWonCardClient({ data }: PortfolioMarkets
           </p>
         </div>
 
-        <div className="scrollbar-hide max-h-[min(40vh,12rem)] space-y-2 overflow-y-auto pr-1 text-left">
+        <div className="max-h-[min(40vh,12rem)] space-y-2 overflow-y-auto pr-1 text-left">
           {markets.map((market) => {
             const href = market.eventSlug ? (`/event/${market.eventSlug}` as Route) : null
             const itemClassName = [
