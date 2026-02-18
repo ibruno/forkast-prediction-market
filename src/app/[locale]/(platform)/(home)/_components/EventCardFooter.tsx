@@ -32,15 +32,15 @@ export default function EventCardFooter({
     : null
 
   return (
-    <div className="flex items-center justify-between gap-2 text-xs/tight text-muted-foreground">
+    <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
       <div className="flex items-center gap-2">
         {showLiveBadge && !shouldShowNewBadge && (
-          <span className="inline-flex items-center gap-1.5 text-red-500">
-            <span className="relative inline-flex size-2.5 items-center justify-center">
-              <span className="absolute inset-0 m-auto inline-flex size-2.5 animate-ping rounded-full bg-red-500/45" />
+          <span className="flex items-center gap-1.5">
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex size-2 animate-ping rounded-full bg-red-500 opacity-75" />
               <span className="relative inline-flex size-2 rounded-full bg-red-500" />
             </span>
-            <span className="text-sm font-medium tracking-[0.04em] uppercase">Live</span>
+            <span className="leading-none font-medium text-red-500 uppercase">Live</span>
           </span>
         )}
         {shouldShowNewBadge

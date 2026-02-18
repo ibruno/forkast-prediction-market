@@ -68,7 +68,7 @@ export default function EventCardHeader({
             alt={headerTitle || event.creator || 'Market'}
             width={38}
             height={38}
-            className="size-full rounded-sm object-cover"
+            className="size-9.5 rounded-sm object-cover"
           />
         </div>
 
