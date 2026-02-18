@@ -69,7 +69,7 @@
 >
 > ### 1. Fork the Repository
 > 1. In the top right corner, click the **[⭐ Star]** button
-> 2. From the same menu, click **[Fork]**
+> 2. [Fork it here](https://github.com/kuestcom/prediction-market/fork)
 >
 > ### 2. Configure Environment Variables before Deploy
 > 1. Download [`.env.example`](./.env.example) from this repository
@@ -133,18 +133,22 @@
 - [x] Safe-compatible proxy wallet flows
 - [x] Relayer server
 - [x] Matching engine
-- [x] Split and Merge functions
+- [x] Split and merge functions
 - [x] PnL system
-- [x] Negative Risk Conversion Positions function
+- [x] Negative risk position conversion
 - [x] Public bot SDK (Python/Rust)
 - [x] Activity page
-- [x] Traders Ranking
-- [ ] UMA Oracle implementation
-- [ ] 🏆 MVP Ready (stress tests, security and calculation checks)
+- [x] Trader leaderboard
+- [x] Multi-language UI
+- [x] Theme customization
+- [x] Recurring Crypto and Nasdaq markets with live charts
+- [x] Fork-created markets with opt-in cross-fork sharing
+- [x] UMA Oracle implementation
+- [ ] 🏆 MVP Ready (stress tests, security, and financial consistency checks)
 - [ ] Move matching engine to mainnet
-- [ ] Auto‑renew Crypto and X counter markets (soon)
+- [ ] Recurring X counter markets (soon)
+- [ ] Recurring temperature markets (soon)
 - [ ] Sports markets (soon)
-- [ ] Fork-created markets with opt-in cross-fork sharing (soon)
 - [ ] Kalshi arbitrage connector (soon)
 
 ---
