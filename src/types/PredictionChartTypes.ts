@@ -37,6 +37,7 @@ export interface PredictionChartProps {
   showYAxis?: boolean
   showHorizontalGrid?: boolean
   showVerticalGrid?: boolean
+  gridLineStyle?: 'dashed' | 'solid'
   showAnnotations?: boolean
   leadingGapStart?: Date | null
   legendContent?: ReactNode
@@ -52,7 +53,10 @@ export interface PredictionChartProps {
   markerOuterRadius?: number
   markerInnerRadius?: number
   lineStrokeWidth?: number
-  lineCurve?: 'catmullRom' | 'monotoneX'
+  lineCurve?: 'catmullRom' | 'monotoneX' | 'basis'
+  showAreaFill?: boolean
+  areaFillTopOpacity?: number
+  areaFillBottomOpacity?: number
   tooltipValueFormatter?: (value: number) => string
   tooltipDateFormatter?: (value: Date) => string
   showTooltipSeriesLabels?: boolean

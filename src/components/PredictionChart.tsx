@@ -3,7 +3,7 @@
 import type { CSSProperties, ReactElement } from 'react'
 import type { DataPoint, PredictionChartCursorSnapshot, PredictionChartProps, SeriesConfig } from '@/types/PredictionChartTypes'
 import { AxisBottom, AxisRight } from '@visx/axis'
-import { curveCatmullRom, curveMonotoneX } from '@visx/curve'
+import { curveBasis, curveCatmullRom, curveMonotoneX } from '@visx/curve'
 import { localPoint } from '@visx/event'
 import { Group } from '@visx/group'
 import { scaleLinear, scaleTime } from '@visx/scale'
@@ -124,6 +124,10 @@ function resolvePointFromPaths(params: {
   return resolvedPoint
 }
 
+function sanitizeSvgId(value: string) {
+  return value.replace(/[^\w-]/g, '-')
+}
+
 export function PredictionChart({
   data: providedData,
   series: providedSeries,
@@ -145,6 +149,7 @@ export function PredictionChart({
   showYAxis = true,
   showHorizontalGrid = true,
   showVerticalGrid = false,
+  gridLineStyle = 'dashed',
   showAnnotations: _showAnnotations = true,
   leadingGapStart = null,
   legendContent,
@@ -156,6 +161,9 @@ export function PredictionChart({
   markerInnerRadius = 2.8,
   lineStrokeWidth = 1.6,
   lineCurve = 'catmullRom',
+  showAreaFill = false,
+  areaFillTopOpacity = 0.16,
+  areaFillBottomOpacity = 0,
   tooltipValueFormatter,
   tooltipDateFormatter,
   showTooltipSeriesLabels = true,
@@ -197,6 +205,12 @@ export function PredictionChart({
   const resolvedLineStrokeWidth = Number.isFinite(lineStrokeWidth) && lineStrokeWidth > 0
     ? lineStrokeWidth
     : 1.6
+  const resolvedAreaFillTopOpacity = Number.isFinite(areaFillTopOpacity)
+    ? clamp01(areaFillTopOpacity)
+    : 0.16
+  const resolvedAreaFillBottomOpacity = Number.isFinite(areaFillBottomOpacity)
+    ? clamp01(areaFillBottomOpacity)
+    : 0
   const resolvedSurgeStrokeWidth = Math.max(resolvedLineStrokeWidth + 1.2, 2.8)
   const emitCursorDataChange = useCallback(
     (point: DataPoint | null) => {
@@ -225,7 +239,11 @@ export function PredictionChart({
     },
     [onCursorDataChange, series],
   )
-  const resolvedLineCurve = lineCurve === 'monotoneX' ? curveMonotoneX : curveCatmullRom
+  const resolvedLineCurve = lineCurve === 'monotoneX'
+    ? curveMonotoneX
+    : lineCurve === 'basis'
+      ? curveBasis
+      : curveCatmullRom
 
   const {
     tooltipData,
@@ -905,10 +923,19 @@ export function PredictionChart({
   const dashedSplitTime = tooltipActive && cursorDate
     ? cursorDate.getTime()
     : revealTime
-  const cursorPoint = shouldSplitByCursor && cursorDate
+  const cursorPoint = tooltipActive && cursorDate
     ? getClampedCursorPoint(cursorDate)
     : null
-  const effectiveTooltipData = tooltipData ?? cursorPoint ?? null
+  const resolvedCursorPoint = tooltipActive && cursorPoint
+    ? resolvePointFromPaths({
+        basePoint: cursorPoint,
+        series,
+        seriesPaths: seriesPathRef.current,
+        targetX: clampedTooltipX,
+        yScale,
+      })
+    : null
+  const effectiveTooltipData = resolvedCursorPoint ?? cursorPoint ?? tooltipData ?? null
 
   let coloredPoints: DataPoint[] = data
   let mutedPoints: DataPoint[] = []
@@ -1082,6 +1109,7 @@ export function PredictionChart({
     : GRID_LINE_OPACITY_LIGHT
   const axisLabelColor = gridLineColor
   const axisLabelOpacity = Math.min(1, gridLineOpacity + 0.25)
+  const gridLineDasharray = gridLineStyle === 'dashed' ? '1,3' : undefined
   const leadingGapStartMs = leadingGapStart instanceof Date ? leadingGapStart.getTime() : Number.NaN
   const clipPadding = 2
   const resolvedCursorGuideTop = typeof cursorGuideTop === 'number'
@@ -1122,6 +1150,30 @@ export function PredictionChart({
                 height={innerHeight + clipPadding * 2}
               />
             </clipPath>
+            {showAreaFill && series.map((seriesItem) => {
+              const areaGradientId = `${clipId}-area-${sanitizeSvgId(seriesItem.key)}`
+              return (
+                <linearGradient
+                  key={areaGradientId}
+                  id={areaGradientId}
+                  x1="0"
+                  y1="0"
+                  x2="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="0%"
+                    stopColor={seriesItem.color}
+                    stopOpacity={resolvedAreaFillTopOpacity}
+                  />
+                  <stop
+                    offset="100%"
+                    stopColor={seriesItem.color}
+                    stopOpacity={resolvedAreaFillBottomOpacity}
+                  />
+                </linearGradient>
+              )
+            })}
           </defs>
           <Group left={resolvedMargin.left} top={resolvedMargin.top}>
             {showVerticalGrid && verticalGridTicks.map((tick) => {
@@ -1136,7 +1188,7 @@ export function PredictionChart({
                   y2={innerHeight}
                   stroke={gridLineColor}
                   strokeWidth={1}
-                  strokeDasharray="1,3"
+                  strokeDasharray={gridLineDasharray}
                   opacity={gridLineOpacity}
                 />
               )
@@ -1151,7 +1203,7 @@ export function PredictionChart({
                 y2={yScale(value)}
                 stroke={gridLineColor}
                 strokeWidth={1}
-                strokeDasharray="1,3"
+                strokeDasharray={gridLineDasharray}
                 opacity={gridLineOpacity}
               />
             ))}
@@ -1184,6 +1236,7 @@ export function PredictionChart({
                 && leadingGapStartMs < firstPointTime
               const ghostOpacity = crossFadeOut
               const seriesSplitTime = isSeriesRevealing ? dashedSplitTime : Number.POSITIVE_INFINITY
+              const areaGradientId = `${clipId}-area-${sanitizeSvgId(seriesItem.key)}`
               let dashedColoredPoints: DataPoint[] | null = null
               let dashedMutedPoints: DataPoint[] | null = null
 
@@ -1319,8 +1372,23 @@ export function PredictionChart({
                           return null
                         }
 
+                        const firstColoredPoint = seriesColoredPoints[0]
+                        const lastColoredPoint = seriesColoredPoints[seriesColoredPoints.length - 1]
+                        const areaPathDefinition = showAreaFill && firstColoredPoint && lastColoredPoint
+                          ? `${pathDefinition} L ${xScale(getDate(lastColoredPoint))} ${innerHeight} L ${xScale(getDate(firstColoredPoint))} ${innerHeight} Z`
+                          : null
+
                         return (
                           <>
+                            {areaPathDefinition && (
+                              <path
+                                d={areaPathDefinition}
+                                fill={`url(#${areaGradientId})`}
+                                fillOpacity={crossFadeIn}
+                                stroke="none"
+                                pointerEvents="none"
+                              />
+                            )}
                             <path
                               d={pathDefinition}
                               stroke={seriesColor}
@@ -1446,11 +1514,14 @@ export function PredictionChart({
                   tickStroke="transparent"
                   tickLabelProps={(_value, index, values) => {
                     const lastIndex = Array.isArray(values) ? values.length - 1 : -1
-                    const textAnchor = index === 0
-                      ? 'start'
-                      : index === lastIndex
-                        ? 'end'
-                        : 'middle'
+                    const shouldCenterAllLabels = Boolean(resolvedXAxisTickValues)
+                    const textAnchor = shouldCenterAllLabels
+                      ? 'middle'
+                      : index === 0
+                        ? 'start'
+                        : index === lastIndex
+                          ? 'end'
+                          : 'middle'
 
                     const hideFirstMonthLabel = isMonthOnlyLabels && index === 0
                     return {
@@ -1460,6 +1531,7 @@ export function PredictionChart({
                       textAnchor,
                       dy: showXAxisTopRule ? '1.05em' : '0.6em',
                       opacity: hideFirstMonthLabel ? 0 : axisLabelOpacity,
+                      fontVariantNumeric: 'tabular-nums',
                     }
                   }}
                   numTicks={xAxisTickCount}
